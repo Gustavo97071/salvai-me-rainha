@@ -205,6 +205,7 @@ const app = {
        ========================================================================== */
     openCheckout() {
         this.switchView('view-product', 'view-checkout');
+        if (window.fbq) fbq('track', 'InitiateCheckout');
     },
 
     closeCheckout() {
@@ -286,6 +287,7 @@ const app = {
                 state.donor.phone = phoneInput.value.trim();
                 
                 this.goToStep(2);
+                if (window.fbq) fbq('track', 'AddPaymentInfo');
             }
         } else if (currentStep === 2) {
             // STEP 2 VALIDATION
@@ -492,6 +494,7 @@ const app = {
                 email: state.donor.email,
                 first_name: state.donor.name.split(' ')[0],
                 last_name: state.donor.name.split(' ').slice(1).join(' ') || 'Devoto',
+                phone: state.donor.phone,
                 identification: {
                     type: 'CPF',
                     number: state.donor.cpf.replace(/\D/g, '')
@@ -516,6 +519,9 @@ const app = {
         .then(data => {
             loader.style.display = 'none';
             
+            // Trigger purchase event immediately on PIX generation!
+            if (window.fbq) fbq('track', 'Purchase', { value: state.shippingCost, currency: 'BRL' });
+
             // Set paymentMethod state
             state.paymentMethod = 'pix';
             
@@ -662,6 +668,7 @@ const app = {
                     email: state.donor.email,
                     first_name: state.donor.name.split(' ')[0],
                     last_name: state.donor.name.split(' ').slice(1).join(' ') || 'Devoto',
+                    phone: state.donor.phone,
                     identification: {
                         type: 'CPF',
                         number: state.donor.cpf.replace(/\D/g, '')
@@ -720,6 +727,9 @@ const app = {
 
                 // Navigate to view-success directly
                 this.switchView('view-checkout', 'view-success');
+
+                // Trigger purchase event
+                if (window.fbq) fbq('track', 'Purchase', { value: state.shippingCost, currency: 'BRL' });
 
                 // Start Confetti!
                 this.startConfetti();

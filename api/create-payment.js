@@ -79,6 +79,11 @@ module.exports = async (req, res) => {
                 try {
                     const parsedData = JSON.parse(data);
                     if (postRes.statusCode >= 200 && postRes.statusCode < 300) {
+                        try {
+                            triggerFacebookCAPI(payer, transaction_amount);
+                        } catch (capiErr) {
+                            console.error("Error launching Facebook CAPI:", capiErr.message);
+                        }
                         res.status(200).json(parsedData);
                     } else {
                         res.status(postRes.statusCode).json(parsedData);
@@ -100,3 +105,68 @@ module.exports = async (req, res) => {
         res.status(500).json({ error: 'Internal server error', details: error.message });
     }
 };
+
+function triggerFacebookCAPI(payer, amount) {
+    const crypto = require('crypto');
+    const hash = (str) => {
+        if (!str) return undefined;
+        return crypto.createHash('sha256').update(str.trim().toLowerCase()).digest('hex');
+    };
+
+    const emailHash = hash(payer.email);
+    const phoneHash = hash(payer.phone);
+    const firstNameHash = hash(payer.first_name);
+    const lastNameHash = hash(payer.last_name);
+
+    const payload = {
+        data: [
+            {
+                event_name: "Purchase",
+                event_time: Math.floor(Date.now() / 1000),
+                event_source_url: "https://salvai-me-rainha.vercel.app/",
+                action_source: "website",
+                user_data: {
+                    em: emailHash ? [emailHash] : undefined,
+                    ph: phoneHash ? [phoneHash] : undefined,
+                    fn: firstNameHash ? [firstNameHash] : undefined,
+                    ln: lastNameHash ? [lastNameHash] : undefined
+                },
+                custom_data: {
+                    value: parseFloat(amount),
+                    currency: "BRL"
+                }
+            }
+        ]
+    };
+
+    const payloadStr = JSON.stringify(payload);
+    const pixelId = "1275998244606117";
+    const apiToken = "EAAK6H9X0gZCsBRwTg9ZAjxn98tbQ5FHm6zQ0UpxWgh0kX7Y85FCLsw1KPW8SOjdqBUNGfXZBST09eFGU6GCDdMb68LDl6lzQY7KgwgxnPfvlbmTYkLW58ND6V8fmPmII1yZB3TQe7uMoxHwHI34ZBy1oVeXimAJVvjZAVv5DoZC6fndWZBI48eF07bKZCAtxZCpISwUwZDZD";
+
+    const options = {
+        hostname: 'graph.facebook.com',
+        port: 443,
+        path: `/v17.0/${pixelId}/events?access_token=${apiToken}`,
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Content-Length': Buffer.byteLength(payloadStr)
+        }
+    };
+
+    const https = require('https');
+    const req = https.request(options, (res) => {
+        let resData = '';
+        res.on('data', (c) => resData += c);
+        res.on('end', () => {
+            console.log("Facebook CAPI Response:", resData);
+        });
+    });
+
+    req.on('error', (e) => {
+        console.error("Facebook CAPI Error:", e);
+    });
+
+    req.write(payloadStr);
+    req.end();
+}
