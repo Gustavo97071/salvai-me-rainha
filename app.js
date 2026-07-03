@@ -25,7 +25,18 @@ const state = {
 /* ==========================================================================
    INITIALIZATION
    ========================================================================== */
+let mp;
+
 document.addEventListener('DOMContentLoaded', () => {
+    // Initialize Mercado Pago with the Public Key
+    try {
+        mp = new MercadoPago('APP_USR-6ef31b59-8d0c-4e29-97bd-d3b544dd91b2', {
+            locale: 'pt-BR'
+        });
+    } catch (e) {
+        console.error("Mercado Pago SDK failed to load:", e);
+    }
+
     initCarousel();
     initNotifications();
     
@@ -55,6 +66,44 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         e.target.value = value;
     });
+
+    // Format Credit Card Number Input (add spaces every 4 digits)
+    const cardNumInput = document.getElementById('input-card-number');
+    if (cardNumInput) {
+        cardNumInput.addEventListener('input', (e) => {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length > 16) value = value.substring(0, 16);
+            
+            // Format: 0000 0000 0000 0000
+            let formatted = value.match(/.{1,4}/g);
+            e.target.value = formatted ? formatted.join(' ') : '';
+        });
+    }
+
+    // Format Card Expiration Input (MM/AA)
+    const cardExpInput = document.getElementById('input-card-expiration');
+    if (cardExpInput) {
+        cardExpInput.addEventListener('input', (e) => {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length > 4) value = value.substring(0, 4);
+            
+            if (value.length > 2) {
+                e.target.value = value.substring(0, 2) + '/' + value.substring(2);
+            } else {
+                e.target.value = value;
+            }
+        });
+    }
+
+    // Format Card CVV Input (digits only, limit 4)
+    const cardCvvInput = document.getElementById('input-card-cvv');
+    if (cardCvvInput) {
+        cardCvvInput.addEventListener('input', (e) => {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length > 4) value = value.substring(0, 4);
+            e.target.value = value;
+        });
+    }
 });
 
 /* ==========================================================================
@@ -385,61 +434,251 @@ const app = {
         state.paymentMethod = method;
         
         const tabPix = document.getElementById('tab-pix');
-        const tabBoleto = document.getElementById('tab-boleto');
+        const tabCard = document.getElementById('tab-card');
         
         const subformPix = document.getElementById('subform-pix');
-        const subformBoleto = document.getElementById('subform-boleto');
+        const subformCard = document.getElementById('subform-card');
 
         if (method === 'pix') {
             tabPix.classList.add('active');
-            tabBoleto.classList.remove('active');
+            tabCard.classList.remove('active');
             subformPix.classList.add('active');
-            subformBoleto.classList.remove('active');
+            subformCard.classList.remove('active');
         } else {
             tabPix.classList.remove('active');
-            tabBoleto.classList.add('active');
+            tabCard.classList.add('active');
             subformPix.classList.remove('active');
-            subformBoleto.classList.add('active');
+            subformCard.classList.add('active');
+            
+            // Sync card button label amount
+            const cardAmt = document.getElementById('btnCardPayAmount');
+            if (cardAmt) {
+                cardAmt.textContent = state.shippingCost.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            }
+            
+            // Update installments options dropdown
+            this.updateCardInstallmentsDropdown();
         }
     },
 
-    generateNativePayment(method) {
+    updateCardInstallmentsDropdown() {
+        const select = document.getElementById('input-card-installments');
+        if (!select) return;
+        
+        select.innerHTML = '';
+        
+        // Setup static elegant installment calculations up to 3x sem juros
+        const amt = state.shippingCost;
+        const options = [
+            { val: 1, text: `1x de R$ ${amt.toFixed(2).replace('.', ',')} sem juros` },
+            { val: 2, text: `2x de R$ ${(amt / 2).toFixed(2).replace('.', ',')} sem juros` },
+            { val: 3, text: `3x de R$ ${(amt / 3).toFixed(2).replace('.', ',')} sem juros` }
+        ];
+        
+        options.forEach(opt => {
+            const el = document.createElement('option');
+            el.value = opt.val;
+            el.textContent = opt.text;
+            select.appendChild(el);
+        });
+    },
+
+    /* Handle PIX Payment with Vercel Serverless Function */
+    processPixPayment() {
         // Show loader spinner
         const loader = document.getElementById('payment-loader');
         loader.style.display = 'flex';
 
-        setTimeout(() => {
+        const payload = {
+            payment_method_id: 'pix',
+            transaction_amount: state.shippingCost,
+            payer: {
+                email: state.donor.email,
+                first_name: state.donor.name.split(' ')[0],
+                last_name: state.donor.name.split(' ').slice(1).join(' ') || 'Devoto',
+                identification: {
+                    type: 'CPF',
+                    number: state.donor.cpf.replace(/\D/g, '')
+                }
+            }
+        };
+
+        // Post to our serverless endpoint
+        fetch('/api/create-payment', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+        })
+        .then(res => {
+            if (!res.ok) {
+                return res.json().then(err => { throw new Error(err.message || 'Erro ao processar PIX') });
+            }
+            return res.json();
+        })
+        .then(data => {
             loader.style.display = 'none';
             
-            // Navigate to view-payment overlay screen
+            // Navigate to view-payment screen
             document.getElementById('view-checkout').classList.remove('active');
             document.getElementById('view-payment').classList.add('active');
             
-            const costText = state.shippingCost.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+            document.getElementById('paymentHeaderTitle').textContent = 'Pagar Taxa de Envio (PIX)';
+            document.getElementById('pixDetailsDisplayAmount').textContent = state.shippingCost.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+            
+            // Populate Real QR Code base64 image and text copy key from Mercado Pago!
+            const qrCodeBase64 = data.point_of_interaction.transaction_data.qr_code_base64;
+            const qrCodeText = data.point_of_interaction.transaction_data.qr_code;
+            
+            document.getElementById('pixDetailsQrImage').src = `data:image/jpeg;base64,${qrCodeBase64}`;
+            document.getElementById('pixDetailsCopyCode').value = qrCodeText;
+            
+            // Periodically check status (mock auto confirmation or we can let the user trigger manual confirmation)
+            if (window.paymentMockTimeout) clearTimeout(window.paymentMockTimeout);
+            window.paymentMockTimeout = setTimeout(() => {
+                app.simulatePaymentSuccess();
+            }, 10000); // Auto confirm after 10s for simulation
+        })
+        .catch(err => {
+            loader.style.display = 'none';
+            alert(`Falha no Pagamento PIX: ${err.message || 'Tente novamente.'}`);
+        });
+    },
 
-            if (method === 'pix') {
-                document.getElementById('paymentHeaderTitle').textContent = 'Pagar Taxa de Envio (PIX)';
-                document.getElementById('payment-pix-details').classList.remove('hidden');
-                document.getElementById('payment-boleto-details').classList.add('hidden');
-                
-                document.getElementById('pixDetailsDisplayAmount').textContent = costText;
-                
-                // Generate QR Code via QRServer API
-                const qrPayload = `pix:acnsf-envio-pulseira-${state.shippingCost}-${state.donor.cpf}`;
-                document.getElementById('pixDetailsQrImage').src = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(qrPayload)}`;
-                
-                // Set auto confirm mock timeout after 15 seconds
-                window.paymentMockTimeout = setTimeout(() => {
-                    app.simulatePaymentSuccess();
-                }, 15000);
-            } else {
-                document.getElementById('paymentHeaderTitle').textContent = 'Pagar Taxa de Envio (Boleto)';
-                document.getElementById('payment-pix-details').classList.add('hidden');
-                document.getElementById('payment-boleto-details').classList.remove('hidden');
-                
-                document.getElementById('boletoDetailsDisplayAmount').textContent = costText;
+    /* Handle Credit Card Tokenization & Payment with Mercado Pago and Vercel */
+    async processCardPayment() {
+        const cardNumInput = document.getElementById('input-card-number');
+        const expInput = document.getElementById('input-card-expiration');
+        const cvvInput = document.getElementById('input-card-cvv');
+        const cardholderInput = document.getElementById('input-card-name');
+        const installmentSelect = document.getElementById('input-card-installments');
+
+        let isValid = true;
+
+        // Validations
+        if (cardNumInput.value.replace(/\s/g, '').length < 15) {
+            this.setInputError(cardNumInput, 'error-card-number', true);
+            isValid = false;
+        } else {
+            this.setInputError(cardNumInput, 'error-card-number', false);
+        }
+
+        if (!expInput.value.includes('/') || expInput.value.length < 5) {
+            this.setInputError(expInput, 'error-card-expiration', true);
+            isValid = false;
+        } else {
+            this.setInputError(expInput, 'error-card-expiration', false);
+        }
+
+        if (cvvInput.value.length < 3) {
+            this.setInputError(cvvInput, 'error-card-cvv', true);
+            isValid = false;
+        } else {
+            this.setInputError(cvvInput, 'error-card-cvv', false);
+        }
+
+        if (cardholderInput.value.trim().split(' ').length < 2) {
+            this.setInputError(cardholderInput, 'error-card-name', true);
+            isValid = false;
+        } else {
+            this.setInputError(cardholderInput, 'error-card-name', false);
+        }
+
+        if (!isValid) return;
+
+        // Show loader spinner
+        const loader = document.getElementById('payment-loader');
+        loader.style.display = 'flex';
+
+        try {
+            const [expMonth, expYear] = expInput.value.split('/');
+            
+            // 1. Create secure Card Token via Mercado Pago SDK
+            const cardTokenResponse = await mp.createCardToken({
+                cardNumber: cardNumInput.value.replace(/\s/g, ''),
+                cardholderName: cardholderInput.value.trim(),
+                cardExpirationMonth: expMonth,
+                cardExpirationYear: '20' + expYear,
+                securityCode: cvvInput.value,
+                identificationType: 'CPF',
+                identificationNumber: state.donor.cpf.replace(/\D/g, '')
+            });
+
+            // 2. Identify Card Brand (Visa, Mastercard, etc.)
+            let cardBrand = 'master'; // fallback
+            const firstBin = cardNumInput.value.replace(/\s/g, '').substring(0, 6);
+            
+            // Simple BIN-based brand resolver
+            if (firstBin.startsWith('4')) {
+                cardBrand = 'visa';
+            } else if (firstBin.startsWith('5')) {
+                cardBrand = 'master';
+            } else if (firstBin.startsWith('3')) {
+                cardBrand = 'amex';
+            } else if (/^(4011|43893|504175|636368|636297|5067|4576|4011)/.test(firstBin)) {
+                cardBrand = 'elo';
+            } else if (/^(6062|5067|5090)/.test(firstBin)) {
+                cardBrand = 'hipercard';
             }
-        }, 1200);
+
+            // 3. Post Token and details to backend serverless function
+            const payload = {
+                payment_method_id: cardBrand,
+                token: cardTokenResponse.id,
+                installments: parseInt(installmentSelect.value) || 1,
+                transaction_amount: state.shippingCost,
+                payer: {
+                    email: state.donor.email,
+                    first_name: state.donor.name.split(' ')[0],
+                    last_name: state.donor.name.split(' ').slice(1).join(' ') || 'Devoto',
+                    identification: {
+                        type: 'CPF',
+                        number: state.donor.cpf.replace(/\D/g, '')
+                    }
+                }
+            };
+
+            const paymentRes = await fetch('/api/create-payment', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            });
+
+            const paymentData = await paymentRes.json();
+
+            if (!paymentRes.ok) {
+                throw new Error(paymentData.message || paymentData.error || 'Pagamento recusado');
+            }
+
+            // check status from MP response
+            if (paymentData.status === 'approved' || paymentData.status === 'in_process') {
+                loader.style.display = 'none';
+                
+                // Navigate to view-success directly
+                document.getElementById('view-checkout').classList.remove('active');
+                document.getElementById('view-success').classList.add('active');
+                
+                // Populate success details
+                document.getElementById('successDonorName').textContent = state.donor.name.split(' ')[0];
+                document.getElementById('successDisplaySize').textContent = state.donor.size;
+                document.getElementById('successShippingType').textContent = state.shippingType === 'normal' ? 'Frete Expresso' : 'Sedex Prioritário';
+                document.getElementById('successTotalPaid').textContent = state.shippingCost.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+                document.getElementById('successMethodText').textContent = 'Cartão de Crédito';
+                document.getElementById('successDonorEmail').textContent = state.donor.email;
+                
+                const fullAddress = `${state.donor.street}, Nº ${state.donor.number} ${state.donor.complement ? '- ' + state.donor.complement : ''}, ${state.donor.neighborhood}, ${state.donor.city}/${state.donor.state}`;
+                document.getElementById('successAddressText').textContent = fullAddress;
+            } else {
+                throw new Error('Pagamento não autorizado pelo banco. Tente outro cartão.');
+            }
+
+        } catch (err) {
+            loader.style.display = 'none';
+            alert(`Falha no Pagamento: ${err.message || 'Verifique os dados do cartão e tente novamente.'}`);
+        }
     },
 
     copyPixCode() {
@@ -454,17 +693,7 @@ const app = {
             });
     },
 
-    copyBoletoCode() {
-        const input = document.getElementById('boletoCopyCode');
-        input.select();
-        input.setSelectionRange(0, 99999);
-        navigator.clipboard.writeText(input.value)
-            .then(() => {
-                const msg = document.getElementById('copyBoletoSuccessMsg');
-                msg.classList.remove('hidden');
-                setTimeout(() => msg.classList.add('hidden'), 3000);
-            });
-    },
+
 
     simulatePaymentSuccess() {
         if (window.paymentMockTimeout) {

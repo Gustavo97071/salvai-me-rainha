@@ -492,9 +492,9 @@
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
                             PIX
                         </button>
-                        <button type="button" class="payment-tab" id="tab-boleto" onclick="app.switchPaymentTab('boleto')">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="4"/><line x1="8" y1="2" x2="8" y2="4"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                            Boleto
+                        <button type="button" class="payment-tab" id="tab-card" onclick="app.switchPaymentTab('card')">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+                            Cartão
                         </button>
                     </div>
 
@@ -506,19 +506,52 @@
                                 <span class="pix-badge-accent">Envio Imediato</span>
                                 <p>A confirmação do PIX é instantânea e seu brinde entra na fila de despacho prioritário.</p>
                             </div>
-                            <button type="button" class="generate-payment-btn" onclick="app.generateNativePayment('pix')">
+                            <button type="button" class="generate-payment-btn" onclick="app.processPixPayment()">
                                 Gerar PIX e Confirmar <i class="fa-solid fa-pix"></i>
                             </button>
                         </div>
 
-                        <!-- BOLETO SUBFORM -->
-                        <div class="payment-subform" id="subform-boleto">
-                            <div class="boleto-info-card">
-                                <span class="boleto-badge-accent">Compensação: 1 a 2 dias</span>
-                                <p>O boleto é compensado pelo banco em até 48h úteis. O brinde é enviado após a compensação.</p>
+                        <!-- CREDIT CARD SUBFORM -->
+                        <div class="payment-subform" id="subform-card">
+                            <div class="card-form-wrapper">
+                                <div class="form-group">
+                                    <label for="input-card-number">Número do Cartão</label>
+                                    <div class="cep-input-wrapper">
+                                        <input type="tel" id="input-card-number" placeholder="0000 0000 0000 0000" maxlength="19" required>
+                                        <span class="cep-spinner" id="card-brand-spinner" style="display:none;"></span>
+                                    </div>
+                                    <span class="error-msg" id="error-card-number">Número de cartão inválido</span>
+                                </div>
+                                
+                                <div class="form-row">
+                                    <div class="form-group flex-2">
+                                        <label for="input-card-expiration">Validade</label>
+                                        <input type="tel" id="input-card-expiration" placeholder="MM/AA" maxlength="5" required>
+                                        <span class="error-msg" id="error-card-expiration">Validade inválida (MM/AA)</span>
+                                    </div>
+                                    <div class="form-group flex-1">
+                                        <label for="input-card-cvv">Código CVV</label>
+                                        <input type="tel" id="input-card-cvv" placeholder="123" maxlength="4" required>
+                                        <span class="error-msg" id="error-card-cvv">CVV inválido</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="input-card-name">Nome Impresso no Cartão</label>
+                                    <input type="text" id="input-card-name" placeholder="Ex: MARIA F SILVA" required>
+                                    <span class="error-msg" id="error-card-name">Insira o nome exatamente como no cartão</span>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="input-card-installments">Parcelas</label>
+                                    <select id="input-card-installments" class="form-select">
+                                        <option value="1">1x de R$ 19,90 sem juros</option>
+                                    </select>
+                                </div>
                             </div>
-                            <button type="button" class="generate-payment-btn" onclick="app.generateNativePayment('boleto')">
-                                Gerar Boleto Bancário <i class="fa-solid fa-barcode"></i>
+
+                            <button type="button" class="generate-payment-btn" onclick="app.processCardPayment()">
+                                Finalizar Pagamento <i class="fa-solid fa-credit-card"></i>
                             </button>
                         </div>
                     </div>
@@ -583,7 +616,7 @@
                         <span class="copy-success-msg hidden" id="copySuccessMsg"><i class="fa-solid fa-circle-check"></i> Chave Copiada!</span>
                     </div>
 
-                    <div class="pix-simulation-panel">
+                        <div class="pix-simulation-panel">
                         <div class="pulse-ring"></div>
                         <p class="status-waiting-msg"><i class="fa-solid fa-spinner fa-spin"></i> Aguardando confirmação do pagamento pelo banco...</p>
                         
@@ -595,34 +628,41 @@
                     </div>
                 </div>
 
-                <!-- BOLETO PAYMENT VIEW -->
-                <div id="payment-boleto-details" class="payment-details-box hidden">
-                    <h3 class="step-title">Boleto Bancário Gerado</h3>
-                    <p class="step-desc">Você pode pagar com o código de barras abaixo no app do seu banco ou imprimir.</p>
-
-                    <div class="pix-amount-badge">
-                        Valor da Taxa: <strong id="boletoDetailsDisplayAmount">R$ 19,90</strong>
-                    </div>
-
-                    <div class="barcode-container">
-                        <div class="barcode-graphic">|||| | | |||||| | ||||| ||| |||| || |||||| | |||||</div>
-                        <span class="barcode-number" id="boletoDetailsBarcode">23793.39803 99000.000004 03000.520092 8 99870000001990</span>
-                    </div>
-
-                    <div class="pix-copia-cola-box" style="margin-top: 20px;">
-                        <label for="boletoCopyCode">Código de Barras:</label>
-                        <div class="copia-cola-input-group">
-                            <input type="text" id="boletoCopyCode" readonly value="23793.39803 99000.000004 03000.520092 8 99870000001990">
-                            <button class="btn btn-gold btn-sm" onclick="app.copyBoletoCode()"><i class="fa-solid fa-copy"></i> Copiar</button>
+                <!-- CREDIT CARD PAYMENT VIEW -->
+                <div id="payment-card-details" class="payment-details-box hidden">
+                    <h3 class="step-title">Pagamento com Cartão</h3>
+                    <div id="form-checkout">
+                        <div class="form-group">
+                            <label for="form-checkout__cardholderName">Nome do Titular</label>
+                            <input type="text" id="form-checkout__cardholderName" class="form-control" />
                         </div>
-                        <span class="copy-success-msg hidden" id="copyBoletoSuccessMsg"><i class="fa-solid fa-circle-check"></i> Código Copiado!</span>
-                    </div>
-
-                    <div class="pix-simulation-panel" style="border: none;">
-                        <p class="status-waiting-msg"><i class="fa-solid fa-circle-info"></i> Compensação bancária ocorre em até 48 horas úteis.</p>
-                        <button class="btn btn-success btn-block" onclick="app.simulatePaymentSuccess()">
-                            Simular Compensação do Boleto
-                        </button>
+                        <div class="form-group">
+                            <label for="form-checkout__cardholderEmail">E-mail</label>
+                            <input type="email" id="form-checkout__cardholderEmail" class="form-control" />
+                        </div>
+                        <div class="form-group">
+                            <label for="form-checkout__cardNumber">Número do Cartão</label>
+                            <div id="form-checkout__cardNumber" class="form-control"></div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="form-checkout__expirationDate">Data de Vencimento</label>
+                                <div id="form-checkout__expirationDate" class="form-control"></div>
+                            </div>
+                            <div class="form-group">
+                                <label for="form-checkout__securityCode">CVV</label>
+                                <div id="form-checkout__securityCode" class="form-control"></div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="form-checkout__issuer">Banco Emissor</label>
+                            <select id="form-checkout__issuer" class="form-select"></select>
+                        </div>
+                        <div class="form-group">
+                            <label for="form-checkout__installments">Parcelas</label>
+                            <select id="form-checkout__installments" class="form-select"></select>
+                        </div>
+                        <button type="submit" id="form-checkout__submit" class="btn btn-gold btn-block">Pagar</button>
                     </div>
                 </div>
             </div>
@@ -683,6 +723,8 @@
     <!-- FontAwesome for beautiful icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
+    <!-- Mercado Pago SDK -->
+    <script src="https://sdk.mercadopago.com/js/v2"></script>
     <!-- JavaScript Logic -->
     <script src="app.js"></script>
 </body>
