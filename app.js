@@ -209,7 +209,7 @@ const app = {
     },
 
     goToCheckoutStep3() {
-        this.switchView('view-payment', 'view-checkout');
+        this.switchView('view-success', 'view-checkout');
         this.goToStep(3);
     },
 
@@ -511,21 +511,59 @@ const app = {
         .then(data => {
             loader.style.display = 'none';
             
-            // Navigate to view-payment screen
-            this.switchView('view-checkout', 'view-payment');
+            // Set paymentMethod state
+            state.paymentMethod = 'pix';
             
-            document.getElementById('paymentHeaderTitle').textContent = 'Pagar Taxa de Envio (PIX)';
-            document.getElementById('pixDetailsDisplayAmount').textContent = state.shippingCost.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+            // Populate success details
+            document.getElementById('successDonorName').textContent = state.donor.name;
+            document.getElementById('successDisplaySize').textContent = state.donor.size;
+            document.getElementById('successShippingType').textContent = state.shippingType === 'normal' ? 'Frete Expresso' : (state.shippingType === 'sedex' ? 'Sedex Prioritário' : 'Simulação de Teste');
+            document.getElementById('successTotalPaid').textContent = state.shippingCost.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+            document.getElementById('successMethodText').textContent = 'PIX';
             
+            const fullAddress = `${state.donor.street}, Nº ${state.donor.number} ${state.donor.complement ? '- ' + state.donor.complement : ''}, ${state.donor.neighborhood}, ${state.donor.city}/${state.donor.state}`;
+            document.getElementById('successAddressText').textContent = fullAddress;
+            
+            // Generate random order ID
+            document.getElementById('success-order-id').textContent = `#SR-${Math.floor(Math.random() * 900000 + 100000)}-BR`;
+
+            // Reset view-success headers for waiting status
+            document.getElementById('success-status-icon').className = 'success-circle waiting';
+            document.getElementById('success-status-icon').innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>';
+            document.getElementById('success-status-title').textContent = 'Aguardando Pagamento';
+            document.getElementById('success-status-desc').textContent = 'O envio do seu brinde será processado imediatamente após a confirmação do pagamento da taxa postal.';
+
+            // Reset Timeline steps
+            document.getElementById('timeline-step-1').className = 'timeline-item active';
+            document.getElementById('timeline-step-1-desc').textContent = 'Aguardando confirmação do pagamento da taxa de envio.';
+            document.getElementById('timeline-step-2').className = 'timeline-item pending';
+            document.getElementById('timeline-step-3').className = 'timeline-item pending';
+            
+            // Show PIX box inside view-success
+            document.getElementById('success-pix-container').style.display = 'block';
+
             // Populate Real QR Code base64 image and text copy key from Mercado Pago!
             const qrCodeBase64 = data.point_of_interaction.transaction_data.qr_code_base64;
             const qrCodeText = data.point_of_interaction.transaction_data.qr_code;
             
-            document.getElementById('pixDetailsQrImage').src = `data:image/jpeg;base64,${qrCodeBase64}`;
-            document.getElementById('pixDetailsCopyCode').value = qrCodeText;
+            document.getElementById('success-pix-qr').src = `data:image/jpeg;base64,${qrCodeBase64}`;
+            document.getElementById('success-pix-code').value = qrCodeText;
             
-            // Manual confirmation via the simulation button is required
-            if (window.paymentMockTimeout) clearTimeout(window.paymentMockTimeout);
+            // Navigate to success view
+            this.switchView('view-checkout', 'view-success');
+
+            // Reset status checker container to waiting state
+            const statusCard = document.getElementById('pix-status-card');
+            if (statusCard) {
+                statusCard.style.background = 'rgba(212, 175, 55, 0.06)';
+                statusCard.style.borderColor = 'rgba(212, 175, 55, 0.4)';
+            }
+            document.getElementById('success-pix-status-label').textContent = 'Aguardando confirmação do pagamento...';
+            document.getElementById('pix-status-loader').style.display = 'block';
+
+            // Start polling and countdown
+            this.startPixCountdown(15 * 60);
+            this.startPixPolling(data.id);
         })
         .catch(err => {
             loader.style.display = 'none';
@@ -644,19 +682,42 @@ const app = {
             if (paymentData.status === 'approved' || paymentData.status === 'in_process') {
                 loader.style.display = 'none';
                 
-                // Navigate to view-success directly
-                this.switchView('view-checkout', 'view-success');
-                
+                // Hide PIX container inside view-success
+                document.getElementById('success-pix-container').style.display = 'none';
+
+                // Set paymentMethod state
+                state.paymentMethod = 'card';
+
+                // Reset view-success headers for approved status
+                document.getElementById('success-status-icon').className = 'success-circle';
+                document.getElementById('success-status-icon').innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+                document.getElementById('success-status-title').textContent = 'Pedido Confirmado!';
+                document.getElementById('success-status-desc').textContent = 'Parabéns! Sua compra foi processada com sucesso. Seus dados de envio já foram repassados para a nossa distribuidora.';
+
+                // Timeline steps
+                document.getElementById('timeline-step-1').className = 'timeline-item active';
+                document.getElementById('timeline-step-1-desc').textContent = 'Pagamento compensado e pedido gerado no sistema.';
+                document.getElementById('timeline-step-2').className = 'timeline-item active';
+                document.getElementById('timeline-step-3').className = 'timeline-item pending';
+
                 // Populate success details
-                document.getElementById('successDonorName').textContent = state.donor.name.split(' ')[0];
+                document.getElementById('successDonorName').textContent = state.donor.name;
                 document.getElementById('successDisplaySize').textContent = state.donor.size;
-                document.getElementById('successShippingType').textContent = state.shippingType === 'normal' ? 'Frete Expresso' : 'Sedex Prioritário';
+                document.getElementById('successShippingType').textContent = state.shippingType === 'normal' ? 'Frete Expresso' : (state.shippingType === 'sedex' ? 'Sedex Prioritário' : 'Simulação de Teste');
                 document.getElementById('successTotalPaid').textContent = state.shippingCost.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
                 document.getElementById('successMethodText').textContent = 'Cartão de Crédito';
-                document.getElementById('successDonorEmail').textContent = state.donor.email;
                 
                 const fullAddress = `${state.donor.street}, Nº ${state.donor.number} ${state.donor.complement ? '- ' + state.donor.complement : ''}, ${state.donor.neighborhood}, ${state.donor.city}/${state.donor.state}`;
                 document.getElementById('successAddressText').textContent = fullAddress;
+
+                // Generate random order ID
+                document.getElementById('success-order-id').textContent = `#SR-${Math.floor(Math.random() * 900000 + 100000)}-BR`;
+
+                // Navigate to view-success directly
+                this.switchView('view-checkout', 'view-success');
+
+                // Start Confetti!
+                this.startConfetti();
             } else {
                 throw new Error('Pagamento não autorizado pelo banco. Tente outro cartão.');
             }
@@ -667,41 +728,199 @@ const app = {
         }
     },
 
-    copyPixCode() {
-        const input = document.getElementById('pixDetailsCopyCode');
-        input.select();
-        input.setSelectionRange(0, 99999);
-        navigator.clipboard.writeText(input.value)
+    copySuccessPIXKey() {
+        const copyInput = document.getElementById('success-pix-code');
+        if (!copyInput) return;
+        
+        copyInput.select();
+        copyInput.setSelectionRange(0, 99999);
+        
+        navigator.clipboard.writeText(copyInput.value)
             .then(() => {
-                const msg = document.getElementById('copySuccessMsg');
-                msg.classList.remove('hidden');
-                setTimeout(() => msg.classList.add('hidden'), 3000);
+                const alertEl = document.getElementById('success-pix-copy-alert');
+                if (alertEl) {
+                    alertEl.classList.add('active');
+                    setTimeout(() => alertEl.classList.remove('active'), 2500);
+                }
             });
     },
 
+    startPixCountdown(duration) {
+        let timer = duration;
+        const countdownEl = document.getElementById('success-pix-countdown');
+        
+        if (this.pixInterval) clearInterval(this.pixInterval);
+        
+        this.pixInterval = setInterval(() => {
+            const minutes = parseInt(timer / 60, 10);
+            const seconds = parseInt(timer % 60, 10);
+            
+            const displayMin = minutes < 10 ? "0" + minutes : minutes;
+            const displaySec = seconds < 10 ? "0" + seconds : seconds;
+            
+            if (countdownEl) {
+                countdownEl.textContent = displayMin + ":" + displaySec;
+            }
+            
+            if (--timer < 0) {
+                clearInterval(this.pixInterval);
+                this.pixInterval = null;
+                if (countdownEl) countdownEl.textContent = "Expirado";
+                this.stopPixPolling();
+                alert("O código PIX expirou. Por favor, reinicie o pedido.");
+                this.resetEcomFlow();
+            }
+        }, 1000);
+    },
 
+    startPixPolling(paymentId) {
+        if (this.pixStatusInterval) clearInterval(this.pixStatusInterval);
+        
+        this.pixStatusInterval = setInterval(() => {
+            fetch(`/api/check-payment?id=${encodeURIComponent(paymentId)}`)
+                .then(res => {
+                    if (!res.ok) throw new Error();
+                    return res.json();
+                })
+                .then(data => {
+                    if (data.status === 'approved') {
+                        this.stopPixPolling();
+                        
+                        // Update status label
+                        const label = document.getElementById('success-pix-status-label');
+                        if (label) {
+                            label.innerHTML = '<span style="color: #34C759; font-weight: 700;">✓ Pagamento confirmado com sucesso!</span>';
+                        }
+                        
+                        const statusCard = document.getElementById('pix-status-card');
+                        if (statusCard) {
+                            statusCard.style.background = 'rgba(52, 199, 89, 0.08)';
+                            statusCard.style.borderColor = 'rgba(52, 199, 89, 0.4)';
+                        }
+                        
+                        const loader = document.getElementById('pix-status-loader');
+                        if (loader) loader.style.display = 'none';
+                        
+                        // Change screen to fully approved
+                        setTimeout(() => {
+                            this.simulatePaymentSuccess();
+                        }, 1500);
+                    }
+                })
+                .catch(err => {
+                    console.error("Polling error:", err);
+                });
+        }, 3000);
+    },
+
+    stopPixPolling() {
+        if (this.pixStatusInterval) {
+            clearInterval(this.pixStatusInterval);
+            this.pixStatusInterval = null;
+        }
+        if (this.pixInterval) {
+            clearInterval(this.pixInterval);
+            this.pixInterval = null;
+        }
+    },
 
     simulatePaymentSuccess() {
-        if (window.paymentMockTimeout) {
-            clearTimeout(window.paymentMockTimeout);
+        this.stopPixPolling();
+        
+        // Update header status card in success view
+        const icon = document.getElementById('success-status-icon');
+        icon.className = 'success-circle';
+        icon.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+        
+        document.getElementById('success-status-title').textContent = 'Pedido Confirmado!';
+        document.getElementById('success-status-desc').textContent = 'Parabéns! Sua compra foi processada com sucesso. Seus dados de envio já foram repassados para a nossa distribuidora.';
+
+        // Hide PIX container inside view-success
+        document.getElementById('success-pix-container').style.display = 'none';
+
+        // Update Timeline
+        document.getElementById('timeline-step-1').className = 'timeline-item active';
+        document.getElementById('timeline-step-1-desc').textContent = 'Pagamento compensado e pedido gerado no sistema.';
+        document.getElementById('timeline-step-2').className = 'timeline-item active';
+        document.getElementById('timeline-step-3').className = 'timeline-item pending';
+
+        // Start confetti
+        this.startConfetti();
+    },
+
+    startConfetti() {
+        const canvas = document.getElementById('confetti-canvas');
+        if (!canvas) return;
+        
+        const ctx = canvas.getContext('2d');
+        const container = document.querySelector('.mobile-container');
+        canvas.width = container.clientWidth;
+        canvas.height = container.clientHeight;
+        
+        const colors = ["#FFCC00", "#FF3B30", "#34C759", "#007AFF", "#AF52DE", "#5AC8FA"];
+        const particles = [];
+        this.confettiActive = true;
+        
+        for (let i = 0; i < 100; i++) {
+            particles.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * -canvas.height - 20,
+                r: Math.random() * 6 + 4,
+                d: Math.random() * canvas.height,
+                color: colors[Math.floor(Math.random() * colors.length)],
+                tilt: Math.random() * 10 - 5,
+                tiltAngleIncremental: Math.random() * 0.07 + 0.02,
+                tiltAngle: 0
+            });
         }
         
-        // Hide payment view, show success view
-        this.switchView('view-payment', 'view-success');
+        const draw = () => {
+            if (!this.confettiActive) return;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            particles.forEach((p, idx) => {
+                p.tiltAngle += p.tiltAngleIncremental;
+                p.y += (Math.cos(p.d) + 3 + p.r / 2) / 2;
+                p.x += Math.sin(p.tiltAngle);
+                
+                ctx.beginPath();
+                ctx.lineWidth = p.r;
+                ctx.strokeStyle = p.color;
+                ctx.moveTo(p.x + p.tilt + p.r / 2, p.y);
+                ctx.lineTo(p.x + p.tilt, p.y + p.tilt + p.r / 2);
+                ctx.stroke();
+                
+                if (p.y > canvas.height) {
+                    particles[idx] = {
+                        x: Math.random() * canvas.width,
+                        y: -20,
+                        r: p.r,
+                        d: p.d,
+                        color: p.color,
+                        tilt: p.tilt,
+                        tiltAngleIncremental: p.tiltAngleIncremental,
+                        tiltAngle: p.tiltAngle
+                    };
+                }
+            });
+            
+            requestAnimationFrame(draw);
+        };
         
-        // Populate success view details
-        document.getElementById('successDonorName').textContent = state.donor.name.split(' ')[0];
-        document.getElementById('successDisplaySize').textContent = state.donor.size;
-        document.getElementById('successShippingType').textContent = state.shippingType === 'normal' ? 'Frete Expresso' : 'Sedex Prioritário';
-        document.getElementById('successTotalPaid').textContent = state.shippingCost.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-        document.getElementById('successMethodText').textContent = state.paymentMethod.toUpperCase();
-        document.getElementById('successDonorEmail').textContent = state.donor.email;
+        draw();
         
-        const fullAddress = `${state.donor.street}, Nº ${state.donor.number} ${state.donor.complement ? '- ' + state.donor.complement : ''}, ${state.donor.neighborhood}, ${state.donor.city}/${state.donor.state}`;
-        document.getElementById('successAddressText').textContent = fullAddress;
+        setTimeout(() => {
+            this.confettiActive = false;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }, 6000);
     },
 
     resetEcomFlow() {
+        this.stopPixPolling();
+        
+        // Hide success containers
+        document.getElementById('success-pix-container').style.display = 'none';
+
         // Reset all views and form inputs
         this.switchView('view-success', 'view-product');
         

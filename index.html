@@ -12,7 +12,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     
     <!-- Custom Stylesheet -->
-    <link rel="stylesheet" href="style.css?v=1.1.3">
+    <link rel="stylesheet" href="style.css?v=1.1.4">
 </head>
 <body>
     <div class="mobile-container">
@@ -581,86 +581,130 @@
             </div>
         </div>
 
-        <!-- 3. PAYMENT INTERACTIVE CODE VIEW -->
-        <div id="view-payment" class="app-view">
-            <!-- Payment Header -->
-            <header class="checkout-header">
-                <button class="back-btn" onclick="app.goToCheckoutStep3()" aria-label="Voltar">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
-                </button>
-                <h2 id="paymentHeaderTitle">Pagamento do Envio</h2>
-            </header>
-
-            <div class="checkout-content text-center">
-                <!-- PIX PAYMENT VIEW -->
-                <div id="payment-pix-details" class="payment-details-box">
-                    <h3 class="step-title">Efetue o pagamento via PIX</h3>
-                    
-                    <div class="pix-amount-badge">
-                        Taxa de Envio: <strong id="pixDetailsDisplayAmount">R$ 19,90</strong>
+        <!-- 3. SUCCESS VIEW -->
+        <div id="view-success" class="app-view">
+            <div class="success-screen-content">
+                <div class="success-badge-container">
+                    <div class="success-circle waiting" id="success-status-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
                     </div>
+                </div>
+                
+                <h1 id="success-status-title">Aguardando Pagamento</h1>
+                <p class="success-main-text" id="success-status-desc">O envio do seu brinde será processado imediatamente após a confirmação do pagamento da taxa postal.</p>
+                
+                <!-- Confetti Canvas -->
+                <canvas id="confetti-canvas" class="confetti-canvas"></canvas>
 
-                    <div class="pix-qrcode-container">
-                        <img src="" alt="Código QR do PIX" class="pix-qrcode" id="pixDetailsQrImage">
-                        <div class="qrcode-scan-helper">
-                            <p>Aponte a câmera do seu banco para o QR Code acima</p>
+                <!-- Order Receipt Card -->
+                <div class="receipt-card">
+                    <div class="receipt-header">
+                        <span>Código do Pedido:</span>
+                        <strong id="success-order-id">#SR-136413-BR</strong>
+                    </div>
+                    <div class="receipt-item-row">
+                        <div class="item-thumb">
+                            <img src="assets/camiseta.jpg" alt="Camisa Nossa Senhora Aparecida">
+                        </div>
+                        <div class="item-info">
+                            <span class="item-name">Camisa Devocional de Nossa Senhora Aparecida (Grátis)</span>
+                            <span class="item-qty">Tamanho: <strong id="successDisplaySize">M</strong></span>
+                        </div>
+                        <div class="item-price" id="successTotalPaid">
+                            R$ 19,90
                         </div>
                     </div>
-                        <div class="pix-copia-cola-box">
-                        <label for="pixDetailsCopyCode">PIX Copia e Cola:</label>
-                        <div class="copia-cola-input-group">
-                            <input type="text" id="pixDetailsCopyCode" readonly value="00020101021226870014br.gov.bcb.pix2565pix.acnsf.org.br/doacao/129841804218094719280470520400005303986540520.005802BR5925AssocNossaSenhoraFatima6009Sao Paulo62070503***6304D1B9">
-                            <button class="btn btn-gold btn-sm" onclick="app.copyPixCode()"><i class="fa-solid fa-copy"></i> Copiar</button>
-                        </div>
-                        <span class="copy-success-msg hidden" id="copySuccessMsg"><i class="fa-solid fa-circle-check"></i> Chave Copiada!</span>
-                    </div>
 
-                    <div class="pix-simulation-panel">
-                        <div class="status-pulse-dot"></div>
-                        <p class="status-waiting-msg"><i class="fa-solid fa-spinner fa-spin"></i> Aguardando confirmação do pagamento pelo banco...</p>
+                    <div class="receipt-divider"></div>
+
+                    <div class="receipt-details">
+                        <div class="receipt-line">
+                            <span>Destinatário:</span>
+                            <strong id="successDonorName">Carregando...</strong>
+                        </div>
+                        <div class="receipt-line">
+                            <span>Entregar em:</span>
+                            <strong id="successAddressText">Carregando...</strong>
+                        </div>
+                        <div class="receipt-line">
+                            <span>Envio:</span>
+                            <strong id="successShippingType">Frete Expresso</strong>
+                        </div>
+                        <div class="receipt-line">
+                            <span>Método:</span>
+                            <strong id="successMethodText">PIX</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Native PIX Container (Only shown when payment method is PIX and not yet confirmed) -->
+                <div class="native-success-section" id="success-pix-container">
+                    <div class="pix-success-box">
+                        <h3>Aguardando Pagamento do PIX</h3>
+                        <p class="pix-instructions">Leia o QR Code abaixo com o aplicativo do seu banco ou copie o código Copia e Cola para pagar.</p>
                         
-                        <div class="simulation-actions">
-                            <button class="btn btn-success btn-sm btn-block" onclick="app.simulatePaymentSuccess()">
+                        <div class="qr-code-box">
+                            <img id="success-pix-qr" src="" alt="QR Code PIX">
+                        </div>
+                        
+                        <p class="pix-timer">Expira em: <span id="success-pix-countdown">15:00</span></p>
+
+                        <div class="copy-paste-box">
+                            <label>Código Copia e Cola:</label>
+                            <div class="copy-input-row">
+                                <input type="text" id="success-pix-code" value="" readonly>
+                                <button type="button" onclick="app.copySuccessPIXKey()">Copiar</button>
+                            </div>
+                            <span class="copy-alert" id="success-pix-copy-alert">Código copiado!</span>
+                        </div>
+
+                        <!-- Real-time status checker -->
+                        <div class="pix-status-container" id="pix-status-card">
+                            <div class="pix-status-spinner" id="pix-status-loader">
+                                <div class="pulse-ring"></div>
+                                <div class="spinner-dot"></div>
+                            </div>
+                            <span class="pix-status-text" id="success-pix-status-label">Aguardando confirmação do pagamento...</span>
+                        </div>
+
+                        <div class="simulation-actions" style="margin-top: 16px;">
+                            <button class="btn btn-success btn-sm btn-block" onclick="app.simulatePaymentSuccess()" style="background-color: #22c55e; color: white; border: none; padding: 12px; border-radius: 8px; font-weight: 700; width: 100%; cursor: pointer;">
                                 Simular Confirmação Bancária
                             </button>
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
 
-        <!-- 4. SUCCESS VIEW -->
-        <div id="view-success" class="app-view">
-            <div class="success-screen-content">
-                <div class="success-badge-container">
-                    <div class="success-circle">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                <!-- Shipping Status Timeline -->
+                <div class="shipping-status-box">
+                    <h3>Status do Envio</h3>
+                    <div class="timeline">
+                        <div class="timeline-item active" id="timeline-step-1">
+                            <div class="timeline-dot"></div>
+                            <div class="timeline-info">
+                                <h4>Pedido Solicitado</h4>
+                                <p id="timeline-step-1-desc">Aguardando confirmação do pagamento da taxa de envio.</p>
+                            </div>
+                        </div>
+                        <div class="timeline-item pending" id="timeline-step-2">
+                            <div class="timeline-dot"></div>
+                            <div class="timeline-info">
+                                <h4>Separação em Estoque</h4>
+                                <p>Embalagem da camisa no tamanho selecionado e despacho.</p>
+                            </div>
+                        </div>
+                        <div class="timeline-item pending" id="timeline-step-3">
+                            <div class="timeline-dot"></div>
+                            <div class="timeline-info">
+                                <h4>Coleta dos Correios</h4>
+                                <p>Código de rastreamento enviado por e-mail e WhatsApp.</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                
-                <h1>Presente Solicitado!</h1>
-                <p class="success-thank-you">Que Deus e Nossa Senhora Aparecida abençoem sua casa, querido(a) devoto(a) <strong id="successDonorName">Apoiador</strong>.</p>
-                
-                <div class="success-summary-box">
-                    <h4>Resumo do Envio:</h4>
-                    <ul>
-                        <li><strong>Produto:</strong> 1x Camisa N. Sra. Aparecida (Grátis)</li>
-                        <li><strong>Tamanho:</strong> <strong id="successDisplaySize">M</strong></li>
-                        <li><strong>Envio:</strong> <span id="successShippingType">Frete Expresso</span></li>
-                        <li><strong>Valor Pago:</strong> <span id="successTotalPaid">R$ 19,90</span></li>
-                        <li><strong>Método:</strong> <span id="successMethodText">PIX</span></li>
-                        <li><strong>Endereço:</strong> <span id="successAddressText">Carregando...</span></li>
-                    </ul>
-                </div>
 
-                <div class="success-alert-box">
-                    <p><i class="fa-solid fa-check"></i> Em até 24h úteis, seu presente bento será postado e enviaremos o código de rastreio dos Correios no e-mail: <strong id="successDonorEmail">email@gmail.com</strong></p>
-                </div>
-
-                <p class="spiritual-blessing">"Sob a vossa proteção nos refugiamos, Santa Mãe de Deus..."</p>
-
-                <button class="btn btn-gold btn-block mt20" onclick="app.resetEcomFlow()">
-                    Voltar ao Início
+                <button class="back-home-btn" onclick="app.resetEcomFlow()">
+                    Voltar para o Início
                 </button>
             </div>
         </div>
@@ -687,6 +731,6 @@
     <!-- Mercado Pago SDK -->
     <script src="https://sdk.mercadopago.com/js/v2"></script>
     <!-- JavaScript Logic -->
-    <script src="app.js?v=1.1.3"></script>
+    <script src="app.js?v=1.1.4"></script>
 </body>
 </html>
