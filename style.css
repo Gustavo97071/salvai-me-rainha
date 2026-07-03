@@ -70,6 +70,10 @@ body {
     display: flex;
 }
 
+#view-product {
+    padding-bottom: 84px;
+}
+
 @keyframes slideIn {
     from {
         opacity: 0;
@@ -91,8 +95,7 @@ body {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    position: sticky;
-    top: 0;
+    position: relative;
     z-index: 100;
     box-shadow: 0 2px 10px rgba(0,0,0,0.1);
 }
@@ -942,8 +945,12 @@ body {
 
 /* Bottom Floating Bar */
 .bottom-cta-bar {
-    position: sticky;
+    position: fixed;
     bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 480px;
     z-index: 90;
     background-color: var(--clr-navy);
     border-top: 2px solid var(--clr-gold);
