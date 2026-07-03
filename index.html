@@ -12,7 +12,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     
     <!-- Custom Stylesheet -->
-    <link rel="stylesheet" href="style.css?v=1.1.9">
+    <link rel="stylesheet" href="style.css?v=1.2.0">
 </head>
 <body>
     <div class="mobile-container">
@@ -423,33 +423,33 @@
                             </div>
                         </div>
 
-                        <h4 class="checkout-subtitle"><i class="fa-solid fa-truck"></i> Escolha a Opção de Envio</h4>
+                        <h4 class="checkout-subtitle"><i class="fa-solid fa-heart"></i> Escolha a sua Doação <span style="font-size: 11px; color: var(--clr-success); margin-left: 8px;">(Frete Grátis)</span></h4>
                         <div class="shipping-options-grid">
                             <label class="shipping-option-card active" id="label-shipping-normal">
-                                <input type="radio" name="shipping-fee" value="19.90" checked onclick="app.updateShipping(19.90, 'normal')">
+                                <input type="radio" name="shipping-fee" value="10.00" checked onclick="app.updateShipping(10.00, 'normal')">
                                 <div class="shipping-option-info">
-                                    <span class="option-name">Frete Expresso Seguro</span>
-                                    <span class="option-time">Entrega em 5 a 10 dias úteis</span>
+                                    <span class="option-name">Doação Devoto</span>
+                                    <span class="option-time">Ajuda no envio bento + Frete Grátis</span>
                                 </div>
-                                <span class="option-price">R$ 19,90</span>
+                                <span class="option-price">R$ 10,00</span>
                             </label>
 
                             <label class="shipping-option-card" id="label-shipping-sedex">
-                                <input type="radio" name="shipping-fee" value="29.90" onclick="app.updateShipping(29.90, 'sedex')">
+                                <input type="radio" name="shipping-fee" value="15.00" onclick="app.updateShipping(15.00, 'sedex')">
                                 <div class="shipping-option-info">
-                                    <span class="option-name">Frete Urgente Sedex</span>
-                                    <span class="option-time">Entrega em 2 a 4 dias úteis</span>
+                                    <span class="option-name">Doação Protetor</span>
+                                    <span class="option-time">Ajuda no envio bento + Frete Grátis</span>
                                 </div>
-                                <span class="option-price">R$ 29,90</span>
+                                <span class="option-price">R$ 15,00</span>
                             </label>
 
                             <label class="shipping-option-card" id="label-shipping-test">
-                                <input type="radio" name="shipping-fee" value="5.00" onclick="app.updateShipping(5.00, 'test')">
+                                <input type="radio" name="shipping-fee" value="20.00" onclick="app.updateShipping(20.00, 'test')">
                                 <div class="shipping-option-info">
-                                    <span class="option-name">Frete Simulado de Teste</span>
-                                    <span class="option-time">Simulação de checkout</span>
+                                    <span class="option-name">Doação Padrinho</span>
+                                    <span class="option-time">Ajuda no envio bento + Frete Grátis</span>
                                 </div>
-                                <span class="option-price">R$ 5,00</span>
+                                <span class="option-price">R$ 20,00</span>
                             </label>
                         </div>
 
@@ -462,8 +462,8 @@
 
                 <!-- STEP 3: NATIVE PAYMENT (PIX / BOLETO) -->
                 <div class="checkout-step" id="step-form-3">
-                    <h3 class="step-title">Contribuição do Envio</h3>
-                    <p class="step-desc">Escolha a forma de pagamento para despacharmos seu brinde.</p>
+                    <h3 class="step-title">Concluir Doação</h3>
+                    <p class="step-desc">Escolha a forma de pagamento para despacharmos seu brinde bento.</p>
 
                     <div class="order-summary-box">
                         <div class="product-item-row">
@@ -475,14 +475,14 @@
                         </div>
                         <div class="product-item-row">
                             <div class="product-info-col">
-                                <span class="shipping-title-bold" id="checkoutDisplayShippingType">Frete Expresso Seguro</span>
+                                <span class="shipping-title-bold" id="checkoutDisplayShippingType">Doação Devoto (Frete Grátis)</span>
                             </div>
-                            <span class="product-price-bold" id="checkoutDisplayShippingCost">R$ 19,90</span>
+                            <span class="product-price-bold" id="checkoutDisplayShippingCost">R$ 10,00</span>
                         </div>
                         <div class="summary-divider"></div>
                         <div class="summary-line-row">
-                            <span>Total a pagar:</span>
-                            <span class="total-price-large" id="checkoutDisplayTotal">R$ 19,90</span>
+                            <span>Total da Doação:</span>
+                            <span class="total-price-large" id="checkoutDisplayTotal">R$ 10,00</span>
                         </div>
                     </div>
 
@@ -725,6 +725,6 @@
     <!-- Mercado Pago SDK -->
     <script src="https://sdk.mercadopago.com/js/v2"></script>
     <!-- JavaScript Logic -->
-    <script src="app.js?v=1.1.9"></script>
+    <script src="app.js?v=1.2.0"></script>
 </body>
 </html>

@@ -3,8 +3,8 @@
    ========================================================================== */
 const state = {
     shippingType: 'normal',
-    shippingCost: 19.90,
-    totalCost: 19.90,
+    shippingCost: 10.00,
+    totalCost: 10.00,
     paymentMethod: 'pix',
     donor: {
         name: '',
@@ -395,7 +395,7 @@ const app = {
     updateShipping(cost, type) {
         state.shippingCost = cost;
         state.shippingType = type;
-        state.totalCost = cost; // product is 0, so total is just shipping
+        state.totalCost = cost; // product is 0, so total is just donation
 
         // Adjust active shipping cards styles
         const normalCard = document.getElementById('label-shipping-normal');
@@ -405,14 +405,16 @@ const app = {
         if (normalCard) normalCard.classList.toggle('active', type === 'normal');
         if (sedexCard) sedexCard.classList.toggle('active', type === 'sedex');
         if (testCard) testCard.classList.toggle('active', type === 'test');
+
+        this.updateShippingDetailsBox();
     },
 
     updateShippingDetailsBox() {
-        let typeText = 'Frete Expresso Seguro';
+        let typeText = 'Doação Devoto (Frete Grátis)';
         if (state.shippingType === 'sedex') {
-            typeText = 'Frete Urgente Sedex';
+            typeText = 'Doação Protetor (Frete Grátis)';
         } else if (state.shippingType === 'test') {
-            typeText = 'Frete Simulado de Teste';
+            typeText = 'Doação Padrinho (Frete Grátis)';
         }
         const costText = state.shippingCost.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
         
@@ -520,7 +522,7 @@ const app = {
             // Populate success details
             document.getElementById('successDonorName').textContent = state.donor.name;
             document.getElementById('successDisplaySize').textContent = state.donor.size;
-            document.getElementById('successShippingType').textContent = state.shippingType === 'normal' ? 'Frete Expresso' : (state.shippingType === 'sedex' ? 'Sedex Prioritário' : 'Simulação de Teste');
+            document.getElementById('successShippingType').textContent = state.shippingType === 'normal' ? 'Doação Devoto (Frete Grátis)' : (state.shippingType === 'sedex' ? 'Doação Protetor (Frete Grátis)' : 'Doação Padrinho (Frete Grátis)');
             document.getElementById('successTotalPaid').textContent = state.shippingCost.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
             document.getElementById('successMethodText').textContent = 'PIX';
             
@@ -706,7 +708,7 @@ const app = {
                 // Populate success details
                 document.getElementById('successDonorName').textContent = state.donor.name;
                 document.getElementById('successDisplaySize').textContent = state.donor.size;
-                document.getElementById('successShippingType').textContent = state.shippingType === 'normal' ? 'Frete Expresso' : (state.shippingType === 'sedex' ? 'Sedex Prioritário' : 'Simulação de Teste');
+                document.getElementById('successShippingType').textContent = state.shippingType === 'normal' ? 'Doação Devoto (Frete Grátis)' : (state.shippingType === 'sedex' ? 'Doação Protetor (Frete Grátis)' : 'Doação Padrinho (Frete Grátis)');
                 document.getElementById('successTotalPaid').textContent = state.shippingCost.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
                 document.getElementById('successMethodText').textContent = 'Cartão de Crédito';
                 
@@ -932,8 +934,8 @@ const app = {
         
         // Clear state
         state.shippingType = 'normal';
-        state.shippingCost = 19.90;
-        state.totalCost = 19.90;
+        state.shippingCost = 10.00;
+        state.totalCost = 10.00;
         state.paymentMethod = 'pix';
         state.donor.size = 'M';
         
@@ -945,7 +947,7 @@ const app = {
         const checkoutSizeDisp = document.getElementById('checkoutDisplaySize');
         if (checkoutSizeDisp) checkoutSizeDisp.textContent = 'M';
         
-        this.updateShipping(19.90, 'normal');
+        this.updateShipping(10.00, 'normal');
         this.switchPaymentTab('pix');
         
         window.scrollTo({ top: 0 });
