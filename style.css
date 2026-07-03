@@ -82,6 +82,7 @@ body {
     background-color: var(--clr-card-bg);
     z-index: 1;
     overflow-y: auto;
+    overflow-x: hidden !important;
     -webkit-overflow-scrolling: touch;
     visibility: hidden;
     opacity: 0;
