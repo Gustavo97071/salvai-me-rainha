@@ -38,7 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     initCarousel();
-    initNotifications();
+    // initNotifications();
     
 
 
