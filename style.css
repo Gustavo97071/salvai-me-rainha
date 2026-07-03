@@ -40,10 +40,6 @@ body {
     background-color: var(--clr-bg-grey);
     color: var(--clr-text-main);
     line-height: 1.5;
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    min-height: 100vh;
     overflow-x: hidden;
 }
 
@@ -60,6 +56,7 @@ body {
     display: flex;
     flex-direction: column;
     overflow-x: hidden;
+    margin: 0 auto;
 }
 
 .app-view {
@@ -1097,7 +1094,6 @@ body {
 .checkout-content {
     padding: 24px 16px;
     flex-grow: 1;
-    overflow-y: auto;
     background-color: #fcfcfd;
 }
 
@@ -1732,7 +1728,7 @@ body {
     font-weight: 600;
 }
 
-.pulse-ring {
+.status-pulse-dot {
     width: 10px;
     height: 10px;
     background-color: var(--clr-gold);

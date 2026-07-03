@@ -606,8 +606,7 @@
                             <p>Aponte a câmera do seu banco para o QR Code acima</p>
                         </div>
                     </div>
-
-                    <div class="pix-copia-cola-box">
+                        <div class="pix-copia-cola-box">
                         <label for="pixDetailsCopyCode">PIX Copia e Cola:</label>
                         <div class="copia-cola-input-group">
                             <input type="text" id="pixDetailsCopyCode" readonly value="00020101021226870014br.gov.bcb.pix2565pix.acnsf.org.br/doacao/129841804218094719280470520400005303986540520.005802BR5925AssocNossaSenhoraFatima6009Sao Paulo62070503***6304D1B9">
@@ -616,8 +615,8 @@
                         <span class="copy-success-msg hidden" id="copySuccessMsg"><i class="fa-solid fa-circle-check"></i> Chave Copiada!</span>
                     </div>
 
-                        <div class="pix-simulation-panel">
-                        <div class="pulse-ring"></div>
+                    <div class="pix-simulation-panel">
+                        <div class="status-pulse-dot"></div>
                         <p class="status-waiting-msg"><i class="fa-solid fa-spinner fa-spin"></i> Aguardando confirmação do pagamento pelo banco...</p>
                         
                         <div class="simulation-actions">
@@ -625,44 +624,6 @@
                                 Simular Confirmação Bancária
                             </button>
                         </div>
-                    </div>
-                </div>
-
-                <!-- CREDIT CARD PAYMENT VIEW -->
-                <div id="payment-card-details" class="payment-details-box hidden">
-                    <h3 class="step-title">Pagamento com Cartão</h3>
-                    <div id="form-checkout">
-                        <div class="form-group">
-                            <label for="form-checkout__cardholderName">Nome do Titular</label>
-                            <input type="text" id="form-checkout__cardholderName" class="form-control" />
-                        </div>
-                        <div class="form-group">
-                            <label for="form-checkout__cardholderEmail">E-mail</label>
-                            <input type="email" id="form-checkout__cardholderEmail" class="form-control" />
-                        </div>
-                        <div class="form-group">
-                            <label for="form-checkout__cardNumber">Número do Cartão</label>
-                            <div id="form-checkout__cardNumber" class="form-control"></div>
-                        </div>
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="form-checkout__expirationDate">Data de Vencimento</label>
-                                <div id="form-checkout__expirationDate" class="form-control"></div>
-                            </div>
-                            <div class="form-group">
-                                <label for="form-checkout__securityCode">CVV</label>
-                                <div id="form-checkout__securityCode" class="form-control"></div>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label for="form-checkout__issuer">Banco Emissor</label>
-                            <select id="form-checkout__issuer" class="form-select"></select>
-                        </div>
-                        <div class="form-group">
-                            <label for="form-checkout__installments">Parcelas</label>
-                            <select id="form-checkout__installments" class="form-select"></select>
-                        </div>
-                        <button type="submit" id="form-checkout__submit" class="btn btn-gold btn-block">Pagar</button>
                     </div>
                 </div>
             </div>

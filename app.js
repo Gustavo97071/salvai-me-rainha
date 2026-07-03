@@ -534,11 +534,8 @@ const app = {
             document.getElementById('pixDetailsQrImage').src = `data:image/jpeg;base64,${qrCodeBase64}`;
             document.getElementById('pixDetailsCopyCode').value = qrCodeText;
             
-            // Periodically check status (mock auto confirmation or we can let the user trigger manual confirmation)
+            // Manual confirmation via the simulation button is required
             if (window.paymentMockTimeout) clearTimeout(window.paymentMockTimeout);
-            window.paymentMockTimeout = setTimeout(() => {
-                app.simulatePaymentSuccess();
-            }, 10000); // Auto confirm after 10s for simulation
         })
         .catch(err => {
             loader.style.display = 'none';
