@@ -36,6 +36,7 @@
 }
 
 html, body {
+    overflow-x: hidden !important;
     overflow-y: scroll !important;
     -webkit-overflow-scrolling: touch !important;
     height: auto !important;
@@ -46,7 +47,7 @@ body {
     background-color: var(--clr-bg-grey);
     color: var(--clr-text-main);
     line-height: 1.5;
-    overflow: visible !important;
+    overflow-x: hidden !important;
 }
 
 /* ==========================================================================
@@ -62,14 +63,14 @@ body {
     display: flex;
     flex-direction: column;
     margin: 0 auto;
-    overflow: visible !important;
+    overflow-x: hidden !important;
 }
 
 .app-view {
     display: none;
     width: 100%;
     flex-direction: column;
-    overflow: visible !important;
+    overflow-x: hidden !important;
 }
 
 .app-view.active {

@@ -10,7 +10,7 @@ const state = {
         name: '',
         email: '',
         phone: '',
-        cpf: '24823194002', // Default mathematically valid CPF to bypass Mercado Pago requirements without asking client
+        cpf: '24823194047', // Default mathematically valid CPF to bypass Mercado Pago requirements without asking client
         cep: '',
         street: '',
         number: '',
