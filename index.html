@@ -12,7 +12,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     
     <!-- Custom Stylesheet -->
-    <link rel="stylesheet" href="style.css?v=1.0.3">
+    <link rel="stylesheet" href="style.css?v=1.0.4">
 </head>
 <body>
     <div class="mobile-container">
@@ -313,18 +313,13 @@
                         <span>Suporte WhatsApp</span>
                     </div>
                 </section>
+                
+                <section class="footer-cta-container text-center" style="padding: 24px 16px; background-color: #fafafa; border-top: 1px solid var(--clr-border);">
+                    <button class="buy-button-cta-inline" onclick="app.openCheckout()">
+                        QUERO RECEBER MINHA CAMISA GRÁTIS <i class="fa-solid fa-gift"></i>
+                    </button>
+                </section>
             </main>
-
-            <!-- Bottom Floating bar for mobile buying -->
-            <div class="bottom-cta-bar">
-                <div class="bottom-price-info">
-                    <span class="bottom-label">Sua Camisa:</span>
-                    <span class="bottom-value">GRÁTIS</span>
-                </div>
-                <button class="btn btn-gold btn-cta-fixed" onclick="app.openCheckout()">
-                    RECEBER PRESENTE <i class="fa-solid fa-gift"></i>
-                </button>
-            </div>
         </div>
 
         <!-- 2. CHECKOUT VIEW (SCREEN OVERLAY) -->
@@ -692,6 +687,6 @@
     <!-- Mercado Pago SDK -->
     <script src="https://sdk.mercadopago.com/js/v2"></script>
     <!-- JavaScript Logic -->
-    <script src="app.js?v=1.0.3"></script>
+    <script src="app.js?v=1.0.4"></script>
 </body>
 </html>

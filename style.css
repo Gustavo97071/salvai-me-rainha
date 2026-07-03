@@ -76,10 +76,6 @@ body {
     display: flex;
 }
 
-#view-product {
-    padding-bottom: 84px;
-}
-
 @keyframes slideIn {
     from {
         opacity: 0;
@@ -949,63 +945,7 @@ body {
     font-size: 1.35rem;
 }
 
-/* Bottom Floating Bar */
-.bottom-cta-bar {
-    position: fixed;
-    bottom: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 100%;
-    max-width: 480px;
-    z-index: 90;
-    background-color: var(--clr-navy);
-    border-top: 2px solid var(--clr-gold);
-    padding: 12px 16px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-    box-shadow: 0 -4px 15px rgba(0,0,0,0.15);
-}
 
-.bottom-price-info {
-    display: flex;
-    flex-direction: column;
-}
-
-.bottom-label {
-    font-size: 0.65rem;
-    color: rgba(255, 255, 255, 0.7);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-}
-
-.bottom-value {
-    font-size: 1.5rem;
-    font-weight: 800;
-    color: var(--clr-gold);
-    line-height: 1;
-}
-
-.btn-cta-fixed {
-    flex-grow: 1;
-    background-color: var(--clr-gold);
-    color: var(--clr-navy);
-    border: none;
-    padding: 14px 20px;
-    font-family: var(--font-ui);
-    font-weight: 800;
-    font-size: 0.95rem;
-    border-radius: 6px;
-    cursor: pointer;
-    box-shadow: 0 4px 10px rgba(212, 175, 55, 0.2);
-    text-align: center;
-    transition: var(--transition-fast);
-}
-
-.btn-cta-fixed:hover {
-    background-color: var(--clr-gold-light);
-}
 
 /* ==========================================================================
    CHECKOUT SCREEN OVERLAY
