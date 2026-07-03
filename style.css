@@ -400,10 +400,10 @@ body {
 }
 
 .size-btn.active {
-    background-color: var(--clr-gold-glass);
-    border-color: var(--clr-gold);
-    color: var(--clr-gold-dark);
-    box-shadow: 0 2px 8px rgba(212, 175, 55, 0.12);
+    background-color: var(--clr-gold) !important;
+    border-color: var(--clr-gold) !important;
+    color: var(--clr-navy) !important;
+    box-shadow: 0 4px 12px rgba(212, 175, 55, 0.24) !important;
 }
 
 /* Price Card */
