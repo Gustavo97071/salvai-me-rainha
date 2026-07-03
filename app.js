@@ -188,12 +188,15 @@ const app = {
         }
         if (toView) {
             toView.classList.add('active');
-            toView.scrollTop = 0;
-            // Force browser to recalculate scroll heights to fix iOS Webkit scroll locks
-            toView.style.overflowY = 'hidden';
-            setTimeout(() => {
-                toView.style.overflowY = 'auto';
-            }, 15);
+            
+            const scrollableChild = toView.querySelector('.product-content, .checkout-content, .success-screen-content');
+            if (scrollableChild) {
+                scrollableChild.scrollTop = 0;
+                scrollableChild.style.overflowY = 'hidden';
+                setTimeout(() => {
+                    scrollableChild.style.overflowY = 'auto';
+                }, 15);
+            }
         }
     },
 

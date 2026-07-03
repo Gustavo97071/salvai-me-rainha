@@ -81,14 +81,19 @@ body {
     flex-direction: column;
     background-color: var(--clr-card-bg);
     z-index: 1;
-    overflow-y: auto;
-    overflow-x: hidden !important;
-    -webkit-overflow-scrolling: touch;
+    overflow: hidden !important;
 }
 
 .app-view.active {
     display: flex !important;
     z-index: 2;
+}
+
+.product-content, .checkout-content, .success-screen-content {
+    flex-grow: 1;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    -webkit-overflow-scrolling: touch;
 }
 
 /* ==========================================================================
@@ -965,9 +970,9 @@ body {
     align-items: center;
     justify-content: space-between;
     height: 64px;
-    position: sticky;
-    top: 0;
+    position: relative;
     z-index: 110;
+    flex-shrink: 0;
     border-bottom: 1.5px solid rgba(212, 175, 55, 0.25);
     box-shadow: 0 4px 12px rgba(0,0,0,0.08);
 }
@@ -1022,6 +1027,7 @@ body {
     background-color: #fafafa;
     padding: 14px 16px;
     border-bottom: 1px solid var(--clr-border);
+    flex-shrink: 0;
 }
 
 .step-indicator {
