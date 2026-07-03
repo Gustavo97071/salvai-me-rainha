@@ -35,6 +35,12 @@
     -webkit-tap-highlight-color: transparent;
 }
 
+html, body {
+    overflow-y: scroll !important;
+    -webkit-overflow-scrolling: touch !important;
+    height: auto !important;
+}
+
 body {
     font-family: var(--font-ui);
     background-color: var(--clr-bg-grey);
