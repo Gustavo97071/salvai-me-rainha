@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Camisa Devocional de Nossa Senhora Aparecida - Presente de Fé</title>
+    <meta name="description" content="Receba gratuitamente a Camisa Devocional de Nossa Senhora Aparecida. Camiseta religiosa 100% algodão premium, benta para você. Pague apenas o frete.">
+    
+    <!-- Google Fonts: Outfit for clean modern UI & Cormorant Garamond for sacred headlines -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Custom Stylesheet -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="mobile-container">
+        <!-- 1. LANDING VIEW (PRODUCT PRESENTATION) -->
+        <div id="view-product" class="app-view active">
+            <!-- Header -->
+            <header class="app-header">
+                <div class="header-logo">
+                    <span class="logo-cross-symbol">†</span>
+                    <span class="logo-text">Salvai-me<span class="logo-light">Rainha</span></span>
+                </div>
+                <div class="header-actions">
+                    <button class="icon-btn" aria-label="Notificações" onclick="app.showNotificationTip()">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+                        <span class="notification-dot"></span>
+                    </button>
+                    <button class="icon-btn cart-badge" aria-label="Carrinho" onclick="app.openCheckout()">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="21" r="1"></circle><circle cx="19" cy="21" r="1"></circle><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"></path></svg>
+                        <span class="badge-count">1</span>
+                    </button>
+                </div>
+            </header>
+
+            <main class="product-content">
+                <!-- Promo Ribbon -->
+                <div class="promo-ribbon">
+                    <span class="ribbon-tag">CAMPANHA DE EVANGELIZAÇÃO</span>
+                    <span class="ribbon-text">🔥 Receba Grátis + Pague apenas o Envio!</span>
+                </div>
+
+                <!-- Product Image Gallery (Carousel) -->
+                <section class="gallery-section">
+                    <div class="carousel-container">
+                        <div class="carousel-track" id="carousel-track">
+                            <div class="carousel-slide">
+                                <img src="assets/camiseta_frente.jpg" alt="Camisa Devocional de Nossa Senhora Aparecida - Frente">
+                            </div>
+                            <div class="carousel-slide">
+                                <img src="assets/camiseta_tras.jpg" alt="Camisa Devocional de Nossa Senhora Aparecida - Verso">
+                            </div>
+                            <div class="carousel-slide">
+                                <img src="assets/camiseta_tabela.jpg" alt="Tabela de Medidas da Camiseta">
+                            </div>
+                        </div>
+                        <button class="carousel-control prev" id="carousel-prev" aria-label="Foto anterior">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                        </button>
+                        <button class="carousel-control next" id="carousel-next" aria-label="Próxima foto">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                        </button>
+                    </div>
+                    <!-- Indicator dots -->
+                    <div class="carousel-dots" id="carousel-dots"></div>
+                </section>
+
+                <!-- Product Information -->
+                <section class="info-section">
+                    <div class="rating-info">
+                        <div class="stars">★★★★★</div>
+                        <span class="rating-val">4.9</span>
+                        <span class="rating-count">(3.420 avaliações)</span>
+                    </div>
+                    <h1 class="product-title">Camisa Devocional de Nossa Senhora Aparecida (Benta)</h1>
+                    <p class="product-subtitle">Manifeste sua fé e devoção com esta camiseta religiosa exclusiva. Confeccionada em algodão premium com estampa detalhada em Ouro Nobre de Nossa Senhora Aparecida, abençoada para proteção do seu lar.</p>
+                    
+                    <!-- Size Selection Box -->
+                    <div class="size-selection-container">
+                        <span class="size-title"><i class="fa-solid fa-shirt"></i> Selecione seu Tamanho:</span>
+                        <div class="size-buttons">
+                            <button type="button" class="size-btn" onclick="app.selectSize('P', this)">P</button>
+                            <button type="button" class="size-btn active" onclick="app.selectSize('M', this)">M</button>
+                            <button type="button" class="size-btn" onclick="app.selectSize('G', this)">G</button>
+                            <button type="button" class="size-btn" onclick="app.selectSize('GG', this)">GG</button>
+                            <button type="button" class="size-btn" onclick="app.selectSize('EG', this)">EG</button>
+                        </div>
+                    </div>
+
+                    <!-- Pricing Card (Free + Shipping) -->
+                    <div class="price-card">
+                        <div class="price-old">De R$ 79,90</div>
+                        <div class="price-row">
+                            <span class="price-currency">R$</span>
+                            <span class="price-current">0</span>
+                            <span class="price-cents">,00</span>
+                            <span class="price-badge">100% GRÁTIS</span>
+                        </div>
+                        <div class="price-installments">
+                            *Campanha nacional de evangelização e fortalecimento das paróquias
+                        </div>
+                        <div class="price-pix">
+                            ✨ Camiseta de presente. Você contribui apenas com o <strong>frete postal</strong> de envio.
+                        </div>
+                        <div class="shipping-info">
+                            <span class="shipping-icon">⚡</span>
+                            <span class="shipping-text">Frete calculado no checkout - Despacho em 24h</span>
+                        </div>
+                    </div>
+                    
+                    <button class="buy-button-cta-inline" onclick="app.openCheckout()">
+                        QUERO RECEBER GRÁTIS
+                        <span class="pulse-ring"></span>
+                    </button>
+                </section>
+
+                <!-- Features Grid -->
+                <section class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">👕</div>
+                        <h3 class="feature-title">Algodão Premium</h3>
+                        <p class="feature-desc">Malha macia 100% Algodão penteado 30.1, muito confortável e durável.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">✨</div>
+                        <h3 class="feature-title">Estampa Nobre</h3>
+                        <p class="feature-desc">Estampa silk-screen em Ouro Nobre brilhante com alto nível de detalhes.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🙏</div>
+                        <h3 class="feature-title">Brinde Bento</h3>
+                        <p class="feature-desc">Abençoada em intenção solene pelas famílias e pela saúde de quem a veste.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">📮</div>
+                        <h3 class="feature-title">Postagem Rápida</h3>
+                        <p class="feature-desc">Envio pelos Correios com código de rastreamento direto para o seu celular.</p>
+                    </div>
+                </section>
+
+                <!-- Banner Section -->
+                <section class="banner-section">
+                    <div class="action-banner">
+                        <div class="banner-overlay"></div>
+                        <div class="banner-content">
+                            <h3>Testemunhe sua fé no dia a dia</h3>
+                            <p>Vestir a estampa de Nossa Senhora Aparecida é um sinal público de consagração e amor filial à Padroeira do Brasil. Receba em sua casa como presente de nossa missão evangelizadora.</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Accordions (Specs & Mission) -->
+                <section class="accordion-section">
+                    <div class="accordion-item">
+                        <button class="accordion-header" onclick="app.toggleAccordion(this)">
+                            <span>Por que a camisa é gratuita?</span>
+                            <span class="accordion-arrow">▼</span>
+                        </button>
+                        <div class="accordion-content">
+                            <p>A Associação Cultural Nossa Senhora de Fátima é uma instituição sem fins lucrativos. A distribuição gratuita destas camisetas religiosas faz parte da nossa missão de propagar a devoção mariana nos lares. A única contribuição solicitada ao devoto é o valor do frete postal, cobrindo exclusivamente as despesas de envio e a logística de entrega dos Correios.</p>
+                        </div>
+                    </div>
+
+                    <div class="accordion-item">
+                        <button class="accordion-header" onclick="app.toggleAccordion(this)">
+                            <span>Especificações Técnicas</span>
+                            <span class="accordion-arrow">▼</span>
+                        </button>
+                        <div class="accordion-content">
+                            <table class="specs-table">
+                                <tr>
+                                    <td><strong>Tecido</strong></td>
+                                    <td>Malha 100% Algodão Penteado (Fio 30.1 Premium)</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Estampa</strong></td>
+                                    <td>Silk-screen em Ouro Metálico de alta resistência</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Costura</strong></td>
+                                    <td>Reforço de ombro a ombro e gola careca canelada</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Modelagem</strong></td>
+                                    <td>Unissex tradicional, caimento solto e confortável</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Tamanhos</strong></td>
+                                    <td>P, M, G, GG e EG (Tabela padrão de medidas)</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Reviews and Testimonials -->
+                <section class="reviews-section">
+                    <h2>Depoimentos de Fiéis (+3K)</h2>
+                    
+                    <!-- Photos of clients gallery -->
+                    <div class="photo-testimonials-section">
+                        <h3>📸 Fotos de devotos que já receberam</h3>
+                        <div class="photo-reviews-grid">
+                            <div class="photo-review-item" onclick="app.zoomImage('assets/devoto_1.jpg')">
+                                <img src="assets/devoto_1.jpg" alt="Devota com a camisa">
+                            </div>
+                            <div class="photo-review-item" onclick="app.zoomImage('assets/devoto_2.jpg')">
+                                <img src="assets/devoto_2.jpg" alt="Casal com a camisa">
+                            </div>
+                            <div class="photo-review-item" onclick="app.zoomImage('assets/devoto_3.jpg')">
+                                <img src="assets/devoto_3.jpg" alt="Devoto com a camisa">
+                            </div>
+                            <div class="photo-review-item" onclick="app.zoomImage('assets/devoto_4.jpg')">
+                                <img src="assets/devoto_4.jpg" alt="Grupo de devotas">
+                            </div>
+                        </div>
+                    </div>
+
+                    <h3>💬 Comentários Recentes</h3>
+
+                    <!-- Review 1 -->
+                    <div class="review-card">
+                        <div class="review-header">
+                            <span class="reviewer-avatar" style="background-color: #0a2240; color: #d4af37;">ML</span>
+                            <div>
+                                <span class="reviewer-name">Maria de Lourdes R.</span>
+                                <span class="reviewer-verified">✓ Apoiadora verificada</span>
+                            </div>
+                        </div>
+                        <div class="review-stars">★★★★★</div>
+                        <div class="review-title">O tecido é maravilhoso, 100% algodão!</div>
+                        <p class="review-text">A camisa é maravilhosa, o tecido é muito macio e confortável. A estampa em ouro brilha muito, é linda! Valeu muito a pena pagar a taxa do envio, chegou super bem embalada e com uma santinha de brinde. Recomendo!</p>
+                        <span class="review-date">Há 2 dias</span>
+                    </div>
+
+                    <!-- Review 2 -->
+                    <div class="review-card">
+                        <div class="review-header">
+                            <span class="reviewer-avatar" style="background-color: #0a2240; color: #d4af37;">AM</span>
+                            <div>
+                                <span class="reviewer-name">Antônio M.</span>
+                                <span class="reviewer-verified">✓ Apoiador verificado</span>
+                            </div>
+                        </div>
+                        <div class="review-stars">★★★★★</div>
+                        <div class="review-title">Veste muito bem, caimento ótimo</div>
+                        <p class="review-text">Pedi o tamanho G e serviu perfeitamente. Costuras reforçadas e a imagem de Nossa Senhora Aparecida é impecável. Entrega super rápida aqui no interior de SP. Parabéns à associação pelo belo projeto.</p>
+                        <span class="review-date">Há 5 dias</span>
+                    </div>
+
+                    <!-- Review 3 -->
+                    <div class="review-card">
+                        <div class="review-header">
+                            <span class="reviewer-avatar" style="background-color: #0a2240; color: #d4af37;">FS</span>
+                            <div>
+                                <span class="reviewer-name">Francisca S.</span>
+                                <span class="reviewer-verified">✓ Apoiadora verificada</span>
+                            </div>
+                        </div>
+                        <div class="review-stars">★★★★★</div>
+                        <div class="review-title">Excelente qualidade, recomendo!</div>
+                        <p class="review-text">Comprei para ir à missa aos domingos. Todos elogiaram o brilho da estampa. O algodão é fresco e forte, já lavei três vezes e a estampa continua perfeita como nova. Podem pedir sem medo.</p>
+                        <span class="review-date">Há 1 semana</span>
+                    </div>
+                </section>
+
+                <!-- Reclame Aqui Trust Badge -->
+                <section class="trust-badge-container">
+                    <div class="ra-badge-card">
+                        <div class="ra-header">
+                            <div class="ra-seal">
+                                <div class="ra-seal-inner">RA</div>
+                                <div class="ra-seal-rating">1000</div>
+                            </div>
+                            <div class="ra-title-block">
+                                <span class="ra-tag">✓ REPUTAÇÃO EXCELENTE</span>
+                                <div class="ra-score">9.9<span class="ra-score-max">/10</span></div>
+                            </div>
+                        </div>
+                        <div class="ra-divider"></div>
+                        <div class="ra-stats-grid">
+                            <div class="ra-stat-item">
+                                <span class="ra-stat-val">100%</span>
+                                <span class="ra-stat-label">Dúvidas Respondidas</span>
+                            </div>
+                            <div class="ra-stat-item">
+                                <span class="ra-stat-val">99.1%</span>
+                                <span class="ra-stat-label">Índice de Solução</span>
+                            </div>
+                            <div class="ra-stat-item">
+                                <span class="ra-stat-val">97.8%</span>
+                                <span class="ra-stat-label">Voltariam a Apoiar</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Security Badges -->
+                <section class="security-badges">
+                    <div class="badge-item">
+                        <span class="badge-icon">🔒</span>
+                        <span>Doação 100% Segura</span>
+                    </div>
+                    <div class="badge-item">
+                        <span class="badge-icon">🛡️</span>
+                        <span>Instituição de Fé desde 1997</span>
+                    </div>
+                    <div class="badge-item">
+                        <span class="badge-icon">💬</span>
+                        <span>Suporte WhatsApp</span>
+                    </div>
+                </section>
+            </main>
+
+            <!-- Bottom Floating bar for mobile buying -->
+            <div class="bottom-cta-bar">
+                <div class="bottom-price-info">
+                    <span class="bottom-label">Sua Camisa:</span>
+                    <span class="bottom-value">GRÁTIS</span>
+                </div>
+                <button class="btn btn-gold btn-cta-fixed" onclick="app.openCheckout()">
+                    RECEBER PRESENTE <i class="fa-solid fa-gift"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- 2. CHECKOUT VIEW (SCREEN OVERLAY) -->
+        <div id="view-checkout" class="app-view">
+            <!-- Checkout Header -->
+            <header class="checkout-header">
+                <button class="back-btn" onclick="app.closeCheckout()" aria-label="Voltar">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                </button>
+                <h2>Solicitar Presente</h2>
+                <div class="secure-ssl-badge">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                    Seguro
+                </div>
+            </header>
+
+            <!-- Steps navigation bar -->
+            <div class="checkout-steps-nav">
+                <div class="step-indicator active" id="step-nav-1">1. Cadastro</div>
+                <div class="step-indicator" id="step-nav-2">2. Entrega</div>
+                <div class="step-indicator" id="step-nav-3">3. Envio</div>
+            </div>
+
+            <div class="checkout-content">
+                <!-- STEP 1: PERSONAL DETAILS -->
+                <div class="checkout-step active" id="step-form-1">
+                    <h3 class="step-title">Dados do Apoiador</h3>
+                    <p class="step-desc">Seus dados pessoais estão protegidos por criptografia em ambiente seguro.</p>
+
+                    <form id="form-personal" onsubmit="app.nextStep(1, event)">
+                        <div class="form-group">
+                            <label for="input-name">Nome Completo</label>
+                            <input type="text" id="input-name" placeholder="Ex: Maria de Fátima da Silva" required autocomplete="name">
+                            <span class="error-msg" id="error-name">Insira seu nome completo</span>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="input-email">E-mail para Confirmação</label>
+                            <input type="email" id="input-email" placeholder="Ex: seunome@email.com" required autocomplete="email">
+                            <span class="error-msg" id="error-email">Insira um e-mail válido</span>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="input-phone">WhatsApp / Celular</label>
+                            <input type="tel" id="input-phone" placeholder="Ex: (11) 99999-9999" required autocomplete="tel">
+                            <span class="error-msg" id="error-phone">Insira um celular válido</span>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="input-cpf">CPF (Obrigatório para emissão de envio)</label>
+                            <input type="tel" id="input-cpf" placeholder="000.000.000-00" required>
+                            <span class="error-msg" id="error-cpf">Insira um CPF válido</span>
+                        </div>
+
+                        <button type="submit" class="submit-step-btn">
+                            Avançar para Entrega <i class="fa-solid fa-arrow-right"></i>
+                        </button>
+                    </form>
+                </div>
+
+                <!-- STEP 2: SHIPPING ADDRESS & SHIPPING SELECTION -->
+                <div class="checkout-step" id="step-form-2">
+                    <h3 class="step-title">Endereço para Envio do Brinde</h3>
+                    <p class="step-desc">Digite seu CEP para preencher o endereço postal automaticamente.</p>
+
+                    <form id="form-shipping" onsubmit="app.nextStep(2, event)">
+                        <div class="form-group zip-group">
+                            <label for="input-cep">CEP</label>
+                            <div class="cep-input-wrapper">
+                                <input type="tel" id="input-cep" placeholder="00000-000" maxlength="9" onblur="app.fetchAddress(this.value)" required>
+                                <div class="cep-spinner" id="cep-loading"></div>
+                            </div>
+                            <span class="error-msg" id="error-cep">CEP não encontrado ou inválido</span>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group flex-2">
+                                <label for="input-street">Rua / Avenida</label>
+                                <input type="text" id="input-street" placeholder="Rua Francisca Júlia" required>
+                            </div>
+                            <div class="form-group flex-1">
+                                <label for="input-number">Número</label>
+                                <input type="text" id="input-number" placeholder="290" required>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="input-complement">Complemento (Opcional)</label>
+                            <input type="text" id="input-complement" placeholder="Apto 12, Bloco C">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="input-neighborhood">Bairro</label>
+                            <input type="text" id="input-neighborhood" placeholder="Santana" required>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group flex-2">
+                                <label for="input-city">Cidade</label>
+                                <input type="text" id="input-city" placeholder="São Paulo" required readonly>
+                            </div>
+                            <div class="form-group flex-1">
+                                <label for="input-state">Estado</label>
+                                <input type="text" id="input-state" placeholder="SP" required readonly>
+                            </div>
+                        </div>
+
+                        <h4 class="checkout-subtitle"><i class="fa-solid fa-truck"></i> Escolha a Opção de Envio</h4>
+                        <div class="shipping-options-grid">
+                            <label class="shipping-option-card active" id="label-shipping-normal">
+                                <input type="radio" name="shipping-fee" value="19.90" checked onclick="app.updateShipping(19.90, 'normal')">
+                                <div class="shipping-option-info">
+                                    <span class="option-name">Frete Expresso Seguro</span>
+                                    <span class="option-time">Entrega em 5 a 10 dias úteis</span>
+                                </div>
+                                <span class="option-price">R$ 19,90</span>
+                            </label>
+
+                            <label class="shipping-option-card" id="label-shipping-sedex">
+                                <input type="radio" name="shipping-fee" value="29.90" onclick="app.updateShipping(29.90, 'sedex')">
+                                <div class="shipping-option-info">
+                                    <span class="option-name">Frete Urgente Sedex</span>
+                                    <span class="option-time">Entrega em 2 a 4 dias úteis</span>
+                                </div>
+                                <span class="option-price">R$ 29,90</span>
+                            </label>
+                        </div>
+
+                        <div class="step-buttons-row">
+                            <button type="button" class="back-step-btn" onclick="app.prevStep(1)"><i class="fa-solid fa-chevron-left"></i> Voltar</button>
+                            <button type="submit" class="submit-step-btn flex-2">Continuar <i class="fa-solid fa-arrow-right"></i></button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- STEP 3: NATIVE PAYMENT (PIX / BOLETO) -->
+                <div class="checkout-step" id="step-form-3">
+                    <h3 class="step-title">Contribuição do Envio</h3>
+                    <p class="step-desc">Escolha a forma de pagamento para despacharmos seu brinde.</p>
+
+                    <div class="order-summary-box">
+                        <div class="product-item-row">
+                            <div class="product-info-col">
+                                <span class="product-title-bold">1x Camisa N. Sra. Aparecida (Tamanho: <span id="checkoutDisplaySize">M</span>)</span>
+                                <span class="product-qty-tag">Qtd: 1x</span>
+                            </div>
+                            <span class="product-price-bold free-tag">R$ 0,00</span>
+                        </div>
+                        <div class="product-item-row">
+                            <div class="product-info-col">
+                                <span class="shipping-title-bold" id="checkoutDisplayShippingType">Frete Expresso Seguro</span>
+                            </div>
+                            <span class="product-price-bold" id="checkoutDisplayShippingCost">R$ 19,90</span>
+                        </div>
+                        <div class="summary-divider"></div>
+                        <div class="summary-line-row">
+                            <span>Total a pagar:</span>
+                            <span class="total-price-large" id="checkoutDisplayTotal">R$ 19,90</span>
+                        </div>
+                    </div>
+
+                    <!-- Payment tabs buttons -->
+                    <div class="payment-tabs">
+                        <button type="button" class="payment-tab active" id="tab-pix" onclick="app.switchPaymentTab('pix')">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                            PIX
+                        </button>
+                        <button type="button" class="payment-tab" id="tab-boleto" onclick="app.switchPaymentTab('boleto')">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="4"/><line x1="8" y1="2" x2="8" y2="4"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                            Boleto
+                        </button>
+                    </div>
+
+                    <!-- Payment inputs subform wrapper -->
+                    <div class="payment-subform-container">
+                        <!-- PIX SUBFORM -->
+                        <div class="payment-subform active" id="subform-pix">
+                            <div class="pix-info-card">
+                                <span class="pix-badge-accent">Envio Imediato</span>
+                                <p>A confirmação do PIX é instantânea e seu brinde entra na fila de despacho prioritário.</p>
+                            </div>
+                            <button type="button" class="generate-payment-btn" onclick="app.generateNativePayment('pix')">
+                                Gerar PIX e Confirmar <i class="fa-solid fa-pix"></i>
+                            </button>
+                        </div>
+
+                        <!-- BOLETO SUBFORM -->
+                        <div class="payment-subform" id="subform-boleto">
+                            <div class="boleto-info-card">
+                                <span class="boleto-badge-accent">Compensação: 1 a 2 dias</span>
+                                <p>O boleto é compensado pelo banco em até 48h úteis. O brinde é enviado após a compensação.</p>
+                            </div>
+                            <button type="button" class="generate-payment-btn" onclick="app.generateNativePayment('boleto')">
+                                Gerar Boleto Bancário <i class="fa-solid fa-barcode"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Secure seal MP -->
+                    <div class="mercadopago-badge-card">
+                        <div class="badge-text-row">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#d4af37" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                            <span>Pagamento Processado de forma Segura</span>
+                        </div>
+                        <p class="badge-subtext">Criptografia e segurança SSL em conformidade com as regras do Banco Central.</p>
+                    </div>
+
+                    <div class="step-buttons-row" style="margin-top: 16px;">
+                        <button type="button" class="back-step-btn" onclick="app.prevStep(2)"><i class="fa-solid fa-chevron-left"></i> Voltar</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Loader modal overlay -->
+            <div class="payment-loader-overlay" id="payment-loader">
+                <div class="loader-card">
+                    <div class="spinner-circle"></div>
+                    <h3>Processando Pedido...</h3>
+                    <p>Por favor, aguarde. Estamos gerando o seu código de pagamento seguro.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. PAYMENT INTERACTIVE CODE VIEW -->
+        <div id="view-payment" class="app-view">
+            <!-- Payment Header -->
+            <header class="checkout-header">
+                <button class="back-btn" onclick="app.goToCheckoutStep3()" aria-label="Voltar">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                </button>
+                <h2 id="paymentHeaderTitle">Pagamento do Envio</h2>
+            </header>
+
+            <div class="checkout-content text-center">
+                <!-- PIX PAYMENT VIEW -->
+                <div id="payment-pix-details" class="payment-details-box">
+                    <h3 class="step-title">Efetue o pagamento via PIX</h3>
+                    
+                    <div class="pix-amount-badge">
+                        Taxa de Envio: <strong id="pixDetailsDisplayAmount">R$ 19,90</strong>
+                    </div>
+
+                    <div class="pix-qrcode-container">
+                        <img src="" alt="Código QR do PIX" class="pix-qrcode" id="pixDetailsQrImage">
+                        <div class="qrcode-scan-helper">
+                            <p>Aponte a câmera do seu banco para o QR Code acima</p>
+                        </div>
+                    </div>
+
+                    <div class="pix-copia-cola-box">
+                        <label for="pixDetailsCopyCode">PIX Copia e Cola:</label>
+                        <div class="copia-cola-input-group">
+                            <input type="text" id="pixDetailsCopyCode" readonly value="00020101021226870014br.gov.bcb.pix2565pix.acnsf.org.br/doacao/129841804218094719280470520400005303986540520.005802BR5925AssocNossaSenhoraFatima6009Sao Paulo62070503***6304D1B9">
+                            <button class="btn btn-gold btn-sm" onclick="app.copyPixCode()"><i class="fa-solid fa-copy"></i> Copiar</button>
+                        </div>
+                        <span class="copy-success-msg hidden" id="copySuccessMsg"><i class="fa-solid fa-circle-check"></i> Chave Copiada!</span>
+                    </div>
+
+                    <div class="pix-simulation-panel">
+                        <div class="pulse-ring"></div>
+                        <p class="status-waiting-msg"><i class="fa-solid fa-spinner fa-spin"></i> Aguardando confirmação do pagamento pelo banco...</p>
+                        
+                        <div class="simulation-actions">
+                            <button class="btn btn-success btn-sm btn-block" onclick="app.simulatePaymentSuccess()">
+                                Simular Confirmação Bancária
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- BOLETO PAYMENT VIEW -->
+                <div id="payment-boleto-details" class="payment-details-box hidden">
+                    <h3 class="step-title">Boleto Bancário Gerado</h3>
+                    <p class="step-desc">Você pode pagar com o código de barras abaixo no app do seu banco ou imprimir.</p>
+
+                    <div class="pix-amount-badge">
+                        Valor da Taxa: <strong id="boletoDetailsDisplayAmount">R$ 19,90</strong>
+                    </div>
+
+                    <div class="barcode-container">
+                        <div class="barcode-graphic">|||| | | |||||| | ||||| ||| |||| || |||||| | |||||</div>
+                        <span class="barcode-number" id="boletoDetailsBarcode">23793.39803 99000.000004 03000.520092 8 99870000001990</span>
+                    </div>
+
+                    <div class="pix-copia-cola-box" style="margin-top: 20px;">
+                        <label for="boletoCopyCode">Código de Barras:</label>
+                        <div class="copia-cola-input-group">
+                            <input type="text" id="boletoCopyCode" readonly value="23793.39803 99000.000004 03000.520092 8 99870000001990">
+                            <button class="btn btn-gold btn-sm" onclick="app.copyBoletoCode()"><i class="fa-solid fa-copy"></i> Copiar</button>
+                        </div>
+                        <span class="copy-success-msg hidden" id="copyBoletoSuccessMsg"><i class="fa-solid fa-circle-check"></i> Código Copiado!</span>
+                    </div>
+
+                    <div class="pix-simulation-panel" style="border: none;">
+                        <p class="status-waiting-msg"><i class="fa-solid fa-circle-info"></i> Compensação bancária ocorre em até 48 horas úteis.</p>
+                        <button class="btn btn-success btn-block" onclick="app.simulatePaymentSuccess()">
+                            Simular Compensação do Boleto
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. SUCCESS VIEW -->
+        <div id="view-success" class="app-view">
+            <div class="success-screen-content">
+                <div class="success-badge-container">
+                    <div class="success-circle">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    </div>
+                </div>
+                
+                <h1>Presente Solicitado!</h1>
+                <p class="success-thank-you">Que Deus e Nossa Senhora Aparecida abençoem sua casa, querido(a) devoto(a) <strong id="successDonorName">Apoiador</strong>.</p>
+                
+                <div class="success-summary-box">
+                    <h4>Resumo do Envio:</h4>
+                    <ul>
+                        <li><strong>Produto:</strong> 1x Camisa N. Sra. Aparecida (Grátis)</li>
+                        <li><strong>Tamanho:</strong> <strong id="successDisplaySize">M</strong></li>
+                        <li><strong>Envio:</strong> <span id="successShippingType">Frete Expresso</span></li>
+                        <li><strong>Valor Pago:</strong> <span id="successTotalPaid">R$ 19,90</span></li>
+                        <li><strong>Método:</strong> <span id="successMethodText">PIX</span></li>
+                        <li><strong>Endereço:</strong> <span id="successAddressText">Carregando...</span></li>
+                    </ul>
+                </div>
+
+                <div class="success-alert-box">
+                    <p><i class="fa-solid fa-check"></i> Em até 24h úteis, seu presente bento será postado e enviaremos o código de rastreio dos Correios no e-mail: <strong id="successDonorEmail">email@gmail.com</strong></p>
+                </div>
+
+                <p class="spiritual-blessing">"Sob a vossa proteção nos refugiamos, Santa Mãe de Deus..."</p>
+
+                <button class="btn btn-gold btn-block mt20" onclick="app.resetEcomFlow()">
+                    Voltar ao Início
+                </button>
+            </div>
+        </div>
+
+        <!-- Notification modal overlay (simulated native notification) -->
+        <div class="toast-notification" id="toast-tip">
+            <div class="toast-content">
+                <span class="toast-icon">✨</span>
+                <span class="toast-msg">Maria acabou de solicitar a pulseira grátis em Curitiba/PR.</span>
+            </div>
+        </div>
+
+        <!-- Zoom Image Modal -->
+        <div class="zoom-modal-overlay" id="zoom-modal" onclick="app.closeZoomImage()">
+            <div class="zoom-modal-card">
+                <img src="" alt="Imagem Ampliada" id="zoom-modal-img">
+            </div>
+        </div>
+    </div>
+
+    <!-- FontAwesome for beautiful icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- JavaScript Logic -->
+    <script src="app.js"></script>
+</body>
+</html>
