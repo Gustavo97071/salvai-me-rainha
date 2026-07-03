@@ -179,24 +179,37 @@ const app = {
         }
     },
 
+    switchView(fromId, toId) {
+        const fromView = document.getElementById(fromId);
+        const toView = document.getElementById(toId);
+        
+        if (fromView) {
+            fromView.classList.remove('active');
+        }
+        if (toView) {
+            toView.classList.add('active');
+            toView.scrollTop = 0;
+            // Force browser to recalculate scroll heights to fix iOS Webkit scroll locks
+            toView.style.overflowY = 'hidden';
+            setTimeout(() => {
+                toView.style.overflowY = 'auto';
+            }, 15);
+        }
+    },
+
     /* ==========================================================================
        CHECKOUT VIEW NAVIGATION
        ========================================================================== */
     openCheckout() {
-        document.getElementById('view-product').classList.remove('active');
-        document.getElementById('view-checkout').classList.add('active');
-        window.scrollTo({ top: 0 });
+        this.switchView('view-product', 'view-checkout');
     },
 
     closeCheckout() {
-        document.getElementById('view-checkout').classList.remove('active');
-        document.getElementById('view-product').classList.add('active');
-        window.scrollTo({ top: 0 });
+        this.switchView('view-checkout', 'view-product');
     },
 
     goToCheckoutStep3() {
-        document.getElementById('view-payment').classList.remove('active');
-        document.getElementById('view-checkout').classList.add('active');
+        this.switchView('view-payment', 'view-checkout');
         this.goToStep(3);
     },
 
@@ -218,7 +231,8 @@ const app = {
         document.getElementById('step-form-2').classList.toggle('active', step === 2);
         document.getElementById('step-form-3').classList.toggle('active', step === 3);
         
-        window.scrollTo({ top: 0 });
+        const checkoutView = document.getElementById('view-checkout');
+        if (checkoutView) checkoutView.scrollTop = 0;
     },
 
     prevStep(step) {
@@ -498,8 +512,7 @@ const app = {
             loader.style.display = 'none';
             
             // Navigate to view-payment screen
-            document.getElementById('view-checkout').classList.remove('active');
-            document.getElementById('view-payment').classList.add('active');
+            this.switchView('view-checkout', 'view-payment');
             
             document.getElementById('paymentHeaderTitle').textContent = 'Pagar Taxa de Envio (PIX)';
             document.getElementById('pixDetailsDisplayAmount').textContent = state.shippingCost.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -632,8 +645,7 @@ const app = {
                 loader.style.display = 'none';
                 
                 // Navigate to view-success directly
-                document.getElementById('view-checkout').classList.remove('active');
-                document.getElementById('view-success').classList.add('active');
+                this.switchView('view-checkout', 'view-success');
                 
                 // Populate success details
                 document.getElementById('successDonorName').textContent = state.donor.name.split(' ')[0];
@@ -675,8 +687,7 @@ const app = {
         }
         
         // Hide payment view, show success view
-        document.getElementById('view-payment').classList.remove('active');
-        document.getElementById('view-success').classList.add('active');
+        this.switchView('view-payment', 'view-success');
         
         // Populate success view details
         document.getElementById('successDonorName').textContent = state.donor.name.split(' ')[0];
@@ -690,10 +701,8 @@ const app = {
         document.getElementById('successAddressText').textContent = fullAddress;
     },
 
-    resetEcomFlow() {
         // Reset all views and form inputs
-        document.getElementById('view-success').classList.remove('active');
-        document.getElementById('view-product').classList.add('active');
+        this.switchView('view-success', 'view-product');
         
         document.getElementById('form-personal').reset();
         document.getElementById('form-shipping').reset();
