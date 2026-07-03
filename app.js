@@ -701,6 +701,7 @@ const app = {
         document.getElementById('successAddressText').textContent = fullAddress;
     },
 
+    resetEcomFlow() {
         // Reset all views and form inputs
         this.switchView('view-success', 'view-product');
         
