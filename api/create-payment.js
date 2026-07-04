@@ -120,8 +120,13 @@ function triggerFacebookCAPI(payer, amount) {
         return crypto.createHash('sha256').update(str.trim().toLowerCase()).digest('hex');
     };
 
+    let cleanPhone = (payer.phone || "").replace(/\D/g, '');
+    if (cleanPhone && !cleanPhone.startsWith('55') && (cleanPhone.length === 10 || cleanPhone.length === 11)) {
+        cleanPhone = '55' + cleanPhone;
+    }
+
     const emailHash = hash(payer.email);
-    const phoneHash = hash(payer.phone);
+    const phoneHash = hash(cleanPhone);
     const firstNameHash = hash(payer.first_name);
     const lastNameHash = hash(payer.last_name);
 
@@ -185,6 +190,11 @@ function triggerLaillaWebhook(payer, parsedData, amount) {
         return;
     }
 
+    let cleanPhone = (payer.phone || "").replace(/\D/g, '');
+    if (cleanPhone && !cleanPhone.startsWith('55') && (cleanPhone.length === 10 || cleanPhone.length === 11)) {
+        cleanPhone = '55' + cleanPhone;
+    }
+
     const payload = {
         event: "order.pending",
         order: {
@@ -199,7 +209,7 @@ function triggerLaillaWebhook(payer, parsedData, amount) {
         customer: {
             name: `${payer.first_name} ${payer.last_name}`.trim(),
             email: payer.email,
-            phone: payer.phone || ""
+            phone: cleanPhone
         }
     };
 
