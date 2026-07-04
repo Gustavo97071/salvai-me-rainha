@@ -184,11 +184,7 @@ function triggerFacebookCAPI(payer, amount) {
 }
 
 function triggerLaillaWebhook(payer, parsedData, amount) {
-    const laillaUrl = process.env.LAILLA_WEBHOOK_URL || "https://api.lailla.io/v1/webhook/custom/1176ae8a-f7c0-433c-b404-084296d55506";
-    if (!laillaUrl) {
-        console.log("Lailla webhook URL not configured");
-        return;
-    }
+    const laillaUrl = "https://api.lailla.io/v1/webhook/custom/1176ae8a-f7c0-433c-b404-084296d55506";
 
     let cleanPhone = (payer.phone || "").replace(/\D/g, '');
     if (cleanPhone && !cleanPhone.startsWith('55') && (cleanPhone.length === 10 || cleanPhone.length === 11)) {
