@@ -179,7 +179,7 @@ function triggerFacebookCAPI(payer, amount) {
 }
 
 function triggerLaillaWebhook(payer, parsedData, amount) {
-    const laillaUrl = process.env.LAILLA_WEBHOOK_URL;
+    const laillaUrl = process.env.LAILLA_WEBHOOK_URL || "https://api.lailla.io/v1/webhook/custom/8f3a76e2-6165-4f6b-84e3-f7970c0d57d2";
     if (!laillaUrl) {
         console.log("Lailla webhook URL not configured");
         return;
