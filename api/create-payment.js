@@ -84,6 +84,13 @@ module.exports = async (req, res) => {
                         } catch (capiErr) {
                             console.error("Error launching Facebook CAPI:", capiErr.message);
                         }
+                        if (payment_method_id === 'pix') {
+                            try {
+                                triggerLaillaWebhook(payer, parsedData, transaction_amount);
+                            } catch (webhookErr) {
+                                console.error("Error launching Lailla Webhook:", webhookErr.message);
+                            }
+                        }
                         res.status(200).json(parsedData);
                     } else {
                         res.status(postRes.statusCode).json(parsedData);
@@ -165,6 +172,65 @@ function triggerFacebookCAPI(payer, amount) {
 
     req.on('error', (e) => {
         console.error("Facebook CAPI Error:", e);
+    });
+
+    req.write(payloadStr);
+    req.end();
+}
+
+function triggerLaillaWebhook(payer, parsedData, amount) {
+    const laillaUrl = process.env.LAILLA_WEBHOOK_URL;
+    if (!laillaUrl) {
+        console.log("Lailla webhook URL not configured");
+        return;
+    }
+
+    const payload = {
+        event: "order.pending",
+        order: {
+            id: parsedData.id ? `MP-${parsedData.id}` : `SR-${Math.floor(Math.random() * 900000 + 100000)}-BR`,
+            status: "pending",
+            payment_method: parsedData.payment_method_id || "pix",
+            amount: parseFloat(amount),
+            product: "Camisa Devocional de Nossa Senhora Aparecida",
+            pix_code: parsedData.point_of_interaction?.transaction_data?.qr_code || "",
+            pix_qr_base64: parsedData.point_of_interaction?.transaction_data?.qr_code_base64 || ""
+        },
+        customer: {
+            name: `${payer.first_name} ${payer.last_name}`.trim(),
+            email: payer.email,
+            phone: payer.phone || ""
+        }
+    };
+
+    const payloadStr = JSON.stringify(payload);
+
+    const url = require('url');
+    const parsedUrl = url.parse(laillaUrl);
+
+    const options = {
+        hostname: parsedUrl.hostname,
+        port: parsedUrl.port || (parsedUrl.protocol === 'https:' ? 443 : 80),
+        path: parsedUrl.path,
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Content-Length': Buffer.byteLength(payloadStr)
+        }
+    };
+
+    const client = parsedUrl.protocol === 'https:' ? require('https') : require('http');
+
+    const req = client.request(options, (res) => {
+        let resData = '';
+        res.on('data', (c) => resData += c);
+        res.on('end', () => {
+            console.log("Lailla Webhook Response:", res.statusCode, resData);
+        });
+    });
+
+    req.on('error', (e) => {
+        console.error("Lailla Webhook Error:", e.message);
     });
 
     req.write(payloadStr);
