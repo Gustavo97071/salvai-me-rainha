@@ -403,10 +403,12 @@ const app = {
         const normalCard = document.getElementById('label-shipping-normal');
         const sedexCard = document.getElementById('label-shipping-sedex');
         const testCard = document.getElementById('label-shipping-test');
+        const benfeitorCard = document.getElementById('label-shipping-benfeitor');
 
         if (normalCard) normalCard.classList.toggle('active', type === 'normal');
         if (sedexCard) sedexCard.classList.toggle('active', type === 'sedex');
         if (testCard) testCard.classList.toggle('active', type === 'test');
+        if (benfeitorCard) benfeitorCard.classList.toggle('active', type === 'benfeitor');
 
         this.updateShippingDetailsBox();
     },
@@ -417,6 +419,8 @@ const app = {
             typeText = 'Doação Protetor (Frete Grátis)';
         } else if (state.shippingType === 'test') {
             typeText = 'Doação Padrinho (Frete Grátis)';
+        } else if (state.shippingType === 'benfeitor') {
+            typeText = 'Doação Benfeitor (Frete Grátis)';
         }
         const costText = state.shippingCost.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
         
@@ -528,7 +532,15 @@ const app = {
             // Populate success details
             document.getElementById('successDonorName').textContent = state.donor.name;
             document.getElementById('successDisplaySize').textContent = state.donor.size;
-            document.getElementById('successShippingType').textContent = state.shippingType === 'normal' ? 'Doação Devoto (Frete Grátis)' : (state.shippingType === 'sedex' ? 'Doação Protetor (Frete Grátis)' : 'Doação Padrinho (Frete Grátis)');
+            let successShippingText = 'Doação Devoto (Frete Grátis)';
+            if (state.shippingType === 'sedex') {
+                successShippingText = 'Doação Protetor (Frete Grátis)';
+            } else if (state.shippingType === 'test') {
+                successShippingText = 'Doação Padrinho (Frete Grátis)';
+            } else if (state.shippingType === 'benfeitor') {
+                successShippingText = 'Doação Benfeitor (Frete Grátis)';
+            }
+            document.getElementById('successShippingType').textContent = successShippingText;
             document.getElementById('successTotalPaid').textContent = state.shippingCost.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
             document.getElementById('successMethodText').textContent = 'PIX';
             
@@ -715,7 +727,15 @@ const app = {
                 // Populate success details
                 document.getElementById('successDonorName').textContent = state.donor.name;
                 document.getElementById('successDisplaySize').textContent = state.donor.size;
-                document.getElementById('successShippingType').textContent = state.shippingType === 'normal' ? 'Doação Devoto (Frete Grátis)' : (state.shippingType === 'sedex' ? 'Doação Protetor (Frete Grátis)' : 'Doação Padrinho (Frete Grátis)');
+                let successShippingText = 'Doação Devoto (Frete Grátis)';
+                if (state.shippingType === 'sedex') {
+                    successShippingText = 'Doação Protetor (Frete Grátis)';
+                } else if (state.shippingType === 'test') {
+                    successShippingText = 'Doação Padrinho (Frete Grátis)';
+                } else if (state.shippingType === 'benfeitor') {
+                    successShippingText = 'Doação Benfeitor (Frete Grátis)';
+                }
+                document.getElementById('successShippingType').textContent = successShippingText;
                 document.getElementById('successTotalPaid').textContent = state.shippingCost.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
                 document.getElementById('successMethodText').textContent = 'Cartão de Crédito';
                 

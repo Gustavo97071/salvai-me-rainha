@@ -12,7 +12,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     
     <!-- Custom Stylesheet -->
-    <link rel="stylesheet" href="style.css?v=1.3.3">
+    <link rel="stylesheet" href="style.css?v=1.3.4">
 
     <!-- Facebook Pixel Code -->
     <script>
@@ -484,6 +484,14 @@
                                 </div>
                                 <span class="option-price">R$ 20,00</span>
                             </label>
+                            <label class="shipping-option-card" id="label-shipping-benfeitor">
+                                <input type="radio" name="shipping-fee" value="50.00" onclick="app.updateShipping(50.00, 'benfeitor')">
+                                <div class="shipping-option-info">
+                                    <span class="option-name">Doação Benfeitor</span>
+                                    <span class="option-time">Ajuda no envio bento + Frete Grátis</span>
+                                </div>
+                                <span class="option-price">R$ 50,00</span>
+                            </label>
                         </div>
 
                         <div class="step-buttons-row">
@@ -774,6 +782,6 @@
     <!-- Mercado Pago SDK -->
     <script src="https://sdk.mercadopago.com/js/v2"></script>
     <!-- JavaScript Logic -->
-    <script src="app.js?v=1.3.3"></script>
+    <script src="app.js?v=1.3.4"></script>
 </body>
 </html>
