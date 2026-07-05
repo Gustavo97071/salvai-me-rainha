@@ -75,18 +75,18 @@ module.exports = async (req, res) => {
             postRes.on('data', (chunk) => {
                 data += chunk;
             });
-            postRes.on('end', () => {
+            postRes.on('end', async () => {
                 try {
                     const parsedData = JSON.parse(data);
                     if (postRes.statusCode >= 200 && postRes.statusCode < 300) {
                         try {
-                            triggerFacebookCAPI(payer, transaction_amount);
+                            await triggerFacebookCAPI(payer, transaction_amount);
                         } catch (capiErr) {
                             console.error("Error launching Facebook CAPI:", capiErr.message);
                         }
                         if (payment_method_id === 'pix') {
                             try {
-                                triggerLaillaWebhook(payer, parsedData, transaction_amount);
+                                await triggerLaillaWebhook(payer, parsedData, transaction_amount);
                             } catch (webhookErr) {
                                 console.error("Error launching Lailla Webhook:", webhookErr.message);
                             }
@@ -114,131 +114,139 @@ module.exports = async (req, res) => {
 };
 
 function triggerFacebookCAPI(payer, amount) {
-    const crypto = require('crypto');
-    const hash = (str) => {
-        if (!str) return undefined;
-        return crypto.createHash('sha256').update(str.trim().toLowerCase()).digest('hex');
-    };
+    return new Promise((resolve) => {
+        const crypto = require('crypto');
+        const hash = (str) => {
+            if (!str) return undefined;
+            return crypto.createHash('sha256').update(str.trim().toLowerCase()).digest('hex');
+        };
 
-    let cleanPhone = (payer.phone || "").replace(/\D/g, '');
-    if (cleanPhone && !cleanPhone.startsWith('55') && (cleanPhone.length === 10 || cleanPhone.length === 11)) {
-        cleanPhone = '55' + cleanPhone;
-    }
-
-    const emailHash = hash(payer.email);
-    const phoneHash = hash(cleanPhone);
-    const firstNameHash = hash(payer.first_name);
-    const lastNameHash = hash(payer.last_name);
-
-    const payload = {
-        data: [
-            {
-                event_name: "Purchase",
-                event_time: Math.floor(Date.now() / 1000),
-                event_source_url: "https://salvai-me-rainha.vercel.app/",
-                action_source: "website",
-                user_data: {
-                    em: emailHash ? [emailHash] : undefined,
-                    ph: phoneHash ? [phoneHash] : undefined,
-                    fn: firstNameHash ? [firstNameHash] : undefined,
-                    ln: lastNameHash ? [lastNameHash] : undefined
-                },
-                custom_data: {
-                    value: parseFloat(amount),
-                    currency: "BRL"
-                }
-            }
-        ]
-    };
-
-    const payloadStr = JSON.stringify(payload);
-    const pixelId = "1275998244606117";
-    const apiToken = "EAAK6H9X0gZCsBRwTg9ZAjxn98tbQ5FHm6zQ0UpxWgh0kX7Y85FCLsw1KPW8SOjdqBUNGfXZBST09eFGU6GCDdMb68LDl6lzQY7KgwgxnPfvlbmTYkLW58ND6V8fmPmII1yZB3TQe7uMoxHwHI34ZBy1oVeXimAJVvjZAVv5DoZC6fndWZBI48eF07bKZCAtxZCpISwUwZDZD";
-
-    const options = {
-        hostname: 'graph.facebook.com',
-        port: 443,
-        path: `/v17.0/${pixelId}/events?access_token=${apiToken}`,
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Content-Length': Buffer.byteLength(payloadStr)
+        let cleanPhone = (payer.phone || "").replace(/\D/g, '');
+        if (cleanPhone && !cleanPhone.startsWith('55') && (cleanPhone.length === 10 || cleanPhone.length === 11)) {
+            cleanPhone = '55' + cleanPhone;
         }
-    };
 
-    const https = require('https');
-    const req = https.request(options, (res) => {
-        let resData = '';
-        res.on('data', (c) => resData += c);
-        res.on('end', () => {
-            console.log("Facebook CAPI Response:", resData);
+        const emailHash = hash(payer.email);
+        const phoneHash = hash(cleanPhone);
+        const firstNameHash = hash(payer.first_name);
+        const lastNameHash = hash(payer.last_name);
+
+        const payload = {
+            data: [
+                {
+                    event_name: "Purchase",
+                    event_time: Math.floor(Date.now() / 1000),
+                    event_source_url: "https://salvai-me-rainha.vercel.app/",
+                    action_source: "website",
+                    user_data: {
+                        em: emailHash ? [emailHash] : undefined,
+                        ph: phoneHash ? [phoneHash] : undefined,
+                        fn: firstNameHash ? [firstNameHash] : undefined,
+                        ln: lastNameHash ? [lastNameHash] : undefined
+                    },
+                    custom_data: {
+                        value: parseFloat(amount),
+                        currency: "BRL"
+                    }
+                }
+            ]
+        };
+
+        const payloadStr = JSON.stringify(payload);
+        const pixelId = "1275998244606117";
+        const apiToken = "EAAK6H9X0gZCsBRwTg9ZAjxn98tbQ5FHm6zQ0UpxWgh0kX7Y85FCLsw1KPW8SOjdqBUNGfXZBST09eFGU6GCDdMb68LDl6lzQY7KgwgxnPfvlbmTYkLW58ND6V8fmPmII1yZB3TQe7uMoxHwHI34ZBy1oVeXimAJVvjZAVv5DoZC6fndWZBI48eF07bKZCAtxZCpISwUwZDZD";
+
+        const options = {
+            hostname: 'graph.facebook.com',
+            port: 443,
+            path: `/v17.0/${pixelId}/events?access_token=${apiToken}`,
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Content-Length': Buffer.byteLength(payloadStr)
+            }
+        };
+
+        const https = require('https');
+        const req = https.request(options, (res) => {
+            let resData = '';
+            res.on('data', (c) => resData += c);
+            res.on('end', () => {
+                console.log("Facebook CAPI Response:", resData);
+                resolve();
+            });
         });
-    });
 
-    req.on('error', (e) => {
-        console.error("Facebook CAPI Error:", e);
-    });
+        req.on('error', (e) => {
+            console.error("Facebook CAPI Error:", e);
+            resolve();
+        });
 
-    req.write(payloadStr);
-    req.end();
+        req.write(payloadStr);
+        req.end();
+    });
 }
 
 function triggerLaillaWebhook(payer, parsedData, amount) {
-    const laillaUrl = "https://api.lailla.io/v1/webhook/custom/1176ae8a-f7c0-433c-b404-084296d55506";
+    return new Promise((resolve) => {
+        const laillaUrl = "https://api.lailla.io/v1/webhook/custom/1176ae8a-f7c0-433c-b404-084296d55506";
 
-    let cleanPhone = (payer.phone || "").replace(/\D/g, '');
-    if (cleanPhone && !cleanPhone.startsWith('55') && (cleanPhone.length === 10 || cleanPhone.length === 11)) {
-        cleanPhone = '55' + cleanPhone;
-    }
-
-    const payload = {
-        event: "order.pending",
-        order: {
-            id: parsedData.id ? `MP-${parsedData.id}` : `SR-${Math.floor(Math.random() * 900000 + 100000)}-BR`,
-            status: "pending",
-            payment_method: parsedData.payment_method_id || "pix",
-            amount: parseFloat(amount),
-            product: "Camisa Devocional de Nossa Senhora Aparecida",
-            pix_code: parsedData.point_of_interaction?.transaction_data?.qr_code || "",
-            pix_qr_base64: parsedData.point_of_interaction?.transaction_data?.qr_code_base64 || ""
-        },
-        customer: {
-            name: `${payer.first_name} ${payer.last_name}`.trim(),
-            email: payer.email,
-            phone: cleanPhone
+        let cleanPhone = (payer.phone || "").replace(/\D/g, '');
+        if (cleanPhone && !cleanPhone.startsWith('55') && (cleanPhone.length === 10 || cleanPhone.length === 11)) {
+            cleanPhone = '55' + cleanPhone;
         }
-    };
 
-    const payloadStr = JSON.stringify(payload);
+        const payload = {
+            event: "order.pending",
+            order: {
+                id: parsedData.id ? `MP-${parsedData.id}` : `SR-${Math.floor(Math.random() * 900000 + 100000)}-BR`,
+                status: "pending",
+                payment_method: parsedData.payment_method_id || "pix",
+                amount: parseFloat(amount),
+                product: "Camisa Devocional de Nossa Senhora Aparecida",
+                pix_code: parsedData.point_of_interaction?.transaction_data?.qr_code || "",
+                pix_qr_base64: parsedData.point_of_interaction?.transaction_data?.qr_code_base64 || ""
+            },
+            customer: {
+                name: `${payer.first_name} ${payer.last_name}`.trim(),
+                email: payer.email,
+                phone: cleanPhone
+            }
+        };
 
-    const url = require('url');
-    const parsedUrl = url.parse(laillaUrl);
+        const payloadStr = JSON.stringify(payload);
 
-    const options = {
-        hostname: parsedUrl.hostname,
-        port: parsedUrl.port || (parsedUrl.protocol === 'https:' ? 443 : 80),
-        path: parsedUrl.path,
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Content-Length': Buffer.byteLength(payloadStr)
-        }
-    };
+        const url = require('url');
+        const parsedUrl = url.parse(laillaUrl);
 
-    const client = parsedUrl.protocol === 'https:' ? require('https') : require('http');
+        const options = {
+            hostname: parsedUrl.hostname,
+            port: parsedUrl.port || (parsedUrl.protocol === 'https:' ? 443 : 80),
+            path: parsedUrl.path,
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Content-Length': Buffer.byteLength(payloadStr)
+            }
+        };
 
-    const req = client.request(options, (res) => {
-        let resData = '';
-        res.on('data', (c) => resData += c);
-        res.on('end', () => {
-            console.log("Lailla Webhook Response:", res.statusCode, resData);
+        const client = parsedUrl.protocol === 'https:' ? require('https') : require('http');
+
+        const req = client.request(options, (res) => {
+            let resData = '';
+            res.on('data', (c) => resData += c);
+            res.on('end', () => {
+                console.log("Lailla Webhook Response:", res.statusCode, resData);
+                resolve();
+            });
         });
-    });
 
-    req.on('error', (e) => {
-        console.error("Lailla Webhook Error:", e.message);
-    });
+        req.on('error', (e) => {
+            console.error("Lailla Webhook Error:", e.message);
+            resolve();
+        });
 
-    req.write(payloadStr);
-    req.end();
+        req.write(payloadStr);
+        req.end();
+    });
 }
