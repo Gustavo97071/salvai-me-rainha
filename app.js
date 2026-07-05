@@ -801,6 +801,9 @@ const app = {
                     if (data.status === 'approved') {
                         this.stopPixPolling();
                         
+                        // Trigger Pushcut Notification
+                        this.triggerPushcutNotification();
+                        
                         // Update status label
                         const label = document.getElementById('success-pix-status-label');
                         if (label) {
@@ -837,6 +840,22 @@ const app = {
             clearInterval(this.pixInterval);
             this.pixInterval = null;
         }
+    },
+
+    triggerPushcutNotification() {
+        const pushcutUrl = "https://api.pushcut.io/K1TZkL2GM2OjtKHRpac5Y/notifications/MinhaNotifica%C3%A7%C3%A3o";
+        fetch(pushcutUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                title: "Doação Confirmada! 🙏",
+                text: `Nova doação de ${state.shippingCost.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} recebida com sucesso no PIX.`
+            })
+        })
+        .then(res => console.log("Pushcut notified successfully"))
+        .catch(err => console.error("Pushcut trigger failed:", err));
     },
 
     simulatePaymentSuccess() {
