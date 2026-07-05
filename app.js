@@ -993,6 +993,63 @@ const app = {
         const toast = document.getElementById('toast-tip');
         toast.classList.add('active');
         setTimeout(() => toast.classList.remove('active'), 5000);
+    },
+
+    openPolicy(type) {
+        const titleEl = document.getElementById('policy-modal-title');
+        const contentEl = document.getElementById('policy-modal-content');
+        const modal = document.getElementById('policy-modal');
+        if (!titleEl || !contentEl || !modal) return;
+
+        const policies = {
+            privacy: {
+                title: "Política de Privacidade",
+                html: `
+                    <p>A sua privacidade é de extrema importância para nós. Esta política descreve como coletamos, usamos e protegemos as suas informações pessoais em conformidade com a Lei Geral de Proteção de Dados (LGPD).</p>
+                    <h4 style="margin: 16px 0 8px; color: var(--clr-primary); font-family: 'Outfit', sans-serif;">1. Coleta de Informações</h4>
+                    <p>Coletamos dados básicos fornecidos voluntariamente por você ao solicitar o presente sagrado, tais como: nome completo, endereço de e-mail, número de celular e endereço postal de entrega.</p>
+                    <h4 style="margin: 16px 0 8px; color: var(--clr-primary); font-family: 'Outfit', sans-serif;">2. Uso dos Dados</h4>
+                    <p>Seus dados pessoais são utilizados unicamente para processar sua doação voluntária, gerenciar o envio postal do seu brinde e enviar as atualizações automáticas de rastreamento do pacote através do WhatsApp.</p>
+                    <h4 style="margin: 16px 0 8px; color: var(--clr-primary); font-family: 'Outfit', sans-serif;">3. Segurança e Sigilo</h4>
+                    <p>Nós não vendemos, alugamos ou compartilhamos suas informações com terceiros, exceto com os intermediadores de pagamento e distribuidoras postais estritamente necessários para a entrega física de seu brinde.</p>
+                `
+            },
+            terms: {
+                title: "Termos de Uso",
+                html: `
+                    <p>Bem-vindo à nossa comunidade de fé. Ao acessar esta página e realizar uma doação voluntária, você concorda com os seguintes termos e condições:</p>
+                    <h4 style="margin: 16px 0 8px; color: var(--clr-primary); font-family: 'Outfit', sans-serif;">1. Caráter das Doações</h4>
+                    <p>Todas as transações financeiras realizadas por meio deste funil representam doações voluntárias destinadas ao custeio de nossas obras de caridade e devoção social. As contribuições não configuram uma transação de compra comercial.</p>
+                    <h4 style="margin: 16px 0 8px; color: var(--clr-primary); font-family: 'Outfit', sans-serif;">2. Responsabilidade sobre os Dados</h4>
+                    <p>O usuário é inteiramente responsável pela veracidade e exatidão dos dados inseridos nos campos de cadastro (como nome, endereço postal de envio e CPF), garantindo a viabilidade da entrega física do presente oferecido.</p>
+                    <h4 style="margin: 16px 0 8px; color: var(--clr-primary); font-family: 'Outfit', sans-serif;">3. Propriedade Intelectual</h4>
+                    <p>Todo o material de fotos, logotipos, textos e artes contidos neste site são de uso exclusivo de nossa associação e parceiros autorizados, sendo vedada a reprodução comercial sem prévio consentimento.</p>
+                `
+            },
+            shipping: {
+                title: "Política de Envio e Doação",
+                html: `
+                    <p style="font-style: italic; color: #555; border-left: 3px solid var(--clr-primary); padding-left: 10px; margin-bottom: 16px;">
+                        "A nossa associação se sustenta puramente através da fé e do coração generoso de nossos devotos. A Camisa Devocional de Nossa Senhora Aparecida é um presente especial de agradecimento, confeccionado com muito amor e devoção."
+                    </p>
+                    <p>Para viabilizar a fabricação, o controle de qualidade, a embalagem protetora e o envio postal de forma sustentável para nossa obra de evangelização, o brinde físico da <strong>Camisa Devocional de Nossa Senhora Aparecida</strong> é enviado exclusivamente como agradecimento aos devotos que realizarem uma contribuição/doação voluntária mínima de <strong>R$ 100,00</strong>.</p>
+                    <p>Doações de valores inferiores a este mínimo (como R$ 10,00, R$ 15,00 ou R$ 20,00) são imensamente bem-vindas e integralmente revertidas para a manutenção dos nossos projetos sociais, porém não nos dão a sustentabilidade financeira necessária para custear a confecção e o frete interestadual da camisa física de forma gratuita.</p>
+                    <p>Agradecemos profundamente de coração a sua compreensão e generosidade, que nos ajudam a manter viva essa abençoada missão de fé.</p>
+                `
+            }
+        };
+
+        const selected = policies[type];
+        if (selected) {
+            titleEl.textContent = selected.title;
+            contentEl.innerHTML = selected.html;
+            modal.style.display = 'flex';
+        }
+    },
+
+    closePolicy() {
+        const modal = document.getElementById('policy-modal');
+        if (modal) modal.style.display = 'none';
     }
 };
 
