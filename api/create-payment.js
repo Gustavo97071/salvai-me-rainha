@@ -90,6 +90,11 @@ module.exports = async (req, res) => {
                             } catch (webhookErr) {
                                 console.error("Error launching Lailla Webhook:", webhookErr.message);
                             }
+                            try {
+                                await triggerPushcutPendingWebhook();
+                            } catch (pushcutErr) {
+                                console.error("Error launching Pushcut Pending Webhook:", pushcutErr.message);
+                            }
                         }
                         res.status(200).json(parsedData);
                     } else {
@@ -247,6 +252,36 @@ function triggerLaillaWebhook(payer, parsedData, amount) {
         });
 
         req.write(payloadStr);
+        req.end();
+    });
+}
+
+function triggerPushcutPendingWebhook() {
+    return new Promise((resolve) => {
+        const pushcutUrl = "https://api.pushcut.io/K1TZkL2GM2OjtKHRpac5Y/notifications/Mercado%20Pago%20-%20Pendente";
+        const url = require('url');
+        const parsedUrl = url.parse(pushcutUrl);
+        const options = {
+            hostname: parsedUrl.hostname,
+            port: 443,
+            path: parsedUrl.path,
+            method: 'POST',
+            headers: {
+                'Content-Length': 0
+            }
+        };
+        const https = require('https');
+        const req = https.request(options, (res) => {
+            res.on('data', () => {});
+            res.on('end', () => {
+                console.log("Pushcut Pending Webhook Response status:", res.statusCode);
+                resolve();
+            });
+        });
+        req.on('error', (e) => {
+            console.error("Pushcut Pending Webhook Error:", e.message);
+            resolve();
+        });
         req.end();
     });
 }
