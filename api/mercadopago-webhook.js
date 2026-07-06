@@ -11,14 +11,44 @@ module.exports = async (req, res) => {
     }
 
     try {
-        console.log("Mercado Pago Webhook Request Query:", req.query);
-        console.log("Mercado Pago Webhook Request Body:", req.body);
+        console.log("Mercado Pago Webhook Raw Query:", req.query);
+        console.log("Mercado Pago Webhook Raw Body Type:", typeof req.body);
+        console.log("Mercado Pago Webhook Raw Body:", req.body);
 
-        // Mercado Pago webhook payload format can be query parameters (for IPN) or JSON body
-        let paymentId = req.query.id || (req.body && req.body.data && req.body.data.id) || (req.body && req.body.id);
-        const topic = req.query.topic || (req.body && req.body.type) || 'payment';
+        // Parse raw body if it is a string or Buffer
+        let body = req.body;
+        if (body && (typeof body === 'string' || Buffer.isBuffer(body))) {
+            const bodyStr = body.toString();
+            try {
+                body = JSON.parse(bodyStr);
+            } catch (e) {
+                const querystring = require('querystring');
+                body = querystring.parse(bodyStr);
+            }
+        }
 
-        if (topic === 'payment' && paymentId) {
+        // Try extracting paymentId from all possible locations
+        let paymentId = req.query.id || 
+                        req.query['data.id'] || 
+                        req.query['data[id]'] ||
+                        (body && body.data && body.data.id) || 
+                        (body && body.id) ||
+                        (body && body['data.id']) ||
+                        (body && body['data[id]']);
+
+        // Try extracting topic/type from all possible locations
+        let topic = req.query.topic || 
+                    req.query.type || 
+                    req.query['type'] || 
+                    (body && body.type) || 
+                    (body && body.topic) ||
+                    'payment';
+
+        console.log("Extracted Payment ID:", paymentId);
+        console.log("Extracted Topic/Type:", topic);
+
+        // We check the status if we found a paymentId (even if topic is different, as a fallback)
+        if (paymentId) {
             const mpAccessToken = process.env.MERCADO_PAGO_ACCESS_TOKEN || "APP_USR-6237078041440230-070300-0a8d02fca8b811f32ec1ddb51f27090e-136413525";
             
             const options = {
@@ -43,6 +73,8 @@ module.exports = async (req, res) => {
                             if (paymentData.status === 'approved') {
                                 // Trigger Pushcut Approved Notification
                                 await triggerPushcutApproved();
+                            } else {
+                                console.log(`Payment status is ${paymentData.status}, not approved. Skipping trigger.`);
                             }
                         } catch (err) {
                             console.error("Error parsing payment details:", err.message);
@@ -58,6 +90,8 @@ module.exports = async (req, res) => {
 
                 getReq.end();
             });
+        } else {
+            console.log("No payment ID found in webhook payload. Skipping check.");
         }
 
         // Always respond with 200 OK or 201 Created to tell Mercado Pago the webhook was received
