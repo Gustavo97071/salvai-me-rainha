@@ -49,89 +49,51 @@ module.exports = async (req, res) => {
         if (resourceId) {
             const mpAccessToken = process.env.MERCADO_PAGO_ACCESS_TOKEN || "APP_USR-6237078041440230-070300-0a8d02fca8b811f32ec1ddb51f27090e-136413525";
             
-            // If topic is merchant_order, query the merchant order API
+            // Skip merchant_order topic to prevent double trigger (we rely exclusively on the direct payment topic)
             if (topic === 'merchant_order' || topic === 'merchant-order') {
-                const options = {
-                    hostname: 'api.mercadopago.com',
-                    port: 443,
-                    path: `/v1/merchant_orders/${resourceId}`,
-                    method: 'GET',
-                    headers: {
-                        'Authorization': `Bearer ${mpAccessToken}`
-                    }
-                };
-
-                await new Promise((resolve) => {
-                    const getReq = https.request(options, (getRes) => {
-                        let data = '';
-                        getRes.on('data', (chunk) => data += chunk);
-                        getRes.on('end', async () => {
-                            try {
-                                const orderData = JSON.parse(data);
-                                console.log(`Order Status for ID ${resourceId}:`, orderData.status);
-                                
-                                // Check if any payment inside the order is approved
-                                let isApproved = false;
-                                if (orderData.payments && Array.isArray(orderData.payments)) {
-                                    isApproved = orderData.payments.some(p => p.status === 'approved');
-                                }
-                                
-                                if (isApproved) {
-                                    await triggerPushcutApproved();
-                                } else {
-                                    console.log("No approved payments found in merchant order.");
-                                }
-                            } catch (err) {
-                                console.error("Error parsing merchant order details:", err.message);
-                            }
-                            resolve();
-                        });
-                    });
-                    getReq.on('error', (err) => {
-                        console.error("Error querying merchant order details:", err.message);
-                        resolve();
-                    });
-                    getReq.end();
-                });
-            } else {
-                // Default to payment API
-                const options = {
-                    hostname: 'api.mercadopago.com',
-                    port: 443,
-                    path: `/v1/payments/${resourceId}`,
-                    method: 'GET',
-                    headers: {
-                        'Authorization': `Bearer ${mpAccessToken}`
-                    }
-                };
-
-                await new Promise((resolve) => {
-                    const getReq = https.request(options, (getRes) => {
-                        let data = '';
-                        getRes.on('data', (chunk) => data += chunk);
-                        getRes.on('end', async () => {
-                            try {
-                                const paymentData = JSON.parse(data);
-                                console.log(`Payment Status for ID ${resourceId}:`, paymentData.status);
-                                
-                                if (paymentData.status === 'approved') {
-                                    await triggerPushcutApproved();
-                                } else {
-                                    console.log(`Payment status is ${paymentData.status}, not approved. Skipping.`);
-                                }
-                            } catch (err) {
-                                console.error("Error parsing payment details:", err.message);
-                            }
-                            resolve();
-                        });
-                    });
-                    getReq.on('error', (err) => {
-                        console.error("Error querying payment details:", err.message);
-                        resolve();
-                    });
-                    getReq.end();
-                });
+                console.log(`Skipping merchant_order ${resourceId} to prevent duplicate triggers`);
+                return res.status(200).send("OK");
             }
+
+            // Query payment API
+            const options = {
+                hostname: 'api.mercadopago.com',
+                port: 443,
+                path: `/v1/payments/${resourceId}`,
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${mpAccessToken}`
+                }
+            };
+
+            await new Promise((resolve) => {
+                const getReq = https.request(options, (getRes) => {
+                    let data = '';
+                    getRes.on('data', (chunk) => data += chunk);
+                    getRes.on('end', async () => {
+                        try {
+                            const paymentData = JSON.parse(data);
+                            console.log(`Payment Status for ID ${resourceId}:`, paymentData.status);
+                            
+                            if (paymentData.status === 'approved') {
+                                await triggerPushcutApproved();
+                            } else {
+                                console.log(`Payment status is ${paymentData.status}, not approved. Skipping.`);
+                            }
+                        } catch (err) {
+                            console.error("Error parsing payment details:", err.message);
+                        }
+                        resolve();
+                    });
+                });
+
+                getReq.on('error', (err) => {
+                    console.error("Error querying payment details:", err.message);
+                    resolve();
+                });
+
+                getReq.end();
+            });
         } else {
             console.log("No resource ID found in webhook payload. Skipping check.");
         }
