@@ -859,8 +859,6 @@ const app = {
         }
     },
 
-    },
-
     simulatePaymentSuccess() {
         this.stopPixPolling();
         
