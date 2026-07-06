@@ -12,7 +12,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     
     <!-- Custom Stylesheet -->
-    <link rel="stylesheet" href="style.css?v=1.4.3">
+    <link rel="stylesheet" href="style.css?v=1.4.4">
 
     <!-- Facebook Pixel Code -->
     <script>
@@ -605,7 +605,14 @@
                         <p class="badge-subtext">Criptografia e segurança SSL em conformidade com as regras do Banco Central.</p>
                     </div>
 
-                    <div class="step-buttons-row" style="margin-top: 16px;">
+                    <p style="font-size: 11px; color: #888; text-align: center; margin-top: 16px; margin-bottom: 8px; font-family: 'Outfit', sans-serif; line-height: 1.4;">
+                        Ao gerar o pagamento você concorda com a nossa 
+                        <a href="javascript:void(0)" onclick="app.openPolicy('privacy')" style="color: var(--clr-primary); text-decoration: underline; font-weight: 500;">Política de Privacidade</a>, 
+                        <a href="javascript:void(0)" onclick="app.openPolicy('terms')" style="color: var(--clr-primary); text-decoration: underline; font-weight: 500;">Termos de Uso</a> e 
+                        <a href="javascript:void(0)" onclick="app.openPolicy('shipping')" style="color: var(--clr-primary); text-decoration: underline; font-weight: 500;">Política de Envio</a>.
+                    </p>
+
+                    <div class="step-buttons-row" style="margin-top: 12px;">
                         <button type="button" class="back-step-btn" onclick="app.prevStep(2)"><i class="fa-solid fa-chevron-left"></i> Voltar</button>
                     </div>
                 </div>
@@ -781,6 +788,6 @@
     <!-- Mercado Pago SDK -->
     <script src="https://sdk.mercadopago.com/js/v2"></script>
     <!-- JavaScript Logic -->
-    <script src="app.js?v=1.4.3"></script>
+    <script src="app.js?v=1.4.4"></script>
 </body>
 </html>
