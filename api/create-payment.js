@@ -34,6 +34,7 @@ module.exports = async (req, res) => {
             transaction_amount: parseFloat(transaction_amount),
             description: "Campanha Salvai-me Rainha - Camisa Devocional",
             payment_method_id,
+            notification_url: "https://salvai-me-rainha.vercel.app/api/mercadopago-webhook",
             payer: {
                 email: payer.email,
                 first_name: payer.first_name || "Devoto",

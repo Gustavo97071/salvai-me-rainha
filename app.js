@@ -821,9 +821,6 @@ const app = {
                     if (data.status === 'approved') {
                         this.stopPixPolling();
                         
-                        // Trigger Pushcut Notification
-                        this.triggerPushcutNotification();
-                        
                         // Update status label
                         const label = document.getElementById('success-pix-status-label');
                         if (label) {
@@ -862,13 +859,6 @@ const app = {
         }
     },
 
-    triggerPushcutNotification() {
-        const pushcutUrl = "https://api.pushcut.io/K1TZkL2GM2OjtKHRpac5Y/notifications/MinhaNotifica%C3%A7%C3%A3o";
-        fetch(pushcutUrl, {
-            method: 'POST'
-        })
-        .then(res => console.log("Pushcut notified successfully"))
-        .catch(err => console.error("Pushcut trigger failed:", err));
     },
 
     simulatePaymentSuccess() {
