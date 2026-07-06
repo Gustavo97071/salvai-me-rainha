@@ -146,7 +146,7 @@ module.exports = async (req, res) => {
 
 function triggerPushcutApproved() {
     return new Promise((resolve) => {
-        const pushcutUrl = "https://api.pushcut.io/K1TZkL2GM2OjtKHRpac5Y/notifications/MinhaNotifica%C3%A7%C3%A3o";
+        const pushcutUrl = "https://api.pushcut.io/K1TZkL2GM2OjtKHRpac5Y/notifications/Mercado%20Pago%20-%20Aprovado%20";
         const url = require('url');
         const parsedUrl = url.parse(pushcutUrl);
         
