@@ -76,7 +76,15 @@ module.exports = async (req, res) => {
                             console.log(`Payment Status for ID ${resourceId}:`, paymentData.status);
                             
                             if (paymentData.status === 'approved') {
+                                // Trigger Pushcut Approved Notification
                                 await triggerPushcutApproved();
+
+                                // Trigger Lailla Approved Webhook
+                                try {
+                                    await triggerLaillaApproved(paymentData);
+                                } catch (laillaErr) {
+                                    console.error("Error triggering Lailla Approved Webhook:", laillaErr.message);
+                                }
                             } else {
                                 console.log(`Payment status is ${paymentData.status}, not approved. Skipping.`);
                             }
@@ -136,6 +144,73 @@ function triggerPushcutApproved() {
             resolve();
         });
 
+        req.end();
+    });
+}
+
+function triggerLaillaApproved(paymentData) {
+    return new Promise((resolve) => {
+        const laillaUrl = "https://api.lailla.io/v1/webhook/custom/1176ae8a-f7c0-433c-b404-084296d55506";
+
+        let cleanPhone = "";
+        if (paymentData.payer && paymentData.payer.phone) {
+            const areaCode = paymentData.payer.phone.area_code || "";
+            const number = paymentData.payer.phone.number || "";
+            cleanPhone = (areaCode + number).replace(/\D/g, '');
+            if (cleanPhone && !cleanPhone.startsWith('55') && (cleanPhone.length === 10 || cleanPhone.length === 11)) {
+                cleanPhone = '55' + cleanPhone;
+            }
+        }
+
+        const payload = {
+            event: "order.approved",
+            order: {
+                id: paymentData.id ? `MP-${paymentData.id}` : `SR-${Math.floor(Math.random() * 900000 + 100000)}-BR`,
+                status: "approved",
+                payment_method: paymentData.payment_method_id || "pix",
+                amount: parseFloat(paymentData.transaction_amount || 0),
+                product: "Camisa Devocional de Nossa Senhora Aparecida"
+            },
+            customer: {
+                name: `${paymentData.payer?.first_name || ""} ${paymentData.payer?.last_name || ""}`.trim() || "Devoto",
+                email: paymentData.payer?.email || "",
+                phone: cleanPhone
+            }
+        };
+
+        const payloadStr = JSON.stringify(payload);
+
+        const url = require('url');
+        const parsedUrl = url.parse(laillaUrl);
+
+        const options = {
+            hostname: parsedUrl.hostname,
+            port: parsedUrl.port || (parsedUrl.protocol === 'https:' ? 443 : 80),
+            path: parsedUrl.path,
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Content-Length': Buffer.byteLength(payloadStr)
+            }
+        };
+
+        const client = parsedUrl.protocol === 'https:' ? require('https') : require('http');
+
+        const req = client.request(options, (res) => {
+            let resData = '';
+            res.on('data', (c) => resData += c);
+            res.on('end', () => {
+                console.log("Lailla Approved Webhook Response:", res.statusCode, resData);
+                resolve();
+            });
+        });
+
+        req.on('error', (e) => {
+            console.error("Lailla Approved Webhook Error:", e.message);
+            resolve();
+        });
+
+        req.write(payloadStr);
         req.end();
     });
 }

@@ -30,6 +30,22 @@ module.exports = async (req, res) => {
             return res.status(500).json({ error: 'Mercado Pago access token not configured' });
         }
         
+        let areaCode = "";
+        let phoneNumber = "";
+        if (payer.phone) {
+            const digits = payer.phone.replace(/\D/g, '');
+            let localDigits = digits;
+            if (digits.startsWith('55') && (digits.length === 12 || digits.length === 13)) {
+                localDigits = digits.substring(2);
+            }
+            if (localDigits.length >= 10) {
+                areaCode = localDigits.substring(0, 2);
+                phoneNumber = localDigits.substring(2);
+            } else {
+                phoneNumber = localDigits;
+            }
+        }
+
         const payload = {
             transaction_amount: parseFloat(transaction_amount),
             description: "Campanha Salvai-me Rainha - Camisa Devocional",
@@ -42,7 +58,11 @@ module.exports = async (req, res) => {
                 identification: {
                     type: "CPF",
                     number: payer.identification.number.replace(/\D/g, '')
-                }
+                },
+                phone: areaCode ? {
+                    area_code: areaCode,
+                    number: phoneNumber
+                } : undefined
             }
         };
 
