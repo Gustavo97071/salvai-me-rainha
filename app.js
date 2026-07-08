@@ -1,3 +1,5 @@
+window.KIWIFY_CHECKOUT_URL = "https://pay.kiwify.com.br/XXXXXXX"; // Substitua XXXXXXX pelo link de checkout da sua Kiwify
+
 /* ==========================================================================
    APP STATE
    ========================================================================== */
@@ -338,8 +340,66 @@ const app = {
                 // Sync pricing variables
                 this.updateShippingDetailsBox();
                 this.goToStep(3);
+
+                // Load pre-filled Kiwify embedded checkout iframe
+                this.loadKiwifyIframe();
             }
         }
+    },
+
+    async loadKiwifyIframe() {
+        const iframe = document.getElementById('kiwify-checkout-iframe');
+        if (!iframe) return;
+
+        iframe.src = 'about:blank';
+
+        // 1. Create a pending payment/lead registration in our serverless API
+        const payload = {
+            payment_method_id: 'pix',
+            transaction_amount: state.shippingCost,
+            payer: {
+                email: state.donor.email,
+                first_name: state.donor.name.split(' ')[0],
+                last_name: state.donor.name.split(' ').slice(1).join(' ') || 'Devoto',
+                phone: state.donor.phone,
+                identification: {
+                    type: 'CPF',
+                    number: state.donor.cpf ? state.donor.cpf.replace(/\D/g, '') : '00000000000'
+                }
+            }
+        };
+
+        try {
+            const res = await fetch('/api/create-payment', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            });
+            const data = await res.json();
+            state.paymentId = data.id;
+        } catch (err) {
+            console.error("Error creating pending lead:", err.message);
+        }
+
+        // 2. Generate Kiwify checkout URL with pre-filled parameters
+        const baseUrl = window.KIWIFY_CHECKOUT_URL || "https://pay.kiwify.com.br/XXXXXXX";
+        const queryParams = new URLSearchParams({
+            embed: 'true',
+            name: state.donor.name,
+            email: state.donor.email,
+            phone: state.donor.phone.replace(/\D/g, ''),
+            zipcode: state.donor.cep.replace(/\D/g, ''),
+            street: state.donor.street,
+            number: state.donor.number,
+            complement: state.donor.complement,
+            neighborhood: state.donor.neighborhood,
+            city: state.donor.city,
+            state: state.donor.state
+        });
+
+        iframe.src = `${baseUrl}?${queryParams.toString()}`;
     },
 
     setInputError(inputElement, errorId, hasError) {

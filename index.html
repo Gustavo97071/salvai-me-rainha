@@ -12,7 +12,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     
     <!-- Custom Stylesheet -->
-    <link rel="stylesheet" href="style.css?v=1.5.0">
+    <link rel="stylesheet" href="style.css?v=1.5.1">
 
     <!-- Facebook Pixel Code -->
     <script>
@@ -526,83 +526,9 @@
                         </div>
                     </div>
 
-                    <!-- Payment tabs buttons -->
-                    <div class="payment-tabs">
-                        <button type="button" class="payment-tab active" id="tab-pix" onclick="app.switchPaymentTab('pix')">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-                            PIX
-                        </button>
-                        <button type="button" class="payment-tab" id="tab-card" onclick="app.switchPaymentTab('card')">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
-                            Cartão
-                        </button>
-                    </div>
-
-                    <!-- Payment inputs subform wrapper -->
-                    <div class="payment-subform-container">
-                        <!-- PIX SUBFORM -->
-                        <div class="payment-subform active" id="subform-pix">
-                            <div class="pix-info-card">
-                                <span class="pix-badge-accent">Envio Imediato</span>
-                                <p>A confirmação do PIX é instantânea e seu brinde entra na fila de despacho prioritário.</p>
-                            </div>
-                            <button type="button" class="generate-payment-btn" onclick="app.processPixPayment()">
-                                Gerar PIX e Confirmar <i class="fa-solid fa-pix"></i>
-                            </button>
-                        </div>
-
-                        <!-- CREDIT CARD SUBFORM -->
-                        <div class="payment-subform" id="subform-card">
-                            <div class="card-form-wrapper">
-                                <div class="form-group">
-                                    <label for="input-card-number">Número do Cartão</label>
-                                    <div class="cep-input-wrapper">
-                                        <input type="tel" id="input-card-number" placeholder="0000 0000 0000 0000" maxlength="19" required>
-                                        <span class="cep-spinner" id="card-brand-spinner" style="display:none;"></span>
-                                    </div>
-                                    <span class="error-msg" id="error-card-number">Número de cartão inválido</span>
-                                </div>
-                                
-                                <div class="form-row">
-                                    <div class="form-group flex-2">
-                                        <label for="input-card-expiration">Validade</label>
-                                        <input type="tel" id="input-card-expiration" placeholder="MM/AA" maxlength="5" required>
-                                        <span class="error-msg" id="error-card-expiration">Validade inválida (MM/AA)</span>
-                                    </div>
-                                    <div class="form-group flex-1">
-                                        <label for="input-card-cvv">Código CVV</label>
-                                        <input type="tel" id="input-card-cvv" placeholder="123" maxlength="4" required>
-                                        <span class="error-msg" id="error-card-cvv">CVV inválido</span>
-                                    </div>
-                                </div>
-                                
-                                <div class="form-group">
-                                    <label for="input-card-name">Nome Impresso no Cartão</label>
-                                    <input type="text" id="input-card-name" placeholder="Ex: MARIA F SILVA" required>
-                                    <span class="error-msg" id="error-card-name">Insira o nome exatamente como no cartão</span>
-                                </div>
-
-                                <div class="form-group">
-                                    <label for="input-card-installments">Parcelas</label>
-                                    <select id="input-card-installments" class="form-select">
-                                        <option value="1">1x de R$ 19,90 sem juros</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <button type="button" class="generate-payment-btn" onclick="app.processCardPayment()">
-                                Finalizar Pagamento <i class="fa-solid fa-credit-card"></i>
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Secure seal MP -->
-                    <div class="mercadopago-badge-card">
-                        <div class="badge-text-row">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#d4af37" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                            <span>Pagamento Processado de forma Segura</span>
-                        </div>
-                        <p class="badge-subtext">Criptografia e segurança SSL em conformidade com as regras do Banco Central.</p>
+                    <!-- Kiwify Embedded Checkout Iframe -->
+                    <div class="kiwify-iframe-container" style="width: 100%; border-radius: 12px; overflow: hidden; margin-top: 16px; min-height: 650px; background: #fff; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid var(--clr-border);">
+                        <iframe id="kiwify-checkout-iframe" src="" style="width: 100%; height: 750px; border: none; overflow: auto;" scrolling="yes"></iframe>
                     </div>
 
                     <p style="font-size: 11px; color: #888; text-align: center; margin-top: 16px; margin-bottom: 8px; font-family: 'Outfit', sans-serif; line-height: 1.4;">
@@ -788,6 +714,6 @@
     <!-- Mercado Pago SDK -->
     <script src="https://sdk.mercadopago.com/js/v2"></script>
     <!-- JavaScript Logic -->
-    <script src="app.js?v=1.5.0"></script>
+    <script src="app.js?v=1.5.1"></script>
 </body>
 </html>
