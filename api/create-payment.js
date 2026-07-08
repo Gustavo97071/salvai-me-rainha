@@ -24,8 +24,8 @@ module.exports = async (req, res) => {
 
     try {
 
-        const KIWIFY_CLIENT_SECRET = process.env.KIWIFY_CLIENT_SECRET || 'ecf68e7dd6ecc2dce2632f276787403dc67a3c79a67ff8d1265d324ba4ffb0f4';
-        const KIWIFY_CLIENT_ID = process.env.KIWIFY_CLIENT_ID || '7a3cf94c-83d8-4b8d-a721-91224f2b0781';
+        const KIWIFY_CLIENT_SECRET = process.env.KIWIFY_CLIENT_SECRET || 'ad6b89a6580466a0f368dbecda2834de2f5550f98a48be0e8751c8be24bf15b1';
+        const KIWIFY_CLIENT_ID = process.env.KIWIFY_CLIENT_ID || '7162d82c-3575-488d-9117-032a84ee07f3';
         const KIWIFY_ACCOUNT_ID = process.env.KIWIFY_ACCOUNT_ID || 'Q3TYWn7cbO9eGCN';
 
         const amountInCents = Math.round(parseFloat(transaction_amount) * 100);
