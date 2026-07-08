@@ -13,6 +13,46 @@ module.exports = async (req, res) => {
     try {
         console.log("Kiwify Webhook Raw Body:", JSON.stringify(req.body));
 
+        // 1. Check if this is a Kiwify Banking / Conta Digital Webhook
+        if (req.body.type && req.body.type.startsWith('CASHIN.PIX.QRCODES')) {
+            const eventType = req.body.type;
+            const qrcodeData = req.body.data;
+            const qrcodeId = qrcodeData?.id;
+            
+            console.log(`Kiwify Banking Webhook received. Event: ${eventType}, QR Code ID: ${qrcodeId}`);
+            
+            if (eventType === 'CASHIN.PIX.QRCODES.PAID' && qrcodeId) {
+                const filepath = `/tmp/mock-payment-${qrcodeId}.json`;
+                const fs = require('fs');
+                if (fs.existsSync(filepath)) {
+                    try {
+                        const fileContent = fs.readFileSync(filepath, 'utf-8');
+                        const { payer, transaction_amount } = JSON.parse(fileContent);
+                        
+                        await triggerPushcutApproved();
+                        await triggerLaillaApproved({
+                            first_name: payer.first_name || payer.name?.split(' ')[0] || "Devoto",
+                            last_name: payer.last_name || payer.name?.split(' ').slice(1).join(' ') || "",
+                            email: payer.email,
+                            phone: payer.phone
+                        }, {
+                            id: qrcodeId,
+                            payment_method_id: 'pix'
+                        }, transaction_amount);
+                        
+                        fs.unlinkSync(filepath);
+                        console.log(`Kiwify Banking Paid Webhook processed successfully for QR Code: ${qrcodeId}`);
+                    } catch (err) {
+                        console.error("Error processing banking paid webhook:", err.message);
+                    }
+                } else {
+                    console.log(`Payer info not found or already processed for QR Code: ${qrcodeId}`);
+                }
+            }
+            return res.status(200).send("OK");
+        }
+
+        // 2. Standard Platform / Product Sale Webhook
         const { order_id, order_status, payment_method, amount, Customer } = req.body;
 
         if (!order_id || !order_status) {

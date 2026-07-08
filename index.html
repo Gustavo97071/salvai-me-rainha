@@ -12,7 +12,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     
     <!-- Custom Stylesheet -->
-    <link rel="stylesheet" href="style.css?v=1.5.1">
+    <link rel="stylesheet" href="style.css?v=1.6.0">
 
     <!-- Facebook Pixel Code -->
     <script>
@@ -460,32 +460,9 @@
                         </div>
 
                         <h4 class="checkout-subtitle"><i class="fa-solid fa-heart"></i> Escolha a sua Doação <span style="font-size: 11px; color: var(--clr-success); margin-left: 8px;">(Frete Grátis)</span></h4>
-                        <div class="shipping-options-grid">
-                            <label class="shipping-option-card active" id="label-shipping-normal">
-                                <input type="radio" name="shipping-fee" value="10.00" checked onclick="app.updateShipping(10.00, 'normal')">
-                                <div class="shipping-option-info">
-                                    <span class="option-name">Doação Devoto</span>
-                                </div>
-                                <span class="option-price">R$ 10,00</span>
-                            </label>
-
-                            <label class="shipping-option-card" id="label-shipping-sedex">
-                                <input type="radio" name="shipping-fee" value="15.00" onclick="app.updateShipping(15.00, 'sedex')">
-                                <div class="shipping-option-info">
-                                    <span class="option-name">Doação Protetor</span>
-                                </div>
-                                <span class="option-price">R$ 15,00</span>
-                            </label>
-
-                            <label class="shipping-option-card" id="label-shipping-test">
-                                <input type="radio" name="shipping-fee" value="20.00" onclick="app.updateShipping(20.00, 'test')">
-                                <div class="shipping-option-info">
-                                    <span class="option-name">Doação Padrinho</span>
-                                </div>
-                                <span class="option-price">R$ 20,00</span>
-                            </label>
-                            <label class="shipping-option-card" id="label-shipping-benfeitor">
-                                <input type="radio" name="shipping-fee" value="50.00" onclick="app.updateShipping(50.00, 'benfeitor')">
+                        <div class="shipping-options-grid" style="grid-template-columns: 1fr;">
+                            <label class="shipping-option-card active" id="label-shipping-benfeitor" style="width: 100%;">
+                                <input type="radio" name="shipping-fee" value="50.00" checked onclick="app.updateShipping(50.00, 'benfeitor')">
                                 <div class="shipping-option-info">
                                     <span class="option-name">Doação Benfeitor</span>
                                 </div>
@@ -526,9 +503,16 @@
                         </div>
                     </div>
 
-                    <!-- Kiwify Embedded Checkout Iframe -->
-                    <div class="kiwify-iframe-container" style="width: 100%; border-radius: 12px; overflow: hidden; margin-top: 16px; min-height: 650px; background: #fff; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid var(--clr-border);">
-                        <iframe id="kiwify-checkout-iframe" src="" style="width: 100%; height: 750px; border: none; overflow: auto;" scrolling="yes"></iframe>
+                    <!-- Native PIX Checkout Box -->
+                    <div class="pix-checkout-box" style="margin-top: 24px; padding: 24px; border-radius: 16px; background: rgba(212, 175, 55, 0.04); border: 1.5px dashed rgba(212, 175, 55, 0.4); text-align: center; font-family: 'Outfit', sans-serif;">
+                        <div style="font-size: 32px; margin-bottom: 8px;">⚡</div>
+                        <h4 style="font-size: 18px; font-weight: 600; color: #252928; margin: 0 0 8px 0;">Pagamento Único por PIX</h4>
+                        <p style="font-size: 13px; color: #707473; line-height: 1.5; margin: 0 0 20px 0;">
+                            A doação benfeitor de R$ 50,00 será feita através de um QR Code Pix gerado na próxima tela. O processamento é instantâneo e seguro.
+                        </p>
+                        <button type="button" class="buy-button-cta-inline" id="btn-generate-pix" onclick="app.submitPayment()" style="width: 100%; padding: 14px; border-radius: 10px; font-size: 15px; font-weight: 600; background: var(--clr-primary); color: #fff; border: none; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 12px rgba(212, 175, 55, 0.2); position: relative; overflow: hidden;">
+                            Gerar QR Code PIX
+                        </button>
                     </div>
 
                     <p style="font-size: 11px; color: #888; text-align: center; margin-top: 16px; margin-bottom: 8px; font-family: 'Outfit', sans-serif; line-height: 1.4;">

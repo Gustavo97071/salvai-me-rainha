@@ -4,9 +4,9 @@ window.KIWIFY_CHECKOUT_URL = "https://pay.kiwify.com.br/XXXXXXX"; // Substitua X
    APP STATE
    ========================================================================== */
 const state = {
-    shippingType: 'normal',
-    shippingCost: 10.00,
-    totalCost: 10.00,
+    shippingType: 'benfeitor',
+    shippingCost: 50.00,
+    totalCost: 50.00,
     paymentMethod: 'pix',
     donor: {
         name: '',
@@ -341,19 +341,13 @@ const app = {
                 this.updateShippingDetailsBox();
                 this.goToStep(3);
 
-                // Load pre-filled Kiwify embedded checkout iframe
-                this.loadKiwifyIframe();
+                // Pre-register lead to capture pending checkout details
+                this.preRegisterLead();
             }
         }
     },
 
-    async loadKiwifyIframe() {
-        const iframe = document.getElementById('kiwify-checkout-iframe');
-        if (!iframe) return;
-
-        iframe.src = 'about:blank';
-
-        // 1. Create a pending payment/lead registration in our serverless API
+    async preRegisterLead() {
         const payload = {
             payment_method_id: 'pix',
             transaction_amount: state.shippingCost,
@@ -364,7 +358,7 @@ const app = {
                 phone: state.donor.phone,
                 identification: {
                     type: 'CPF',
-                    number: state.donor.cpf ? state.donor.cpf.replace(/\D/g, '') : '00000000000'
+                    number: state.donor.cpf ? state.donor.cpf.replace(/\D/g, '') : '24823194047'
                 }
             }
         };
@@ -382,24 +376,6 @@ const app = {
         } catch (err) {
             console.error("Error creating pending lead:", err.message);
         }
-
-        // 2. Generate Kiwify checkout URL with pre-filled parameters
-        const baseUrl = window.KIWIFY_CHECKOUT_URL || "https://pay.kiwify.com.br/XXXXXXX";
-        const queryParams = new URLSearchParams({
-            embed: 'true',
-            name: state.donor.name,
-            email: state.donor.email,
-            phone: state.donor.phone.replace(/\D/g, ''),
-            zipcode: state.donor.cep.replace(/\D/g, ''),
-            street: state.donor.street,
-            number: state.donor.number,
-            complement: state.donor.complement,
-            neighborhood: state.donor.neighborhood,
-            city: state.donor.city,
-            state: state.donor.state
-        });
-
-        iframe.src = `${baseUrl}?${queryParams.toString()}`;
     },
 
     setInputError(inputElement, errorId, hasError) {
@@ -625,11 +601,15 @@ const app = {
             // Show PIX box inside view-success
             document.getElementById('success-pix-container').style.display = 'block';
 
-            // Populate Real QR Code base64 image and text copy key from Mercado Pago!
+            // Populate Real QR Code base64 image and text copy key from payment gateway
             const qrCodeBase64 = data.point_of_interaction.transaction_data.qr_code_base64;
             const qrCodeText = data.point_of_interaction.transaction_data.qr_code;
             
-            document.getElementById('success-pix-qr').src = `data:image/jpeg;base64,${qrCodeBase64}`;
+            if (qrCodeBase64) {
+                document.getElementById('success-pix-qr').src = `data:image/jpeg;base64,${qrCodeBase64}`;
+            } else if (qrCodeText) {
+                document.getElementById('success-pix-qr').src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(qrCodeText)}`;
+            }
             document.getElementById('success-pix-code').value = qrCodeText;
             
             // Navigate to success view
@@ -1031,9 +1011,9 @@ const app = {
         document.getElementById('form-shipping').reset();
         
         // Clear state
-        state.shippingType = 'normal';
-        state.shippingCost = 10.00;
-        state.totalCost = 10.00;
+        state.shippingType = 'benfeitor';
+        state.shippingCost = 50.00;
+        state.totalCost = 50.00;
         state.paymentMethod = 'pix';
         state.donor.size = 'M';
         
@@ -1045,7 +1025,7 @@ const app = {
         const checkoutSizeDisp = document.getElementById('checkoutDisplaySize');
         if (checkoutSizeDisp) checkoutSizeDisp.textContent = 'M';
         
-        this.updateShipping(10.00, 'normal');
+        this.updateShipping(50.00, 'benfeitor');
         this.switchPaymentTab('pix');
         
         window.scrollTo({ top: 0 });

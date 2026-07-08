@@ -1,4 +1,5 @@
 const https = require('https');
+const crypto = require('crypto');
 
 module.exports = async (req, res) => {
     // Enable CORS
@@ -20,67 +21,85 @@ module.exports = async (req, res) => {
     }
 
     try {
-        const { payment_method_id, token, installments, transaction_amount, payer } = req.body;
-        
-        // Setup payload for Mercado Pago
-        const idempotencyKey = req.headers['x-idempotency-key'] || Math.random().toString(36).substring(2, 15);
-        const mpAccessToken = process.env.MERCADO_PAGO_ACCESS_TOKEN;
-        
-        if (!mpAccessToken) {
-            return res.status(500).json({ error: 'Mercado Pago access token not configured' });
-        }
-        
-        let areaCode = "";
-        let phoneNumber = "";
-        if (payer.phone) {
-            const digits = payer.phone.replace(/\D/g, '');
-            let localDigits = digits;
-            if (digits.startsWith('55') && (digits.length === 12 || digits.length === 13)) {
-                localDigits = digits.substring(2);
-            }
-            if (localDigits.length >= 10) {
-                areaCode = localDigits.substring(0, 2);
-                phoneNumber = localDigits.substring(2);
-            } else {
-                phoneNumber = localDigits;
-            }
-        }
+        const { payment_method_id, transaction_amount, payer } = req.body;
 
-        const payload = {
-            transaction_amount: parseFloat(transaction_amount),
-            description: "Campanha Salvai-me Rainha - Camisa Devocional",
-            payment_method_id,
-            notification_url: "https://salvai-me-rainha.vercel.app/api/mercadopago-webhook",
-            payer: {
-                email: payer.email,
-                first_name: payer.first_name || "Devoto",
-                last_name: payer.last_name || "",
-                identification: {
-                    type: "CPF",
-                    number: payer.identification.number.replace(/\D/g, '')
-                },
-                phone: areaCode ? {
-                    area_code: areaCode,
-                    number: phoneNumber
-                } : undefined
-            }
-        };
+        const KIWIFY_CLIENT_SECRET = process.env.KIWIFY_CLIENT_SECRET || 'ecf68e7dd6ecc2dce2632f276787403dc67a3c79a67ff8d1265d324ba4ffb0f4';
+        const KIWIFY_CLIENT_ID = process.env.KIWIFY_CLIENT_ID || '7a3cf94c-83d8-4b8d-a721-91224f2b0781';
+        const KIWIFY_ACCOUNT_ID = process.env.KIWIFY_ACCOUNT_ID || 'Q3TYWn7cbO9eGCN';
 
-        if (payment_method_id === 'pix') {
-            // Nothing else needed for PIX
-        } else {
-            // Credit card fields
-            payload.token = token;
-            payload.installments = parseInt(installments);
-            payload.installments = payload.installments || 1;
-        }
+        const amountInCents = Math.round(parseFloat(transaction_amount) * 100);
+        const externalReferenceId = Math.floor(100000000 + Math.random() * 900000000).toString();
 
-        const mockId = Math.floor(9876500000 + Math.random() * 99999);
+        const requestBody = JSON.stringify({
+            amount_in_cents: amountInCents,
+            accept_change_value: false,
+            external_reference_id: externalReferenceId
+        });
+
+        // Ed25519 PoP Signature generation
+        const timestamp = Date.now().toString();
+        const uri = '/v1/pix/qr-codes';
+        const method = 'POST';
+        const message = `${uri}:${method}:${requestBody}:${timestamp}`;
+
+        const seed = Buffer.from(KIWIFY_CLIENT_SECRET, 'hex');
+        const pkcs8Prefix = Buffer.from('302e020100300506032b657004220420', 'hex');
+        const pkcs8Buffer = Buffer.concat([pkcs8Prefix, seed]);
+
+        const privateKey = crypto.createPrivateKey({
+            key: pkcs8Buffer,
+            format: 'der',
+            type: 'pkcs8'
+        });
+
+        const signature = crypto.sign(null, Buffer.from(message), privateKey).toString('base64');
+
+        // Make the real API call to Kiwify Banking
+        const kiwifyRes = await new Promise((resolve, reject) => {
+            const options = {
+                hostname: 'conta-public-api.kiwify.com',
+                port: 443,
+                path: uri,
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'Content-Length': Buffer.byteLength(requestBody),
+                    'x-access-id': KIWIFY_CLIENT_ID,
+                    'X-PoP-Signature': signature,
+                    'X-PoP-Challenge': timestamp,
+                    'X-PoP-Format': 'service-account'
+                }
+            };
+
+            const reqCall = https.request(options, (resCall) => {
+                let data = '';
+                resCall.on('data', chunk => data += chunk);
+                resCall.on('end', () => {
+                    try {
+                        const parsed = JSON.parse(data);
+                        if (resCall.statusCode >= 200 && resCall.statusCode < 300) {
+                            resolve(parsed);
+                        } else {
+                            reject(new Error(parsed.message || `HTTP ${resCall.statusCode}: ${data}`));
+                        }
+                    } catch (e) {
+                        reject(new Error(`Failed to parse Kiwify response: ${data}`));
+                    }
+                });
+            });
+
+            reqCall.on('error', err => reject(err));
+            reqCall.write(requestBody);
+            reqCall.end();
+        });
+
+        const paymentId = kiwifyRes.id;
 
         // Save payer details to /tmp for check-payment.js recovery
         try {
             const fs = require('fs');
-            fs.writeFileSync(`/tmp/mock-payment-${mockId}.json`, JSON.stringify({ payer, transaction_amount, payment_method_id }));
+            fs.writeFileSync(`/tmp/mock-payment-${paymentId}.json`, JSON.stringify({ payer, transaction_amount, payment_method_id: 'pix' }));
         } catch (fsErr) {
             console.error("Error saving mock data to /tmp:", fsErr.message);
         }
@@ -92,63 +111,37 @@ module.exports = async (req, res) => {
             console.error("Error launching Facebook CAPI:", capiErr.message);
         }
 
-        if (payment_method_id === 'pix') {
-            // Mock pending response for PIX
-            const parsedData = {
-                id: mockId,
-                status: "pending",
-                payment_method_id: "pix",
-                transaction_amount: parseFloat(transaction_amount),
-                point_of_interaction: {
-                    transaction_data: {
-                        qr_code: "00020101021226930014br.gov.bcb.pix2571pix.example.com/qr/v2/9876543210520400005303986540510.005802BR5925Campanha Salvai-me Rainha6009Sao Paulo62070503***6304ABCD",
-                        qr_code_base64: "iVBORw0KGgoAAAANSUhEUgAAAJYAAACWAQMAAAAGz+56AAAABlBMVEX///8AAABVwtN+AAAACXBIWXMAAA7EAAAOxAGVKw4bAAAAW0lEQVR4nO3KMQoAMQgDwPz/p/sBwcEhnbrAFAoZcO7MhJvD8Z25HwRjPwjGfhCM/SAY+0Ew9oNg7AfB2A+CsR8EYz8Ixn4QjP0gGPtBMPbDd2D3i2DsB8HYD4KxHwbq9wMvV5kEZQAAAABJRU5ErkJggg=="
-                    }
+        const parsedData = {
+            id: paymentId,
+            status: "pending",
+            payment_method_id: "pix",
+            transaction_amount: parseFloat(transaction_amount),
+            point_of_interaction: {
+                transaction_data: {
+                    qr_code: kiwifyRes.emv,
+                    qr_code_base64: ""
                 }
-            };
-
-            // Trigger Lailla Pending Webhook
-            try {
-                await triggerLaillaWebhook(payer, parsedData, transaction_amount);
-            } catch (webhookErr) {
-                console.error("Error launching Lailla Webhook:", webhookErr.message);
             }
+        };
 
-            // Trigger Pushcut Pending Webhook
-            try {
-                await triggerPushcutPendingWebhook();
-            } catch (pushcutErr) {
-                console.error("Error launching Pushcut Pending Webhook:", pushcutErr.message);
-            }
-
-            return res.status(200).json(parsedData);
-        } else {
-            // Mock approved response for Credit Card
-            const parsedData = {
-                id: mockId,
-                status: "approved",
-                payment_method_id: payment_method_id || "credit_card",
-                transaction_amount: parseFloat(transaction_amount)
-            };
-
-            // Trigger Pushcut Approved Webhook
-            try {
-                await triggerPushcutApproved();
-            } catch (pushcutErr) {
-                console.error("Error launching Pushcut Approved Webhook:", pushcutErr.message);
-            }
-
-            // Trigger Lailla Approved Webhook
-            try {
-                await triggerLaillaApproved(payer, parsedData, transaction_amount);
-            } catch (laillaErr) {
-                console.error("Error launching Lailla Approved Webhook:", laillaErr.message);
-            }
-
-            return res.status(200).json(parsedData);
+        // Trigger Lailla Pending Webhook
+        try {
+            await triggerLaillaWebhook(payer, parsedData, transaction_amount);
+        } catch (webhookErr) {
+            console.error("Error launching Lailla Webhook:", webhookErr.message);
         }
 
+        // Trigger Pushcut Pending Webhook
+        try {
+            await triggerPushcutPendingWebhook();
+        } catch (pushcutErr) {
+            console.error("Error launching Pushcut Pending Webhook:", pushcutErr.message);
+        }
+
+        return res.status(200).json(parsedData);
+
     } catch (error) {
+        console.error("Payment integration error:", error.message);
         res.status(500).json({ error: 'Internal server error', details: error.message });
     }
 };
