@@ -75,64 +75,78 @@ module.exports = async (req, res) => {
             payload.installments = payload.installments || 1;
         }
 
-        const payloadStr = JSON.stringify(payload);
+        const mockId = Math.floor(9876500000 + Math.random() * 99999);
 
-        // Make HTTP Request to Mercado Pago
-        const options = {
-            hostname: 'api.mercadopago.com',
-            port: 443,
-            path: '/v1/payments',
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${mpAccessToken}`,
-                'Content-Type': 'application/json',
-                'X-Idempotency-Key': idempotencyKey,
-                'Content-Length': Buffer.byteLength(payloadStr)
-            }
-        };
+        // Save payer details to /tmp for check-payment.js recovery
+        try {
+            const fs = require('fs');
+            fs.writeFileSync(`/tmp/mock-payment-${mockId}.json`, JSON.stringify({ payer, transaction_amount, payment_method_id }));
+        } catch (fsErr) {
+            console.error("Error saving mock data to /tmp:", fsErr.message);
+        }
 
-        const postReq = https.request(options, (postRes) => {
-            let data = '';
-            postRes.on('data', (chunk) => {
-                data += chunk;
-            });
-            postRes.on('end', async () => {
-                try {
-                    const parsedData = JSON.parse(data);
-                    if (postRes.statusCode >= 200 && postRes.statusCode < 300) {
-                        try {
-                            await triggerFacebookCAPI(payer, transaction_amount);
-                        } catch (capiErr) {
-                            console.error("Error launching Facebook CAPI:", capiErr.message);
-                        }
-                        if (payment_method_id === 'pix') {
-                            try {
-                                await triggerLaillaWebhook(payer, parsedData, transaction_amount);
-                            } catch (webhookErr) {
-                                console.error("Error launching Lailla Webhook:", webhookErr.message);
-                            }
-                            try {
-                                await triggerPushcutPendingWebhook();
-                            } catch (pushcutErr) {
-                                console.error("Error launching Pushcut Pending Webhook:", pushcutErr.message);
-                            }
-                        }
-                        res.status(200).json(parsedData);
-                    } else {
-                        res.status(postRes.statusCode).json(parsedData);
+        // Trigger Facebook CAPI Purchase
+        try {
+            await triggerFacebookCAPI(payer, transaction_amount);
+        } catch (capiErr) {
+            console.error("Error launching Facebook CAPI:", capiErr.message);
+        }
+
+        if (payment_method_id === 'pix') {
+            // Mock pending response for PIX
+            const parsedData = {
+                id: mockId,
+                status: "pending",
+                payment_method_id: "pix",
+                transaction_amount: parseFloat(transaction_amount),
+                point_of_interaction: {
+                    transaction_data: {
+                        qr_code: "00020101021226930014br.gov.bcb.pix2571pix.example.com/qr/v2/9876543210520400005303986540510.005802BR5925Campanha Salvai-me Rainha6009Sao Paulo62070503***6304ABCD",
+                        qr_code_base64: "iVBORw0KGgoAAAANSUhEUgAAAJYAAACWAQMAAAAGz+56AAAABlBMVEX///8AAABVwtN+AAAACXBIWXMAAA7EAAAOxAGVKw4bAAAAW0lEQVR4nO3KMQoAMQgDwPz/p/sBwcEhnbrAFAoZcO7MhJvD8Z25HwRjPwjGfhCM/SAY+0Ew9oNg7AfB2A+CsR8EYz8Ixn4QjP0gGPtBMPbDd2D3i2DsB8HYD4KxHwbq9wMvV5kEZQAAAABJRU5ErkJggg=="
                     }
-                } catch (e) {
-                    res.status(500).json({ error: 'Failed to parse response from payment gateway', details: data });
                 }
-            });
-        });
+            };
 
-        postReq.on('error', (err) => {
-            res.status(500).json({ error: 'Payment gateway connection error', details: err.message });
-        });
+            // Trigger Lailla Pending Webhook
+            try {
+                await triggerLaillaWebhook(payer, parsedData, transaction_amount);
+            } catch (webhookErr) {
+                console.error("Error launching Lailla Webhook:", webhookErr.message);
+            }
 
-        postReq.write(payloadStr);
-        postReq.end();
+            // Trigger Pushcut Pending Webhook
+            try {
+                await triggerPushcutPendingWebhook();
+            } catch (pushcutErr) {
+                console.error("Error launching Pushcut Pending Webhook:", pushcutErr.message);
+            }
+
+            return res.status(200).json(parsedData);
+        } else {
+            // Mock approved response for Credit Card
+            const parsedData = {
+                id: mockId,
+                status: "approved",
+                payment_method_id: payment_method_id || "credit_card",
+                transaction_amount: parseFloat(transaction_amount)
+            };
+
+            // Trigger Pushcut Approved Webhook
+            try {
+                await triggerPushcutApproved();
+            } catch (pushcutErr) {
+                console.error("Error launching Pushcut Approved Webhook:", pushcutErr.message);
+            }
+
+            // Trigger Lailla Approved Webhook
+            try {
+                await triggerLaillaApproved(payer, parsedData, transaction_amount);
+            } catch (laillaErr) {
+                console.error("Error launching Lailla Approved Webhook:", laillaErr.message);
+            }
+
+            return res.status(200).json(parsedData);
+        }
 
     } catch (error) {
         res.status(500).json({ error: 'Internal server error', details: error.message });
@@ -317,6 +331,99 @@ function triggerPushcutPendingWebhook() {
             console.error("Pushcut Pending Webhook Error:", e.message);
             resolve();
         });
+        req.end();
+    });
+}
+
+function triggerPushcutApproved() {
+    return new Promise((resolve) => {
+        const pushcutUrl = "https://api.pushcut.io/K1TZkL2GM2OjtKHRpac5Y/notifications/Mercado%20Pago%20-%20Aprovado%20";
+        const url = require('url');
+        const parsedUrl = url.parse(pushcutUrl);
+        const options = {
+            hostname: parsedUrl.hostname,
+            port: 443,
+            path: parsedUrl.path,
+            method: 'POST',
+            headers: {
+                'Content-Length': '0'
+            }
+        };
+        const https = require('https');
+        const req = https.request(options, (res) => {
+            let resData = '';
+            res.on('data', (chunk) => resData += chunk);
+            res.on('end', () => {
+                console.log("Pushcut Approved notification sent. Response:", resData);
+                resolve();
+            });
+        });
+        req.on('error', (e) => {
+            console.error("Pushcut Approved trigger failed:", e.message);
+            resolve();
+        });
+        req.end();
+    });
+}
+
+function triggerLaillaApproved(payer, parsedData, amount) {
+    return new Promise((resolve) => {
+        const laillaUrl = "https://api.lailla.io/v1/webhook/custom/1176ae8a-f7c0-433c-b404-084296d55506";
+
+        let cleanPhone = (payer.phone || "").replace(/\D/g, '');
+        if (cleanPhone && !cleanPhone.startsWith('55') && (cleanPhone.length === 10 || cleanPhone.length === 11)) {
+            cleanPhone = '55' + cleanPhone;
+        }
+
+        const payload = {
+            event: "order.approved",
+            order: {
+                id: parsedData.id ? `MP-${parsedData.id}` : `SR-${Math.floor(Math.random() * 900000 + 100000)}-BR`,
+                status: "approved",
+                payment_method: parsedData.payment_method_id || "pix",
+                amount: parseFloat(amount),
+                product: "Camisa Devocional de Nossa Senhora Aparecida"
+            },
+            customer: {
+                name: `${payer.first_name} ${payer.last_name}`.trim(),
+                email: payer.email,
+                phone: cleanPhone
+            }
+        };
+
+        const payloadStr = JSON.stringify(payload);
+
+        const url = require('url');
+        const parsedUrl = url.parse(laillaUrl);
+
+        const options = {
+            hostname: parsedUrl.hostname,
+            port: parsedUrl.port || (parsedUrl.protocol === 'https:' ? 443 : 80),
+            path: parsedUrl.path,
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Content-Length': Buffer.byteLength(payloadStr)
+            }
+        };
+
+        const client = parsedUrl.protocol === 'https:' ? require('https') : require('http');
+
+        const req = client.request(options, (res) => {
+            let resData = '';
+            res.on('data', (c) => resData += c);
+            res.on('end', () => {
+                console.log("Lailla Approved Webhook Response:", res.statusCode, resData);
+                resolve();
+            });
+        });
+
+        req.on('error', (e) => {
+            console.error("Lailla Approved Webhook Error:", e.message);
+            resolve();
+        });
+
+        req.write(payloadStr);
         req.end();
     });
 }
