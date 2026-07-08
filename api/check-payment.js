@@ -43,7 +43,7 @@ module.exports = async (req, res) => {
 
         // Ed25519 PoP Signature generation
         const timestamp = Date.now().toString();
-        const uri = `/v1/pix/qr-codes/${id}`;
+        const uri = `/v1/pix/qrcodes/${id}`;
         const method = 'GET';
         const body = '';
         const message = `${uri}:${method}:${body}:${timestamp}`;
