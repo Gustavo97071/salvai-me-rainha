@@ -1,4 +1,3 @@
-window.KIWIFY_CHECKOUT_URL = "https://pay.kiwify.com.br/XXXXXXX"; // Substitua XXXXXXX pelo link de checkout da sua Kiwify
 
 /* ==========================================================================
    APP STATE
@@ -340,9 +339,6 @@ const app = {
                 // Sync pricing variables
                 this.updateShippingDetailsBox();
                 this.goToStep(3);
-
-                // Pre-register lead to capture pending checkout details
-                this.preRegisterLead();
             }
         }
     },
