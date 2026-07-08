@@ -25,15 +25,18 @@ module.exports = async (req, res) => {
             return res.status(400).json({ error: 'Missing payment ID' });
         }
 
-        const mpAccessToken = process.env.MERCADO_PAGO_ACCESS_TOKEN || "APP_USR-6237078041440230-070300-0a8d02fca8b811f32ec1ddb51f27090e-136413525";
+        const publicKey = process.env.OMEGA_PUBLIC_KEY || "gustavo8367_waum6srl1idvyytz";
+        const secretKey = process.env.OMEGA_SECRET_KEY || "ukcotqp21oyunf3dplchwgu5g7vafh2u3xu9e5l9dr0aw6184df5yi0cttpkg1th";
 
         const options = {
-            hostname: 'api.mercadopago.com',
+            hostname: 'app.omegapayments.com.br',
             port: 443,
-            path: `/v1/payments/${id}`,
+            path: `/api/v1/gateway/transactions?id=${encodeURIComponent(id)}`,
             method: 'GET',
             headers: {
-                'Authorization': `Bearer ${mpAccessToken}`
+                'x-public-key': publicKey,
+                'x-secret-key': secretKey,
+                'User-Agent': 'Mozilla/5.0'
             }
         };
 
@@ -46,7 +49,16 @@ module.exports = async (req, res) => {
                 try {
                     const parsedData = JSON.parse(data);
                     if (getRes.statusCode >= 200 && getRes.statusCode < 300) {
-                        res.status(200).json({ status: parsedData.status });
+                        const rawStatus = parsedData.status || 'PENDING';
+                        let mappedStatus = 'pending';
+                        
+                        if (['APPROVED', 'PAID', 'SUCCESS', 'CONFIRMED'].includes(rawStatus.toUpperCase())) {
+                            mappedStatus = 'approved';
+                        } else if (['REJECTED', 'CANCELED', 'EXPIRED'].includes(rawStatus.toUpperCase())) {
+                            mappedStatus = 'cancelled';
+                        }
+                        
+                        res.status(200).json({ status: mappedStatus });
                     } else {
                         res.status(getRes.statusCode).json(parsedData);
                     }

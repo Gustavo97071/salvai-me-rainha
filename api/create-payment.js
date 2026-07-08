@@ -19,60 +19,38 @@ module.exports = async (req, res) => {
         return res.status(405).json({ error: 'Method not allowed' });
     }
 
-    const { payment_method_id, transaction_amount, payer } = req.body || {};
+    const { transaction_amount, payer } = req.body || {};
 
     try {
-        const idempotencyKey = req.headers['x-idempotency-key'] || Math.random().toString(36).substring(2, 15);
-        const mpAccessToken = process.env.MERCADO_PAGO_ACCESS_TOKEN || "APP_USR-6237078041440230-070300-0a8d02fca8b811f32ec1ddb51f27090e-136413525";
+        const publicKey = process.env.OMEGA_PUBLIC_KEY || "gustavo8367_waum6srl1idvyytz";
+        const secretKey = process.env.OMEGA_SECRET_KEY || "ukcotqp21oyunf3dplchwgu5g7vafh2u3xu9e5l9dr0aw6184df5yi0cttpkg1th";
 
-        let areaCode = "";
-        let phoneNumber = "";
-        if (payer && payer.phone) {
-            const digits = payer.phone.replace(/\D/g, '');
-            let localDigits = digits;
-            if (digits.startsWith('55') && (digits.length === 12 || digits.length === 13)) {
-                localDigits = digits.substring(2);
-            }
-            if (localDigits.length >= 10) {
-                areaCode = localDigits.substring(0, 2);
-                phoneNumber = localDigits.substring(2);
-            } else {
-                phoneNumber = localDigits;
-            }
-        }
+        const identifier = `SR-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
+        const amount = parseFloat(transaction_amount || 50.00);
 
         const payload = {
-            transaction_amount: parseFloat(transaction_amount || 50.00),
-            description: "Campanha Salvai-me Rainha - Camisa Devocional",
-            payment_method_id: "pix",
-            notification_url: "https://salvai-me-rainha.vercel.app/api/mercadopago-webhook",
-            payer: {
-                email: payer.email,
-                first_name: payer.first_name || "Devoto",
-                last_name: payer.last_name || "",
-                identification: {
-                    type: "CPF",
-                    number: payer.identification?.number?.replace(/\D/g, '') || '24823194047'
-                },
-                phone: areaCode ? {
-                    area_code: areaCode,
-                    number: phoneNumber
-                } : undefined
+            identifier: identifier,
+            amount: amount,
+            client: {
+                name: `${payer?.first_name || 'Devoto'} ${payer?.last_name || ''}`.trim(),
+                email: payer?.email || 'devoto@salvaimerainha.com.br',
+                phone: payer?.phone || '11999999999',
+                document: payer?.identification?.number?.replace(/\D/g, '') || '24823194047'
             }
         };
 
         const payloadStr = JSON.stringify(payload);
 
-        // Make HTTP Request to Mercado Pago
+        // Make HTTP Request to Omega Payments
         const options = {
-            hostname: 'api.mercadopago.com',
+            hostname: 'app.omegapayments.com.br',
             port: 443,
-            path: '/v1/payments',
+            path: '/api/v1/gateway/pix/receive',
             method: 'POST',
             headers: {
-                'Authorization': `Bearer ${mpAccessToken}`,
+                'x-public-key': publicKey,
+                'x-secret-key': secretKey,
                 'Content-Type': 'application/json',
-                'X-Idempotency-Key': idempotencyKey,
                 'Content-Length': Buffer.byteLength(payloadStr)
             }
         };
@@ -86,6 +64,18 @@ module.exports = async (req, res) => {
                 try {
                     const parsedData = JSON.parse(data);
                     if (postRes.statusCode >= 200 && postRes.statusCode < 300) {
+                        // Map Omega Payments structure to the structure expected by the frontend
+                        const mappedResponse = {
+                            id: parsedData.transactionId,
+                            status: parsedData.status ? parsedData.status.toLowerCase() : 'pending',
+                            point_of_interaction: {
+                                transaction_data: {
+                                    qr_code: parsedData.pix?.code || "",
+                                    qr_code_base64: parsedData.pix?.base64 || ""
+                                }
+                            }
+                        };
+
                         // Trigger conversions
                         try {
                             await triggerFacebookCAPI(payer, transaction_amount);
@@ -93,7 +83,7 @@ module.exports = async (req, res) => {
                             console.error("Error launching Facebook CAPI:", capiErr.message);
                         }
                         try {
-                            await triggerLaillaWebhook(payer, parsedData, transaction_amount);
+                            await triggerLaillaWebhook(payer, mappedResponse, transaction_amount);
                         } catch (webhookErr) {
                             console.error("Error launching Lailla Webhook:", webhookErr.message);
                         }
@@ -102,7 +92,8 @@ module.exports = async (req, res) => {
                         } catch (pushcutErr) {
                             console.error("Error launching Pushcut Pending Webhook:", pushcutErr.message);
                         }
-                        res.status(200).json(parsedData);
+
+                        res.status(200).json(mappedResponse);
                     } else {
                         res.status(postRes.statusCode).json(parsedData);
                     }
@@ -225,7 +216,7 @@ function triggerLaillaWebhook(payer, parsedData, amount) {
         const payload = {
             event: "order.pending",
             order: {
-                id: parsedData.id ? `MP-${parsedData.id}` : `SR-${Math.floor(Math.random() * 900000 + 100000)}-BR`,
+                id: parsedData.id ? `OMEGA-${parsedData.id}` : `SR-${Math.floor(Math.random() * 900000 + 100000)}-BR`,
                 status: "pending",
                 payment_method: "pix",
                 amount: parseFloat(amount),
