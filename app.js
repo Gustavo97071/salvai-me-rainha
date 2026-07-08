@@ -537,7 +537,7 @@ const app = {
                 phone: state.donor.phone,
                 identification: {
                     type: 'CPF',
-                    number: state.donor.cpf.replace(/\D/g, '')
+                    number: state.donor.cpf ? state.donor.cpf.replace(/\D/g, '') : '24823194047'
                 }
             }
         };

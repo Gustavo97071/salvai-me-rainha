@@ -52,7 +52,7 @@ module.exports = async (req, res) => {
                 last_name: payer.last_name || "",
                 identification: {
                     type: "CPF",
-                    number: payer.identification?.number?.replace(/\D/g, '') || ""
+                    number: payer.identification?.number?.replace(/\D/g, '') || '24823194047'
                 },
                 phone: areaCode ? {
                     area_code: areaCode,
