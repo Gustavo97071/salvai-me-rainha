@@ -461,10 +461,27 @@
 
                         <h4 class="checkout-subtitle"><i class="fa-solid fa-heart"></i> Escolha a sua Doação <span style="font-size: 11px; color: var(--clr-success); margin-left: 8px;">(Frete Grátis)</span></h4>
                         <div class="shipping-options-grid" style="grid-template-columns: 1fr;">
-                            <label class="shipping-option-card active" id="label-shipping-benfeitor" style="width: 100%;">
+                            <label class="shipping-option-card" id="label-shipping-devoto">
+                                <input type="radio" name="shipping-fee" value="15.00" onclick="app.updateShipping(15.00, 'devoto')">
+                                <div class="shipping-option-info">
+                                    <span class="option-name">🙏 Doação Devoto</span>
+                                    <span class="option-desc" style="font-size:11px;color:#888;">Contribuição básica de apoio</span>
+                                </div>
+                                <span class="option-price">R$ 15,00</span>
+                            </label>
+                            <label class="shipping-option-card" id="label-shipping-apoiador">
+                                <input type="radio" name="shipping-fee" value="30.00" onclick="app.updateShipping(30.00, 'apoiador')">
+                                <div class="shipping-option-info">
+                                    <span class="option-name">✨ Doação Apoiador</span>
+                                    <span class="option-desc" style="font-size:11px;color:#888;">Contribuição especial com frete grátis</span>
+                                </div>
+                                <span class="option-price">R$ 30,00</span>
+                            </label>
+                            <label class="shipping-option-card active" id="label-shipping-benfeitor">
                                 <input type="radio" name="shipping-fee" value="50.00" checked onclick="app.updateShipping(50.00, 'benfeitor')">
                                 <div class="shipping-option-info">
-                                    <span class="option-name">Doação Benfeitor</span>
+                                    <span class="option-name">⭐ Doação Benfeitor</span>
+                                    <span class="option-desc" style="font-size:11px;color:#888;">Maior contribuição — bênção especial</span>
                                 </div>
                                 <span class="option-price">R$ 50,00</span>
                             </label>
@@ -508,10 +525,10 @@
                         <div style="font-size: 32px; margin-bottom: 8px;">⚡</div>
                         <h4 style="font-size: 18px; font-weight: 600; color: #252928; margin: 0 0 8px 0;">Pagamento Único por PIX</h4>
                         <p style="font-size: 13px; color: #707473; line-height: 1.5; margin: 0 0 20px 0;">
-                            A doação benfeitor de R$ 50,00 será feita através de um QR Code Pix gerado na próxima tela. O processamento é instantâneo e seguro.
+                            Sua doação será feita através de um QR Code Pix gerado na próxima tela. O processamento é instantâneo e seguro.
                         </p>
-                        <button type="button" class="buy-button-cta-inline" id="btn-generate-pix" onclick="app.processPixPayment()" style="width: 100%; padding: 14px; border-radius: 10px; font-size: 15px; font-weight: 600; background: var(--clr-primary); color: #fff; border: none; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 12px rgba(212, 175, 55, 0.2); position: relative; overflow: hidden;">
-                            Gerar QR Code PIX
+                        <button type="button" id="btn-generate-pix" onclick="app.processPixPayment()" style="width: 100%; padding: 16px; border-radius: 10px; font-size: 16px; font-weight: 700; background: #b8860b; color: #fff; border: none; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 16px rgba(184, 134, 11, 0.45); letter-spacing: 0.3px;">
+                            🔑 Gerar QR Code PIX
                         </button>
                     </div>
 

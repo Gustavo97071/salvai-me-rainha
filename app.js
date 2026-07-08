@@ -432,14 +432,12 @@ const app = {
         state.totalCost = cost; // product is 0, so total is just donation
 
         // Adjust active shipping cards styles
-        const normalCard = document.getElementById('label-shipping-normal');
-        const sedexCard = document.getElementById('label-shipping-sedex');
-        const testCard = document.getElementById('label-shipping-test');
+        const devotoCard = document.getElementById('label-shipping-devoto');
+        const apoiadorCard = document.getElementById('label-shipping-apoiador');
         const benfeitorCard = document.getElementById('label-shipping-benfeitor');
 
-        if (normalCard) normalCard.classList.toggle('active', type === 'normal');
-        if (sedexCard) sedexCard.classList.toggle('active', type === 'sedex');
-        if (testCard) testCard.classList.toggle('active', type === 'test');
+        if (devotoCard) devotoCard.classList.toggle('active', type === 'devoto');
+        if (apoiadorCard) apoiadorCard.classList.toggle('active', type === 'apoiador');
         if (benfeitorCard) benfeitorCard.classList.toggle('active', type === 'benfeitor');
 
         this.updateShippingDetailsBox();
@@ -447,10 +445,8 @@ const app = {
 
     updateShippingDetailsBox() {
         let typeText = 'Doação Devoto (Frete Grátis)';
-        if (state.shippingType === 'sedex') {
-            typeText = 'Doação Protetor (Frete Grátis)';
-        } else if (state.shippingType === 'test') {
-            typeText = 'Doação Padrinho (Frete Grátis)';
+        if (state.shippingType === 'apoiador') {
+            typeText = 'Doação Apoiador (Frete Grátis)';
         } else if (state.shippingType === 'benfeitor') {
             typeText = 'Doação Benfeitor (Frete Grátis)';
         }
