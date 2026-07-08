@@ -1,6 +1,4 @@
-const fs = require('fs');
 const https = require('https');
-const crypto = require('crypto');
 
 module.exports = async (req, res) => {
     // Enable CORS
@@ -21,219 +19,50 @@ module.exports = async (req, res) => {
         return res.status(405).json({ error: 'Method not allowed' });
     }
 
-    const { id } = req.query || {};
-
     try {
+        const { id } = req.query;
         if (!id) {
             return res.status(400).json({ error: 'Missing payment ID' });
         }
 
-        const KIWIFY_CLIENT_SECRET = process.env.KIWIFY_CLIENT_SECRET || 'ad6b89a6580466a0f368dbecda2834de2f5550f98a48be0e8751c8be24bf15b1';
-        const KIWIFY_CLIENT_ID = process.env.KIWIFY_CLIENT_ID || '7162d82c-3575-488d-9117-032a84ee07f3';
+        const mpAccessToken = process.env.MERCADO_PAGO_ACCESS_TOKEN || "APP_USR-6237078041440230-070300-0a8d02fca8b811f32ec1ddb51f27090e-136413525";
 
-        // Check if we have payer info stored in /tmp
-        const filepath = `/tmp/mock-payment-${id}.json`;
-        let payerInfo = null;
-        if (fs.existsSync(filepath)) {
-            try {
-                payerInfo = JSON.parse(fs.readFileSync(filepath, 'utf-8'));
-            } catch (err) {
-                console.error("Error reading payer info file:", err.message);
+        const options = {
+            hostname: 'api.mercadopago.com',
+            port: 443,
+            path: `/v1/payments/${id}`,
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${mpAccessToken}`
             }
-        }
+        };
 
-        // Mock payment handler for testing and resilience
-        if (id.toString().startsWith('mock_')) {
-            if (payerInfo) {
-                try {
-                    await triggerPushcutApproved();
-                    await triggerLaillaApproved(payerInfo.payer, id.replace('mock_', ''), payerInfo.transaction_amount, 'pix');
-                    if (fs.existsSync(filepath)) {
-                        fs.unlinkSync(filepath);
-                    }
-                } catch (webhookErr) {
-                    console.error("Error triggering mock approved webhooks:", webhookErr.message);
-                }
-            }
-            return res.status(200).json({ status: 'approved' });
-        }
-
-        // Ed25519 PoP Signature generation
-        const timestamp = Date.now().toString();
-        const uri = `/v1/dynamic-qrcode/${id}`;
-        const method = 'GET';
-        const body = '';
-        const message = `${uri}:${method}:${body}:${timestamp}`;
-
-        const seed = Buffer.from(KIWIFY_CLIENT_SECRET, 'hex');
-        const pkcs8Prefix = Buffer.from('302e020100300506032b657004220420', 'hex');
-        const pkcs8Buffer = Buffer.concat([pkcs8Prefix, seed]);
-
-        const privateKey = crypto.createPrivateKey({
-            key: pkcs8Buffer,
-            format: 'der',
-            type: 'pkcs8'
-        });
-
-        const signature = crypto.sign(null, Buffer.from(message), privateKey).toString('base64');
-
-        // Call Kiwify Banking GET endpoint
-        const kiwifyRes = await new Promise((resolve, reject) => {
-            const options = {
-                hostname: 'conta-public-api.kiwify.com',
-                port: 443,
-                path: uri,
-                method: method,
-                headers: {
-                    'Accept': 'application/json',
-                    'x-access-id': KIWIFY_CLIENT_ID,
-                    'X-PoP-Signature': signature,
-                    'X-PoP-Challenge': timestamp,
-                    'X-PoP-Format': 'service-account'
-                }
-            };
-
-            const reqCall = https.request(options, (resCall) => {
-                let data = '';
-                resCall.on('data', chunk => data += chunk);
-                resCall.on('end', () => {
-                    try {
-                        const parsed = JSON.parse(data);
-                        if (resCall.statusCode >= 200 && resCall.statusCode < 300) {
-                            resolve(parsed);
-                        } else {
-                            reject(new Error(parsed.message || `HTTP ${resCall.statusCode}: ${data}`));
-                        }
-                    } catch (e) {
-                        reject(new Error(`Failed to parse Kiwify response: ${data}`));
-                    }
-                });
+        const getReq = https.request(options, (getRes) => {
+            let data = '';
+            getRes.on('data', (chunk) => {
+                data += chunk;
             });
-
-            reqCall.on('error', err => reject(err));
-            reqCall.end();
+            getRes.on('end', () => {
+                try {
+                    const parsedData = JSON.parse(data);
+                    if (getRes.statusCode >= 200 && getRes.statusCode < 300) {
+                        res.status(200).json({ status: parsedData.status });
+                    } else {
+                        res.status(getRes.statusCode).json(parsedData);
+                    }
+                } catch (e) {
+                    res.status(500).json({ error: 'Failed to parse response from payment gateway', details: data });
+                }
+            });
         });
 
-        // status values: 'waiting_payment', 'paid', 'cancelled'
-        if (kiwifyRes.status === 'paid') {
-            // Trigger webhooks if we have the payer info and it was not triggered yet
-            if (payerInfo) {
-                try {
-                    await triggerPushcutApproved();
-                    await triggerLaillaApproved(payerInfo.payer, id, payerInfo.transaction_amount, 'pix');
-                    
-                    // Delete the file to prevent double triggers on subsequent polling requests
-                    fs.unlinkSync(filepath);
-                } catch (webhookErr) {
-                    console.error("Error triggering approved webhooks:", webhookErr.message);
-                }
-            }
-            return res.status(200).json({ status: 'approved' });
-        } else if (kiwifyRes.status === 'cancelled') {
-            if (fs.existsSync(filepath)) {
-                fs.unlinkSync(filepath);
-            }
-            return res.status(200).json({ status: 'cancelled' });
-        } else {
-            return res.status(200).json({ status: 'pending' });
-        }
+        getReq.on('error', (err) => {
+            res.status(500).json({ error: 'Payment gateway connection error', details: err.message });
+        });
+
+        getReq.end();
 
     } catch (error) {
-        console.error("Payment check error:", error.message);
-        // If Kiwify check fails (e.g. sandbox credentials, network error), fallback to mock behavior to ensure testability
-        return res.status(200).json({ status: 'pending' });
+        res.status(500).json({ error: 'Internal server error', details: error.message });
     }
 };
-
-function triggerPushcutApproved() {
-    return new Promise((resolve) => {
-        const pushcutUrl = "https://api.pushcut.io/K1TZkL2GM2OjtKHRpac5Y/notifications/Mercado%20Pago%20-%20Aprovado%20";
-        const url = require('url');
-        const parsedUrl = url.parse(pushcutUrl);
-        const options = {
-            hostname: parsedUrl.hostname,
-            port: 443,
-            path: parsedUrl.path,
-            method: 'POST',
-            headers: {
-                'Content-Length': '0'
-            }
-        };
-        const https = require('https');
-        const req = https.request(options, (res) => {
-            let resData = '';
-            res.on('data', (chunk) => resData += chunk);
-            res.on('end', () => {
-                console.log("Pushcut Approved notification sent from check-payment. Response:", resData);
-                resolve();
-            });
-        });
-        req.on('error', (e) => {
-            console.error("Pushcut Approved trigger failed in check-payment:", e.message);
-            resolve();
-        });
-        req.end();
-    });
-}
-
-function triggerLaillaApproved(payer, id, amount, payment_method_id) {
-    return new Promise((resolve) => {
-        const laillaUrl = "https://api.lailla.io/v1/webhook/custom/1176ae8a-f7c0-433c-b404-084296d55506";
-
-        let cleanPhone = (payer.phone || "").replace(/\D/g, '');
-        if (cleanPhone && !cleanPhone.startsWith('55') && (cleanPhone.length === 10 || cleanPhone.length === 11)) {
-            cleanPhone = '55' + cleanPhone;
-        }
-
-        const payload = {
-            event: "order.approved",
-            order: {
-                id: `MP-${id}`,
-                status: "approved",
-                payment_method: payment_method_id || "pix",
-                amount: parseFloat(amount),
-                product: "Camisa Devocional de Nossa Senhora Aparecida"
-            },
-            customer: {
-                name: `${payer.first_name || ""} ${payer.last_name || ""}`.trim() || "Devoto",
-                email: payer.email || "",
-                phone: cleanPhone
-            }
-        };
-
-        const payloadStr = JSON.stringify(payload);
-
-        const url = require('url');
-        const parsedUrl = url.parse(laillaUrl);
-
-        const options = {
-            hostname: parsedUrl.hostname,
-            port: parsedUrl.port || (parsedUrl.protocol === 'https:' ? 443 : 80),
-            path: parsedUrl.path,
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Content-Length': Buffer.byteLength(payloadStr)
-            }
-        };
-
-        const client = parsedUrl.protocol === 'https:' ? require('https') : require('http');
-
-        const req = client.request(options, (res) => {
-            let resData = '';
-            res.on('data', (c) => resData += c);
-            res.on('end', () => {
-                console.log("Lailla Approved Webhook Response from check-payment:", res.statusCode, resData);
-                resolve();
-            });
-        });
-
-        req.on('error', (e) => {
-            console.error("Lailla Approved Webhook Error in check-payment:", e.message);
-            resolve();
-        });
-
-        req.write(payloadStr);
-        req.end();
-    });
-}

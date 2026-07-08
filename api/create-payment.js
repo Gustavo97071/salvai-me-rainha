@@ -1,5 +1,4 @@
 const https = require('https');
-const crypto = require('crypto');
 
 module.exports = async (req, res) => {
     // Enable CORS
@@ -23,174 +22,106 @@ module.exports = async (req, res) => {
     const { payment_method_id, transaction_amount, payer } = req.body || {};
 
     try {
+        const idempotencyKey = req.headers['x-idempotency-key'] || Math.random().toString(36).substring(2, 15);
+        const mpAccessToken = process.env.MERCADO_PAGO_ACCESS_TOKEN || "APP_USR-6237078041440230-070300-0a8d02fca8b811f32ec1ddb51f27090e-136413525";
 
-        const KIWIFY_CLIENT_SECRET = process.env.KIWIFY_CLIENT_SECRET || 'ad6b89a6580466a0f368dbecda2834de2f5550f98a48be0e8751c8be24bf15b1';
-        const KIWIFY_CLIENT_ID = process.env.KIWIFY_CLIENT_ID || '7162d82c-3575-488d-9117-032a84ee07f3';
-        const KIWIFY_ACCOUNT_ID = process.env.KIWIFY_ACCOUNT_ID || 'Q3TYWn7cbO9eGCN';
-
-        const amountInCents = Math.round(parseFloat(transaction_amount) * 100);
-        const externalReferenceId = Math.floor(100000000 + Math.random() * 900000000).toString();
-
-        const requestBody = JSON.stringify({
-            amount_in_cents: amountInCents,
-            accept_change_value: false,
-            external_reference_id: externalReferenceId
-        });
-
-        // Ed25519 PoP Signature generation
-        const timestamp = Date.now().toString();
-        const uri = '/v1/dynamic-qrcode';
-        const method = 'POST';
-        const message = `${uri}:${method}:${requestBody}:${timestamp}`;
-
-        const seed = Buffer.from(KIWIFY_CLIENT_SECRET, 'hex');
-        const pkcs8Prefix = Buffer.from('302e020100300506032b657004220420', 'hex');
-        const pkcs8Buffer = Buffer.concat([pkcs8Prefix, seed]);
-
-        const privateKey = crypto.createPrivateKey({
-            key: pkcs8Buffer,
-            format: 'der',
-            type: 'pkcs8'
-        });
-
-        const signature = crypto.sign(null, Buffer.from(message), privateKey).toString('base64');
-
-        // Make the real API call to Kiwify Banking
-        const kiwifyRes = await new Promise((resolve, reject) => {
-            const options = {
-                hostname: 'conta-public-api.kiwify.com',
-                port: 443,
-                path: uri,
-                method: method,
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                    'Content-Length': Buffer.byteLength(requestBody),
-                    'x-access-id': KIWIFY_CLIENT_ID,
-                    'X-PoP-Signature': signature,
-                    'X-PoP-Challenge': timestamp,
-                    'X-PoP-Format': 'service-account'
-                }
-            };
-
-            const reqCall = https.request(options, (resCall) => {
-                let data = '';
-                resCall.on('data', chunk => data += chunk);
-                resCall.on('end', () => {
-                    try {
-                        const parsed = JSON.parse(data);
-                        if (resCall.statusCode >= 200 && resCall.statusCode < 300) {
-                            resolve(parsed);
-                        } else {
-                            reject(new Error(parsed.message || `HTTP ${resCall.statusCode}: ${data}`));
-                        }
-                    } catch (e) {
-                        reject(new Error(`Failed to parse Kiwify response: ${data}`));
-                    }
-                });
-            });
-
-            reqCall.on('error', err => reject(err));
-            reqCall.write(requestBody);
-            reqCall.end();
-        });
-
-        const paymentId = kiwifyRes.id;
-
-        // Save payer details to /tmp for check-payment.js recovery
-        try {
-            const fs = require('fs');
-            fs.writeFileSync(`/tmp/mock-payment-${paymentId}.json`, JSON.stringify({ payer, transaction_amount, payment_method_id: 'pix' }));
-        } catch (fsErr) {
-            console.error("Error saving mock data to /tmp:", fsErr.message);
+        let areaCode = "";
+        let phoneNumber = "";
+        if (payer && payer.phone) {
+            const digits = payer.phone.replace(/\D/g, '');
+            let localDigits = digits;
+            if (digits.startsWith('55') && (digits.length === 12 || digits.length === 13)) {
+                localDigits = digits.substring(2);
+            }
+            if (localDigits.length >= 10) {
+                areaCode = localDigits.substring(0, 2);
+                phoneNumber = localDigits.substring(2);
+            } else {
+                phoneNumber = localDigits;
+            }
         }
 
-        // Trigger Facebook CAPI Purchase
-        try {
-            await triggerFacebookCAPI(payer, transaction_amount);
-        } catch (capiErr) {
-            console.error("Error launching Facebook CAPI:", capiErr.message);
-        }
-
-        const parsedData = {
-            id: paymentId,
-            status: "pending",
+        const payload = {
+            transaction_amount: parseFloat(transaction_amount || 50.00),
+            description: "Campanha Salvai-me Rainha - Camisa Devocional",
             payment_method_id: "pix",
-            transaction_amount: parseFloat(transaction_amount),
-            point_of_interaction: {
-                transaction_data: {
-                    qr_code: kiwifyRes.emv,
-                    qr_code_base64: ""
-                }
+            notification_url: "https://salvai-me-rainha.vercel.app/api/mercadopago-webhook",
+            payer: {
+                email: payer.email,
+                first_name: payer.first_name || "Devoto",
+                last_name: payer.last_name || "",
+                identification: {
+                    type: "CPF",
+                    number: payer.identification?.number?.replace(/\D/g, '') || ""
+                },
+                phone: areaCode ? {
+                    area_code: areaCode,
+                    number: phoneNumber
+                } : undefined
             }
         };
 
-        // Trigger Lailla Pending Webhook
-        try {
-            await triggerLaillaWebhook(payer, parsedData, transaction_amount);
-        } catch (webhookErr) {
-            console.error("Error launching Lailla Webhook:", webhookErr.message);
-        }
+        const payloadStr = JSON.stringify(payload);
 
-        // Trigger Pushcut Pending Webhook
-        try {
-            await triggerPushcutPendingWebhook();
-        } catch (pushcutErr) {
-            console.error("Error launching Pushcut Pending Webhook:", pushcutErr.message);
-        }
-
-        return res.status(200).json(parsedData);
-
-    } catch (error) {
-        console.error("Payment integration error (falling back to mock):", error.message);
-        
-        // Generate a mock payment so that the site is testable even if credentials are not active yet
-        const paymentId = `mock_${Math.floor(100000000 + Math.random() * 900000000)}`;
-        
-        // Save payer details to /tmp for check-payment.js recovery
-        try {
-            const fs = require('fs');
-            fs.writeFileSync(`/tmp/mock-payment-${paymentId}.json`, JSON.stringify({ payer, transaction_amount, payment_method_id: 'pix' }));
-        } catch (fsErr) {
-            console.error("Error saving mock data to /tmp:", fsErr.message);
-        }
-
-        const parsedData = {
-            id: paymentId,
-            status: "pending",
-            payment_method_id: "pix",
-            transaction_amount: parseFloat(transaction_amount),
-            point_of_interaction: {
-                transaction_data: {
-                    qr_code: "00020101021226870014br.gov.bcb.pix2565qr.kiwify.com.br/v2/mock-pix-payment-salvai-me-rainha520400005303986540550.005802BR5925Salvai-me Rainha do Brasil6009Sao Paulo62070503***6304ABCD",
-                    qr_code_base64: ""
-                }
-            },
-            is_mock: true
+        // Make HTTP Request to Mercado Pago
+        const options = {
+            hostname: 'api.mercadopago.com',
+            port: 443,
+            path: '/v1/payments',
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${mpAccessToken}`,
+                'Content-Type': 'application/json',
+                'X-Idempotency-Key': idempotencyKey,
+                'Content-Length': Buffer.byteLength(payloadStr)
+            }
         };
 
-        // Trigger Facebook CAPI Purchase immediately in mock mode
-        try {
-            await triggerFacebookCAPI(payer, transaction_amount);
-        } catch (capiErr) {
-            console.error("Error launching Facebook CAPI in mock:", capiErr.message);
-        }
+        const postReq = https.request(options, (postRes) => {
+            let data = '';
+            postRes.on('data', (chunk) => {
+                data += chunk;
+            });
+            postRes.on('end', async () => {
+                try {
+                    const parsedData = JSON.parse(data);
+                    if (postRes.statusCode >= 200 && postRes.statusCode < 300) {
+                        // Trigger conversions
+                        try {
+                            await triggerFacebookCAPI(payer, transaction_amount);
+                        } catch (capiErr) {
+                            console.error("Error launching Facebook CAPI:", capiErr.message);
+                        }
+                        try {
+                            await triggerLaillaWebhook(payer, parsedData, transaction_amount);
+                        } catch (webhookErr) {
+                            console.error("Error launching Lailla Webhook:", webhookErr.message);
+                        }
+                        try {
+                            await triggerPushcutPendingWebhook();
+                        } catch (pushcutErr) {
+                            console.error("Error launching Pushcut Pending Webhook:", pushcutErr.message);
+                        }
+                        res.status(200).json(parsedData);
+                    } else {
+                        res.status(postRes.statusCode).json(parsedData);
+                    }
+                } catch (e) {
+                    res.status(500).json({ error: 'Failed to parse response from payment gateway', details: data });
+                }
+            });
+        });
 
-        // Trigger Lailla Pending Webhook
-        try {
-            await triggerLaillaWebhook(payer, parsedData, transaction_amount);
-        } catch (webhookErr) {
-            console.error("Error launching Lailla Webhook in mock:", webhookErr.message);
-        }
+        postReq.on('error', (err) => {
+            res.status(500).json({ error: 'Payment gateway connection error', details: err.message });
+        });
 
-        // Trigger Pushcut Pending Webhook
-        try {
-            await triggerPushcutPendingWebhook();
-        } catch (pushcutErr) {
-            console.error("Error launching Pushcut Pending Webhook in mock:", pushcutErr.message);
-        }
+        postReq.write(payloadStr);
+        postReq.end();
 
-        return res.status(200).json(parsedData);
+    } catch (error) {
+        console.error("Payment integration error:", error.message);
+        res.status(500).json({ error: 'Internal server error', details: error.message });
     }
 };
 
@@ -296,7 +227,7 @@ function triggerLaillaWebhook(payer, parsedData, amount) {
             order: {
                 id: parsedData.id ? `MP-${parsedData.id}` : `SR-${Math.floor(Math.random() * 900000 + 100000)}-BR`,
                 status: "pending",
-                payment_method: parsedData.payment_method_id || "pix",
+                payment_method: "pix",
                 amount: parseFloat(amount),
                 product: "Camisa Devocional de Nossa Senhora Aparecida",
                 pix_code: parsedData.point_of_interaction?.transaction_data?.qr_code || "",
@@ -372,99 +303,6 @@ function triggerPushcutPendingWebhook() {
             console.error("Pushcut Pending Webhook Error:", e.message);
             resolve();
         });
-        req.end();
-    });
-}
-
-function triggerPushcutApproved() {
-    return new Promise((resolve) => {
-        const pushcutUrl = "https://api.pushcut.io/K1TZkL2GM2OjtKHRpac5Y/notifications/Mercado%20Pago%20-%20Aprovado%20";
-        const url = require('url');
-        const parsedUrl = url.parse(pushcutUrl);
-        const options = {
-            hostname: parsedUrl.hostname,
-            port: 443,
-            path: parsedUrl.path,
-            method: 'POST',
-            headers: {
-                'Content-Length': '0'
-            }
-        };
-        const https = require('https');
-        const req = https.request(options, (res) => {
-            let resData = '';
-            res.on('data', (chunk) => resData += chunk);
-            res.on('end', () => {
-                console.log("Pushcut Approved notification sent. Response:", resData);
-                resolve();
-            });
-        });
-        req.on('error', (e) => {
-            console.error("Pushcut Approved trigger failed:", e.message);
-            resolve();
-        });
-        req.end();
-    });
-}
-
-function triggerLaillaApproved(payer, parsedData, amount) {
-    return new Promise((resolve) => {
-        const laillaUrl = "https://api.lailla.io/v1/webhook/custom/1176ae8a-f7c0-433c-b404-084296d55506";
-
-        let cleanPhone = (payer.phone || "").replace(/\D/g, '');
-        if (cleanPhone && !cleanPhone.startsWith('55') && (cleanPhone.length === 10 || cleanPhone.length === 11)) {
-            cleanPhone = '55' + cleanPhone;
-        }
-
-        const payload = {
-            event: "order.approved",
-            order: {
-                id: parsedData.id ? `MP-${parsedData.id}` : `SR-${Math.floor(Math.random() * 900000 + 100000)}-BR`,
-                status: "approved",
-                payment_method: parsedData.payment_method_id || "pix",
-                amount: parseFloat(amount),
-                product: "Camisa Devocional de Nossa Senhora Aparecida"
-            },
-            customer: {
-                name: `${payer.first_name} ${payer.last_name}`.trim(),
-                email: payer.email,
-                phone: cleanPhone
-            }
-        };
-
-        const payloadStr = JSON.stringify(payload);
-
-        const url = require('url');
-        const parsedUrl = url.parse(laillaUrl);
-
-        const options = {
-            hostname: parsedUrl.hostname,
-            port: parsedUrl.port || (parsedUrl.protocol === 'https:' ? 443 : 80),
-            path: parsedUrl.path,
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Content-Length': Buffer.byteLength(payloadStr)
-            }
-        };
-
-        const client = parsedUrl.protocol === 'https:' ? require('https') : require('http');
-
-        const req = client.request(options, (res) => {
-            let resData = '';
-            res.on('data', (c) => resData += c);
-            res.on('end', () => {
-                console.log("Lailla Approved Webhook Response:", res.statusCode, resData);
-                resolve();
-            });
-        });
-
-        req.on('error', (e) => {
-            console.error("Lailla Approved Webhook Error:", e.message);
-            resolve();
-        });
-
-        req.write(payloadStr);
         req.end();
     });
 }
