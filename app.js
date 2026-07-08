@@ -429,15 +429,17 @@ const app = {
     updateShipping(cost, type) {
         state.shippingCost = cost;
         state.shippingType = type;
-        state.totalCost = cost; // product is 0, so total is just donation
+        state.totalCost = cost;
 
         // Adjust active shipping cards styles
         const devotoCard = document.getElementById('label-shipping-devoto');
-        const apoiadorCard = document.getElementById('label-shipping-apoiador');
+        const protetorCard = document.getElementById('label-shipping-protetor');
+        const padrinhoCard = document.getElementById('label-shipping-padrinho');
         const benfeitorCard = document.getElementById('label-shipping-benfeitor');
 
         if (devotoCard) devotoCard.classList.toggle('active', type === 'devoto');
-        if (apoiadorCard) apoiadorCard.classList.toggle('active', type === 'apoiador');
+        if (protetorCard) protetorCard.classList.toggle('active', type === 'protetor');
+        if (padrinhoCard) padrinhoCard.classList.toggle('active', type === 'padrinho');
         if (benfeitorCard) benfeitorCard.classList.toggle('active', type === 'benfeitor');
 
         this.updateShippingDetailsBox();
@@ -445,13 +447,15 @@ const app = {
 
     updateShippingDetailsBox() {
         let typeText = 'Doação Devoto (Frete Grátis)';
-        if (state.shippingType === 'apoiador') {
-            typeText = 'Doação Apoiador (Frete Grátis)';
+        if (state.shippingType === 'protetor') {
+            typeText = 'Doação Protetor (Frete Grátis)';
+        } else if (state.shippingType === 'padrinho') {
+            typeText = 'Doação Padrinho (Frete Grátis)';
         } else if (state.shippingType === 'benfeitor') {
             typeText = 'Doação Benfeitor (Frete Grátis)';
         }
         const costText = state.shippingCost.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-        
+
         document.getElementById('checkoutDisplayShippingType').textContent = typeText;
         document.getElementById('checkoutDisplayShippingCost').textContent = costText;
         document.getElementById('checkoutDisplayTotal').textContent = costText;
