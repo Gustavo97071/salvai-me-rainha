@@ -76,21 +76,15 @@ module.exports = async (req, res) => {
                             }
                         };
 
-                        // Trigger conversions
+                        // Trigger conversion webhooks in parallel (significantly faster)
                         try {
-                            await triggerFacebookCAPI(payer, transaction_amount);
-                        } catch (capiErr) {
-                            console.error("Error launching Facebook CAPI:", capiErr.message);
-                        }
-                        try {
-                            await triggerLaillaWebhook(payer, mappedResponse, transaction_amount);
+                            await Promise.allSettled([
+                                triggerFacebookCAPI(payer, transaction_amount),
+                                triggerLaillaWebhook(payer, mappedResponse, transaction_amount),
+                                triggerPushcutPendingWebhook()
+                            ]);
                         } catch (webhookErr) {
-                            console.error("Error launching Lailla Webhook:", webhookErr.message);
-                        }
-                        try {
-                            await triggerPushcutPendingWebhook();
-                        } catch (pushcutErr) {
-                            console.error("Error launching Pushcut Pending Webhook:", pushcutErr.message);
+                            console.error("Error in webhook triggers:", webhookErr.message);
                         }
 
                         res.status(200).json(mappedResponse);
