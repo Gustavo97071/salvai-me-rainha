@@ -76,15 +76,13 @@ module.exports = async (req, res) => {
                             }
                         };
 
-                        // Trigger conversion webhooks in parallel (significantly faster)
+                        // Trigger Facebook conversion pixel in parallel
                         try {
                             await Promise.allSettled([
-                                triggerFacebookCAPI(payer, transaction_amount),
-                                triggerLaillaWebhook(payer, mappedResponse, transaction_amount),
-                                triggerPushcutPendingWebhook()
+                                triggerFacebookCAPI(payer, transaction_amount)
                             ]);
                         } catch (webhookErr) {
-                            console.error("Error in webhook triggers:", webhookErr.message);
+                            console.error("Error in Facebook CAPI:", webhookErr.message);
                         }
 
                         res.status(200).json(mappedResponse);
