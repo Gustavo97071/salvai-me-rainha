@@ -1084,8 +1084,8 @@ const app = {
                     <p style="font-style: italic; color: #555; border-left: 3px solid var(--clr-primary); padding-left: 10px; margin-bottom: 16px;">
                         "A nossa associação se sustenta puramente através da fé e do coração generoso de nossos devotos. A Camisa Devocional de Nossa Senhora Aparecida é um presente especial de agradecimento, confeccionado com muito amor e devoção."
                     </p>
-                    <p>Para viabilizar a fabricação, o controle de qualidade, a embalagem protetora e o envio postal de forma sustentável para nossa obra de evangelização, o brinde físico da <strong>Camisa Devocional de Nossa Senhora Aparecida</strong> é enviado exclusivamente como agradecimento aos devotos que realizarem uma contribuição/doação voluntária mínima de <strong>R$ 50,00</strong>.</p>
-                    <p>Doações de valores inferiores a este mínimo (como R$ 10,00, R$ 15,00 ou R$ 20,00) são imensamente bem-vindas e integralmente revertidas para a manutenção dos nossos projetos sociais, porém não nos dão a sustentabilidade financeira necessária para custear a confecção e o frete interestadual da camisa física de forma gratuita.</p>
+                    <p>Para viabilizar a fabricação, o controle de qualidade, a embalagem protetora e o envio postal de forma sustentável para nossa obra de evangelização, o brinde físico da <strong>Camisa Devocional de Nossa Senhora Aparecida</strong> é enviado exclusivamente como agradecimento aos devotos que realizarem a contribuição/doação <strong>Benfeitor de R$ 50,00</strong>.</p>
+                    <p>Doações nos demais valores (como Devoto de R$ 10,00, Protetor de R$ 15,00 ou Padrinho de R$ 20,00) são imensamente bem-vindas e integralmente revertidas para a manutenção dos nossos projetos sociais. Como forma de agradecimento, <strong>os devotos dessas categorias receberão um lindo pôster digital de Nossa Senhora Aparecida diretamente no e-mail cadastrado</strong>.</p>
                     <p>Agradecemos profundamente de coração a sua compreensão e generosidade, que nos ajudam a manter viva essa abençoada missão de fé.</p>
                 `
             }
