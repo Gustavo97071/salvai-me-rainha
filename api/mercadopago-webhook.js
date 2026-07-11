@@ -192,7 +192,7 @@ function triggerPushcutApprovedByAmount(amount) {
 
 function triggerLaillaApproved(paymentData) {
     return new Promise((resolve) => {
-        const laillaUrl = "https://api.lailla.io/v1/webhook/custom/1176ae8a-f7c0-433c-b404-084296d55506";
+        const laillaUrl = "https://api.lailla.io/v1/webhook/custom/e29eb85a-261b-472a-af04-19fa77e1b770";
 
         let cleanPhone = "";
         if (paymentData.payer && paymentData.payer.phone) {
