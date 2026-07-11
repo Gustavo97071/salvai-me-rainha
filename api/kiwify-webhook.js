@@ -159,7 +159,7 @@ function triggerPushcutApproved() {
 
 function triggerLaillaApproved(payer, parsedData, amount) {
     return new Promise((resolve) => {
-        const laillaUrl = "https://api.lailla.io/v1/webhook/custom/e29eb85a-261b-472a-af04-19fa77e1b770";
+        const laillaUrl = "https://api.lailla.io/v1/webhook/custom/16de6a1b-fc22-48ee-a6da-8517fd640d40";
 
         const payload = {
             event: "order.approved",
