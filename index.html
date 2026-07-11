@@ -618,22 +618,46 @@
                 <!-- Native PIX Container (Only shown when payment method is PIX and not yet confirmed) -->
                 <div class="native-success-section" id="success-pix-container">
                     <div class="pix-success-box">
-                        <h3>Aguardando Pagamento do PIX</h3>
-                        <p class="pix-instructions">Leia o QR Code abaixo com o aplicativo do seu banco ou copie o código Copia e Cola para pagar.</p>
+                        <div class="pix-header">
+                            <div class="pix-tag">PAGAMENTO SEGURO VIA PIX</div>
+                            <h3>Aguardando Confirmação do Pagamento</h3>
+                            <p class="pix-instructions">Leia o QR Code abaixo com o aplicativo do seu banco ou copie o código Copia e Cola.</p>
+                        </div>
                         
                         <div class="qr-code-box">
                             <img id="success-pix-qr" src="" alt="QR Code PIX">
                         </div>
                         
-                        <p class="pix-timer">Expira em: <span id="success-pix-countdown">15:00</span></p>
+                        <p class="pix-timer">⚠️ O QR Code expira em: <span id="success-pix-countdown">15:00</span></p>
 
                         <div class="copy-paste-box">
-                            <label>Código Copia e Cola:</label>
+                            <label>Código PIX Copia e Cola:</label>
                             <div class="copy-input-row">
                                 <input type="text" id="success-pix-code" value="" readonly>
-                                <button type="button" onclick="app.copySuccessPIXKey()">Copiar</button>
+                                <button type="button" onclick="app.copySuccessPIXKey()">📋 Copiar</button>
                             </div>
                             <span class="copy-alert" id="success-pix-copy-alert">Código copiado!</span>
+                        </div>
+
+                        <!-- Step by Step Guide for client -->
+                        <div class="pix-steps-guide">
+                            <h4>💡 Como pagar com o código copiado?</h4>
+                            <div class="pix-step-item">
+                                <span class="pix-step-num">1</span>
+                                <p>Clique no botão <strong>"📋 Copiar"</strong> azul acima.</p>
+                            </div>
+                            <div class="pix-step-item">
+                                <span class="pix-step-num">2</span>
+                                <p>Abra o <strong>aplicativo do seu banco</strong> no celular.</p>
+                            </div>
+                            <div class="pix-step-item">
+                                <span class="pix-step-num">3</span>
+                                <p>Acesse a área <strong>Pix</strong> e escolha a opção <strong>"Pix Copia e Cola"</strong>.</p>
+                            </div>
+                            <div class="pix-step-item danger">
+                                <span class="pix-step-num">⚠️</span>
+                                <p><strong>Atenção:</strong> Não cole na opção de "Chave Pix" (CPF/CNPJ). Use apenas a opção de "Copia e Cola" do seu banco.</p>
+                            </div>
                         </div>
 
                         <!-- Real-time status checker -->
@@ -646,7 +670,7 @@
                         </div>
 
                         <!-- Button to simulate success for user preview -->
-                        <button type="button" onclick="app.simulatePaymentSuccess()" style="margin-top: 16px; padding: 10px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; background: #34C759; color: #fff; border: none; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 8px rgba(52, 199, 89, 0.2); width: 100%;">
+                        <button type="button" class="btn-simulate-success" onclick="app.simulatePaymentSuccess()">
                             ⚡ Simular Pagamento Aprovado (Ver Tela de Sucesso)
                         </button>
                     </div>
