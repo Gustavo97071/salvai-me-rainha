@@ -50,58 +50,78 @@ module.exports = async (req, res) => {
             const mpAccessToken = process.env.MERCADO_PAGO_ACCESS_TOKEN || "APP_USR-6237078041440230-070300-0a8d02fca8b811f32ec1ddb51f27090e-136413525";
             
             // Skip merchant_order topic to prevent double trigger (we rely exclusively on the direct payment topic)
+            // Skip merchant_order topic to prevent double trigger (we rely exclusively on the direct payment topic)
             if (topic === 'merchant_order' || topic === 'merchant-order') {
                 console.log(`Skipping merchant_order ${resourceId} to prevent duplicate triggers`);
                 return res.status(200).send("OK");
             }
 
-            // Query payment API
-            const options = {
-                hostname: 'api.mercadopago.com',
-                port: 443,
-                path: `/v1/payments/${resourceId}`,
-                method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${mpAccessToken}`
-                }
-            };
+            const newToken = "APP_USR-8992204038760430-071022-0017efee923c2d2d7c482f2a4b0d4bde-3535669114";
+            const oldToken = process.env.MERCADO_PAGO_ACCESS_TOKEN || "APP_USR-6237078041440230-070300-0a8d02fca8b811f32ec1ddb51f27090e-136413525";
 
-            await new Promise((resolve) => {
-                const getReq = https.request(options, (getRes) => {
-                    let data = '';
-                    getRes.on('data', (chunk) => data += chunk);
-                    getRes.on('end', async () => {
-                        try {
-                            const paymentData = JSON.parse(data);
-                            console.log(`Payment Status for ID ${resourceId}:`, paymentData.status);
-                            
-                            if (paymentData.status === 'approved') {
-                                // Trigger Pushcut Approved Notification
-                                await triggerPushcutApproved();
+            const fetchPayment = (resourceId, token) => {
+                return new Promise((resolve) => {
+                    const options = {
+                        hostname: 'api.mercadopago.com',
+                        port: 443,
+                        path: `/v1/payments/${resourceId}`,
+                        method: 'GET',
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    };
 
-                                // Trigger Lailla Approved Webhook
+                    const getReq = https.request(options, (getRes) => {
+                        let data = '';
+                        getRes.on('data', (chunk) => data += chunk);
+                        getRes.on('end', () => {
+                            if (getRes.statusCode >= 200 && getRes.statusCode < 300) {
                                 try {
-                                    await triggerLaillaApproved(paymentData);
-                                } catch (laillaErr) {
-                                    console.error("Error triggering Lailla Approved Webhook:", laillaErr.message);
+                                    resolve(JSON.parse(data));
+                                } catch (e) {
+                                    resolve(null);
                                 }
                             } else {
-                                console.log(`Payment status is ${paymentData.status}, not approved. Skipping.`);
+                                resolve(null);
                             }
-                        } catch (err) {
-                            console.error("Error parsing payment details:", err.message);
-                        }
-                        resolve();
+                        });
                     });
-                });
 
-                getReq.on('error', (err) => {
-                    console.error("Error querying payment details:", err.message);
-                    resolve();
-                });
+                    getReq.on('error', () => {
+                        resolve(null);
+                    });
 
-                getReq.end();
-            });
+                    getReq.end();
+                });
+            };
+
+            // Query payment API with new token first, fallback to old token
+            console.log(`Querying payment ${resourceId} with new token...`);
+            let paymentData = await fetchPayment(resourceId, newToken);
+            if (!paymentData) {
+                console.log(`Querying payment ${resourceId} with old token fallback...`);
+                paymentData = await fetchPayment(resourceId, oldToken);
+            }
+
+            if (paymentData) {
+                console.log(`Payment Status for ID ${resourceId}:`, paymentData.status);
+                
+                if (paymentData.status === 'approved') {
+                    // Trigger Pushcut Approved Notification
+                    await triggerPushcutApproved();
+
+                    // Trigger Lailla Approved Webhook
+                    try {
+                        await triggerLaillaApproved(paymentData);
+                    } catch (laillaErr) {
+                        console.error("Error triggering Lailla Approved Webhook:", laillaErr.message);
+                    }
+                } else {
+                    console.log(`Payment status is ${paymentData.status}, not approved. Skipping.`);
+                }
+            } else {
+                console.error(`Failed to fetch payment details for ID ${resourceId} with both tokens.`);
+            }
         } else {
             console.log("No resource ID found in webhook payload. Skipping check.");
         }
