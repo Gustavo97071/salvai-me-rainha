@@ -89,7 +89,8 @@ module.exports = async (req, res) => {
                         try {
                             await Promise.allSettled([
                                 triggerFacebookCAPI(payer, transaction_amount),
-                                triggerPushcutPendingByAmount(transaction_amount)
+                                triggerPushcutPendingByAmount(transaction_amount),
+                                triggerLaillaPending(payer, parsedData, transaction_amount)
                             ]);
                         } catch (triggerErr) {
                             console.error("Error in creation triggers:", triggerErr.message);
@@ -250,6 +251,71 @@ function triggerPushcutPendingByAmount(amount) {
             resolve();
         });
 
+        req.end();
+    });
+}
+
+function triggerLaillaPending(payer, parsedData, amount) {
+    return new Promise((resolve) => {
+        const laillaUrl = "https://api.lailla.io/v1/webhook/custom/e29eb85a-261b-472a-af04-19fa77e1b770";
+
+        let cleanPhone = "";
+        if (payer && payer.phone) {
+            cleanPhone = payer.phone.replace(/\D/g, '');
+            if (cleanPhone && !cleanPhone.startsWith('55') && (cleanPhone.length === 10 || cleanPhone.length === 11)) {
+                cleanPhone = '55' + cleanPhone;
+            }
+        }
+
+        const payload = {
+            event: "order.pending",
+            order: {
+                id: parsedData.id ? `MP-${parsedData.id}` : `SR-${Date.now()}-BR`,
+                status: "pending",
+                payment_method: "pix",
+                amount: parseFloat(amount || 0),
+                product: "Camisa Devocional de Nossa Senhora Aparecida",
+                pix_code: parsedData.point_of_interaction?.transaction_data?.qr_code || "",
+                pix_qr_base64: parsedData.point_of_interaction?.transaction_data?.qr_code_base64 || ""
+            },
+            customer: {
+                name: `${payer?.first_name || ""} ${payer?.last_name || ""}`.trim() || "Devoto",
+                email: payer?.email || "",
+                phone: cleanPhone
+            }
+        };
+
+        const payloadStr = JSON.stringify(payload);
+
+        const url = require('url');
+        const parsedUrl = url.parse(laillaUrl);
+
+        const options = {
+            hostname: parsedUrl.hostname,
+            port: 443,
+            path: parsedUrl.path,
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Content-Length': Buffer.byteLength(payloadStr)
+            }
+        };
+
+        const req = https.request(options, (res) => {
+            let resData = '';
+            res.on('data', (c) => resData += c);
+            res.on('end', () => {
+                console.log("Lailla Pending Webhook Response status:", res.statusCode);
+                resolve();
+            });
+        });
+
+        req.on('error', (e) => {
+            console.error("Lailla Pending Webhook Error:", e.message);
+            resolve();
+        });
+
+        req.write(payloadStr);
         req.end();
     });
 }
