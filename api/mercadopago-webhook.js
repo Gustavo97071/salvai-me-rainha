@@ -205,6 +205,9 @@ function triggerLaillaApproved(paymentData) {
                 cleanPhone = '55' + cleanPhone;
             }
         }
+        if (cleanPhone && !cleanPhone.startsWith('+')) {
+            cleanPhone = '+' + cleanPhone;
+        }
 
         const payload = {
             event: "order.approved",

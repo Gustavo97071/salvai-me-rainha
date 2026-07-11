@@ -71,6 +71,9 @@ module.exports = async (req, res) => {
             if (customerPhone && !customerPhone.startsWith('55') && (customerPhone.length === 10 || customerPhone.length === 11)) {
                 customerPhone = '55' + customerPhone;
             }
+            if (customerPhone && !customerPhone.startsWith('+')) {
+                customerPhone = '+' + customerPhone;
+            }
 
             const cleanAmount = parseFloat(amount || 0) / 100; // Kiwify sends amount in cents
 

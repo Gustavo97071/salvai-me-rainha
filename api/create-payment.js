@@ -47,6 +47,9 @@ module.exports = async (req, res) => {
             if (cleanPhone && !cleanPhone.startsWith('55') && (cleanPhone.length === 10 || cleanPhone.length === 11)) {
                 cleanPhone = '55' + cleanPhone;
             }
+            if (cleanPhone && !cleanPhone.startsWith('+')) {
+                cleanPhone = '+' + cleanPhone;
+            }
         }
 
         const payload = {
