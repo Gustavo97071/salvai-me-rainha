@@ -24,103 +24,45 @@ module.exports = async (req, res) => {
         return res.status(400).json({ error: 'Missing payment ID' });
     }
 
-    const host = req.headers.host || '';
+    try {
+        const mpAccessToken = "APP_USR-8992204038760430-071022-0017efee923c2d2d7c482f2a4b0d4bde-3535669114";
 
-    if (host.includes('maesantissima.com')) {
-        try {
-            const publicKey = process.env.OMEGA_PUBLIC_KEY || "gustavo8367_waum6srl1idvyytz";
-            const secretKey = process.env.OMEGA_SECRET_KEY || "ukcotqp21oyunf3dplchwgu5g7vafh2u3xu9e5l9dr0aw6184df5yi0cttpkg1th";
+        const options = {
+            hostname: 'api.mercadopago.com',
+            port: 443,
+            path: `/v1/payments/${id}`,
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${mpAccessToken}`
+            }
+        };
 
-            const options = {
-                hostname: 'app.omegapayments.com.br',
-                port: 443,
-                path: `/api/v1/gateway/transactions?id=${encodeURIComponent(id)}`,
-                method: 'GET',
-                headers: {
-                    'x-public-key': publicKey,
-                    'x-secret-key': secretKey,
-                    'User-Agent': 'Mozilla/5.0'
-                }
-            };
-
-            const getReq = https.request(options, (getRes) => {
-                let data = '';
-                getRes.on('data', (chunk) => {
-                    data += chunk;
-                });
-                getRes.on('end', () => {
-                    try {
-                        const parsedData = JSON.parse(data);
-                        if (getRes.statusCode >= 200 && getRes.statusCode < 300) {
-                            const rawStatus = parsedData.status || 'PENDING';
-                            let mappedStatus = 'pending';
-                            
-                            if (['APPROVED', 'PAID', 'SUCCESS', 'CONFIRMED'].includes(rawStatus.toUpperCase())) {
-                                mappedStatus = 'approved';
-                            } else if (['REJECTED', 'CANCELED', 'EXPIRED'].includes(rawStatus.toUpperCase())) {
-                                mappedStatus = 'cancelled';
-                            }
-                            
-                            res.status(200).json({ status: mappedStatus });
-                        } else {
-                            res.status(getRes.statusCode).json(parsedData);
-                        }
-                    } catch (e) {
-                        res.status(500).json({ error: 'Failed to parse response from payment gateway', details: data });
+        const getReq = https.request(options, (getRes) => {
+            let data = '';
+            getRes.on('data', (chunk) => {
+                data += chunk;
+            });
+            getRes.on('end', () => {
+                try {
+                    const parsedData = JSON.parse(data);
+                    if (getRes.statusCode >= 200 && getRes.statusCode < 300) {
+                        res.status(200).json({ status: parsedData.status });
+                    } else {
+                        res.status(getRes.statusCode).json(parsedData);
                     }
-                });
-            });
-
-            getReq.on('error', (err) => {
-                res.status(500).json({ error: 'Payment gateway connection error', details: err.message });
-            });
-
-            getReq.end();
-
-        } catch (error) {
-            res.status(500).json({ error: 'Internal server error', details: error.message });
-        }
-    } else {
-        try {
-            const mpAccessToken = "APP_USR-8992204038760430-071022-0017efee923c2d2d7c482f2a4b0d4bde-3535669114";
-
-            const options = {
-                hostname: 'api.mercadopago.com',
-                port: 443,
-                path: `/v1/payments/${id}`,
-                method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${mpAccessToken}`
+                } catch (e) {
+                    res.status(500).json({ error: 'Failed to parse response from payment gateway', details: data });
                 }
-            };
-
-            const getReq = https.request(options, (getRes) => {
-                let data = '';
-                getRes.on('data', (chunk) => {
-                    data += chunk;
-                });
-                getRes.on('end', () => {
-                    try {
-                        const parsedData = JSON.parse(data);
-                        if (getRes.statusCode >= 200 && getRes.statusCode < 300) {
-                            res.status(200).json({ status: parsedData.status });
-                        } else {
-                            res.status(getRes.statusCode).json(parsedData);
-                        }
-                    } catch (e) {
-                        res.status(500).json({ error: 'Failed to parse response from payment gateway', details: data });
-                    }
-                });
             });
+        });
 
-            getReq.on('error', (err) => {
-                res.status(500).json({ error: 'Payment gateway connection error', details: err.message });
-            });
+        getReq.on('error', (err) => {
+            res.status(500).json({ error: 'Payment gateway connection error', details: err.message });
+        });
 
-            getReq.end();
+        getReq.end();
 
-        } catch (error) {
-            res.status(500).json({ error: 'Internal server error', details: error.message });
-        }
+    } catch (error) {
+        res.status(500).json({ error: 'Internal server error', details: error.message });
     }
 };
