@@ -760,7 +760,7 @@ const app = {
                 document.getElementById('success-status-icon').className = 'success-circle';
                 document.getElementById('success-status-icon').innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
                 document.getElementById('success-status-title').textContent = 'Pedido Confirmado!';
-                document.getElementById('success-status-desc').textContent = 'Parabéns! Sua compra foi processada com sucesso. Seus dados de envio já foram repassados para a nossa distribuidora.';
+                document.getElementById('success-status-desc').textContent = 'Muito obrigado por sua generosa doação! Seu pedido foi confirmado com sucesso. As instruções com os próximos passos foram enviadas para o seu e-mail cadastrado.';
 
                 // Timeline steps
                 document.getElementById('timeline-step-1').className = 'timeline-item active';
@@ -912,7 +912,7 @@ const app = {
         icon.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
         
         document.getElementById('success-status-title').textContent = 'Pedido Confirmado!';
-        document.getElementById('success-status-desc').textContent = 'Parabéns! Sua compra foi processada com sucesso. Seus dados de envio já foram repassados para a nossa distribuidora.';
+        document.getElementById('success-status-desc').textContent = 'Muito obrigado por sua generosa doação! Seu pedido foi confirmado com sucesso. As instruções com os próximos passos foram enviadas para o seu e-mail cadastrado.';
 
         // Hide PIX container inside view-success
         document.getElementById('success-pix-container').style.display = 'none';
