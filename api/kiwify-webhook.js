@@ -163,6 +163,9 @@ function triggerLaillaApproved(payer, parsedData, amount) {
 
         const payload = {
             event: "order.approved",
+            phone: payer.phone,
+            name: `${payer.first_name} ${payer.last_name}`.trim(),
+            email: payer.email,
             order: {
                 id: `KW-${parsedData.id}`,
                 status: "approved",

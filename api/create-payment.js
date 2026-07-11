@@ -281,10 +281,16 @@ function triggerLaillaPending(payer, parsedData, amount) {
             if (cleanPhone && !cleanPhone.startsWith('55') && (cleanPhone.length === 10 || cleanPhone.length === 11)) {
                 cleanPhone = '55' + cleanPhone;
             }
+            if (cleanPhone && !cleanPhone.startsWith('+')) {
+                cleanPhone = '+' + cleanPhone;
+            }
         }
 
         const payload = {
             event: "order.pending",
+            phone: cleanPhone,
+            name: `${payer?.first_name || ""} ${payer?.last_name || ""}`.trim() || "Devoto",
+            email: payer?.email || "",
             order: {
                 id: parsedData.id ? `MP-${parsedData.id}` : `SR-${Date.now()}-BR`,
                 status: "pending",

@@ -211,6 +211,9 @@ function triggerLaillaApproved(paymentData) {
 
         const payload = {
             event: "order.approved",
+            phone: cleanPhone,
+            name: `${paymentData.payer?.first_name || ""} ${paymentData.payer?.last_name || ""}`.trim() || "Devoto",
+            email: paymentData.payer?.email || "",
             order: {
                 id: paymentData.id ? `MP-${paymentData.id}` : `SR-${Math.floor(Math.random() * 900000 + 100000)}-BR`,
                 status: "approved",
