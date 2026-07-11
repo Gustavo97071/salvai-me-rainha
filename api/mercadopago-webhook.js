@@ -1,5 +1,8 @@
 const https = require('https');
 
+// Global Set to keep track of processed approved payment IDs in the current instance container
+const processedPayments = new Set();
+
 module.exports = async (req, res) => {
     // Enable CORS
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -47,9 +50,6 @@ module.exports = async (req, res) => {
         console.log("Extracted Topic/Type:", topic);
 
         if (resourceId) {
-            const mpAccessToken = process.env.MERCADO_PAGO_ACCESS_TOKEN || "APP_USR-6237078041440230-070300-0a8d02fca8b811f32ec1ddb51f27090e-136413525";
-            
-            // Skip merchant_order topic to prevent double trigger (we rely exclusively on the direct payment topic)
             // Skip merchant_order topic to prevent double trigger (we rely exclusively on the direct payment topic)
             if (topic === 'merchant_order' || topic === 'merchant-order') {
                 console.log(`Skipping merchant_order ${resourceId} to prevent duplicate triggers`);
@@ -99,7 +99,7 @@ module.exports = async (req, res) => {
             console.log(`Querying payment ${resourceId} with new token...`);
             let paymentData = await fetchPayment(resourceId, newToken);
             if (!paymentData) {
-                console.log(`Querying payment ${resourceId} with old token fallback...`);
+                console.log("Querying payment " + resourceId + " with old token fallback...");
                 paymentData = await fetchPayment(resourceId, oldToken);
             }
 
@@ -107,14 +107,21 @@ module.exports = async (req, res) => {
                 console.log(`Payment Status for ID ${resourceId}:`, paymentData.status);
                 
                 if (paymentData.status === 'approved') {
-                    // Trigger Pushcut Approved Notification
-                    await triggerPushcutApproved();
+                    // Double check if we've already triggered for this ID
+                    if (processedPayments.has(resourceId)) {
+                        console.log(`Payment ${resourceId} already processed as approved in this instance container. Skipping duplicate triggers.`);
+                    } else {
+                        processedPayments.add(resourceId);
 
-                    // Trigger Lailla Approved Webhook
-                    try {
-                        await triggerLaillaApproved(paymentData);
-                    } catch (laillaErr) {
-                        console.error("Error triggering Lailla Approved Webhook:", laillaErr.message);
+                        // Trigger conversion webhooks in parallel (much faster, resolves timeout issues)
+                        try {
+                            await Promise.allSettled([
+                                triggerPushcutApproved(),
+                                triggerLaillaApproved(paymentData)
+                            ]);
+                        } catch (webhookErr) {
+                            console.error("Error in webhook parallel triggers:", webhookErr.message);
+                        }
                     }
                 } else {
                     console.log(`Payment status is ${paymentData.status}, not approved. Skipping.`);
