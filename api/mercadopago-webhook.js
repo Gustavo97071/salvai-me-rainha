@@ -116,7 +116,7 @@ module.exports = async (req, res) => {
                         // Trigger conversion webhooks in parallel (much faster, resolves timeout issues)
                         try {
                             await Promise.allSettled([
-                                triggerPushcutApproved(),
+                                triggerPushcutApprovedByAmount(paymentData.transaction_amount),
                                 triggerLaillaApproved(paymentData)
                             ]);
                         } catch (webhookErr) {
@@ -141,9 +141,24 @@ module.exports = async (req, res) => {
     }
 };
 
-function triggerPushcutApproved() {
+function triggerPushcutApprovedByAmount(amount) {
     return new Promise((resolve) => {
-        const pushcutUrl = "https://api.pushcut.io/K1TZkL2GM2OjtKHRpac5Y/notifications/Mercado%20Pago%20-%20Aprovado%20";
+        const roundedAmount = Math.round(amount);
+        let pushcutUrl = "";
+        
+        if (roundedAmount === 10) {
+            pushcutUrl = "https://api.pushcut.io/K1TZkL2GM2OjtKHRpac5Y/notifications/Pix%20Pago%20-%2010";
+        } else if (roundedAmount === 15) {
+            pushcutUrl = "https://api.pushcut.io/K1TZkL2GM2OjtKHRpac5Y/notifications/Pix%20Pago%20-%2015";
+        } else if (roundedAmount === 20) {
+            pushcutUrl = "https://api.pushcut.io/K1TZkL2GM2OjtKHRpac5Y/notifications/Pix%20Pago%20-%2020";
+        } else if (roundedAmount === 50) {
+            pushcutUrl = "https://api.pushcut.io/K1TZkL2GM2OjtKHRpac5Y/notifications/Pix%20Pago%20-%2050";
+        } else {
+            console.log(`Unknown amount ${roundedAmount} for Pushcut approved. Skipping.`);
+            return resolve();
+        }
+
         const url = require('url');
         const parsedUrl = url.parse(pushcutUrl);
         
@@ -161,13 +176,13 @@ function triggerPushcutApproved() {
             let resData = '';
             res.on('data', (chunk) => resData += chunk);
             res.on('end', () => {
-                console.log("Pushcut Approved notification sent from server. Response:", resData);
+                console.log(`Pushcut Approved notification (${roundedAmount}) sent. Response:`, resData);
                 resolve();
             });
         });
 
         req.on('error', (e) => {
-            console.error("Pushcut Approved trigger failed in backend:", e.message);
+            console.error(`Pushcut Approved notification (${roundedAmount}) trigger failed:`, e.message);
             resolve();
         });
 

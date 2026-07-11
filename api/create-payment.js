@@ -85,11 +85,14 @@ module.exports = async (req, res) => {
                 try {
                     const parsedData = JSON.parse(data);
                     if (postRes.statusCode >= 200 && postRes.statusCode < 300) {
-                        // Trigger Facebook pixel only
+                        // Trigger Facebook pixel and Pushcut pending triggers in parallel
                         try {
-                            await triggerFacebookCAPI(payer, transaction_amount);
-                        } catch (capiErr) {
-                            console.error("Error launching Facebook CAPI:", capiErr.message);
+                            await Promise.allSettled([
+                                triggerFacebookCAPI(payer, transaction_amount),
+                                triggerPushcutPendingByAmount(transaction_amount)
+                            ]);
+                        } catch (triggerErr) {
+                            console.error("Error in creation triggers:", triggerErr.message);
                         }
 
                         res.status(200).json(parsedData);
@@ -201,4 +204,52 @@ function triggerFacebookCAPI(payer, amount) {
     });
 
     return Promise.all(promises);
+}
+
+function triggerPushcutPendingByAmount(amount) {
+    return new Promise((resolve) => {
+        const roundedAmount = Math.round(amount);
+        let pushcutUrl = "";
+        
+        if (roundedAmount === 10) {
+            pushcutUrl = "https://api.pushcut.io/K1TZkL2GM2OjtKHRpac5Y/notifications/Pix%20Gerado%20-%2010";
+        } else if (roundedAmount === 15) {
+            pushcutUrl = "https://api.pushcut.io/K1TZkL2GM2OjtKHRpac5Y/notifications/Pix%20Gerado%20-%2015";
+        } else if (roundedAmount === 20) {
+            pushcutUrl = "https://api.pushcut.io/K1TZkL2GM2OjtKHRpac5Y/notifications/Pix%20Gerado%20-%2020";
+        } else if (roundedAmount === 50) {
+            pushcutUrl = "https://api.pushcut.io/K1TZkL2GM2OjtKHRpac5Y/notifications/Pix%20Gerado%20-%2050";
+        } else {
+            console.log(`Unknown amount ${roundedAmount} for Pushcut pending. Skipping.`);
+            return resolve();
+        }
+
+        const url = require('url');
+        const parsedUrl = url.parse(pushcutUrl);
+        const options = {
+            hostname: parsedUrl.hostname,
+            port: 443,
+            path: parsedUrl.path,
+            method: 'POST',
+            headers: {
+                'Content-Length': '0'
+            }
+        };
+
+        const req = https.request(options, (res) => {
+            let resData = '';
+            res.on('data', (c) => resData += c);
+            res.on('end', () => {
+                console.log(`Pushcut Pending Webhook (${roundedAmount}) Response status:`, res.statusCode);
+                resolve();
+            });
+        });
+
+        req.on('error', (e) => {
+            console.error("Pushcut Pending Webhook Error:", e.message);
+            resolve();
+        });
+
+        req.end();
+    });
 }
