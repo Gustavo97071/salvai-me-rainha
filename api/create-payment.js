@@ -41,6 +41,14 @@ module.exports = async (req, res) => {
             }
         }
 
+        let cleanPhone = "";
+        if (payer && payer.phone) {
+            cleanPhone = payer.phone.replace(/\D/g, '');
+            if (cleanPhone && !cleanPhone.startsWith('55') && (cleanPhone.length === 10 || cleanPhone.length === 11)) {
+                cleanPhone = '55' + cleanPhone;
+            }
+        }
+
         const payload = {
             transaction_amount: parseFloat(transaction_amount || 50.00),
             description: "Campanha Salvai-me Rainha - Camisa Devocional",
@@ -58,6 +66,11 @@ module.exports = async (req, res) => {
                     area_code: areaCode,
                     number: phoneNumber
                 } : undefined
+            },
+            metadata: {
+                payer_phone: cleanPhone,
+                payer_name: `${payer.first_name || ""} ${payer.last_name || ""}`.trim() || "Devoto",
+                payer_email: payer.email
             }
         };
 

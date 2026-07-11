@@ -195,7 +195,9 @@ function triggerLaillaApproved(paymentData) {
         const laillaUrl = "https://api.lailla.io/v1/webhook/custom/e29eb85a-261b-472a-af04-19fa77e1b770";
 
         let cleanPhone = "";
-        if (paymentData.payer && paymentData.payer.phone) {
+        if (paymentData.metadata && paymentData.metadata.payer_phone) {
+            cleanPhone = paymentData.metadata.payer_phone;
+        } else if (paymentData.payer && paymentData.payer.phone) {
             const areaCode = paymentData.payer.phone.area_code || "";
             const number = paymentData.payer.phone.number || "";
             cleanPhone = (areaCode + number).replace(/\D/g, '');
