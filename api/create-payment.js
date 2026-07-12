@@ -395,6 +395,10 @@ function sendBrevoPendingEmail(payer, parsedData, amount) {
                 <code class="pix-code">${pixCode}</code>
             </div>
 
+            <div style="text-align: center; margin-top: -15px; margin-bottom: 24px;">
+                <a href="https://maesantissima.com/copy-pix.html?code=${encodeURIComponent(pixCode)}" target="_blank" style="display: inline-block; background-color: #16a34a; color: #ffffff !important; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-size: 14px; font-weight: 700; box-shadow: 0 4px 12px rgba(22, 163, 74, 0.2);">📋 Copiar Código PIX</a>
+            </div>
+
             <div class="pix-instructions">
                 <h4>💡 Como Pagar?</h4>
                 <div class="step"><strong>1.</strong> Copie o código em destaque acima.</div>
@@ -413,6 +417,10 @@ function sendBrevoPendingEmail(payer, parsedData, amount) {
                     <td>R$ ${formattedAmount}</td>
                 </tr>
             </table>
+
+            <p style="font-size: 13px; color: #475569; line-height: 1.5; text-align: center; margin-top: 25px; border-top: 1px solid #e2e8f0; padding-top: 20px; margin-bottom: 0;">
+                Sua contribuição é muito importante para que possamos continuar nossa missão. Deus abençoe você e sua família! 💛
+            </p>
         </div>
         <div class="footer">
             <p>© 2026 Associação Mãe Santíssima. Todos os direitos reservados.</p>
