@@ -388,7 +388,7 @@ function sendBrevoPendingEmail(payer, parsedData, amount) {
         </div>
         <div class="content">
             <h2 class="greeting">Olá, ${recipientName}!</h2>
-            <p class="intro-text">Sua solicitação de doação para a campanha <strong>Salvai-me Rainha</strong> foi gerada com sucesso. Para concluir o envio da sua Camisa Devocional de Nossa Senhora Aparecida, efetue o pagamento do PIX Copia e Cola abaixo:</p>
+            <p class="intro-text">Sua solicitação de participação na campanha <strong>Salvai-me Rainha</strong> foi gerada com sucesso. Para concluir sua contribuição, efetue o pagamento utilizando o PIX Copia e Cola abaixo. Após a confirmação do pagamento, sua participação será processada de acordo com as condições da campanha.</p>
             
             <div class="pix-box">
                 <div class="pix-title">Código PIX Copia e Cola</div>
