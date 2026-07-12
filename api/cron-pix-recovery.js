@@ -2,10 +2,12 @@ const https = require('https');
 const url = require('url');
 
 module.exports = async (req, res) => {
-    // Authorize Cron requests (supporting external triggers like cron-job.org)
+    // Authorize Cron requests (supporting both native Vercel daily cron and external hourly triggers)
     const recoveryToken = req.headers['x-recovery-token'];
     const secretToken = "7a8d8e5f2c4b1a0d3f8e6c7d9a0b1c2d";
-    if (process.env.NODE_ENV === 'production' && recoveryToken !== secretToken) {
+    const isVercelCron = req.headers['x-vercel-cron'] === '1';
+
+    if (process.env.NODE_ENV === 'production' && !isVercelCron && recoveryToken !== secretToken) {
         return res.status(401).json({ error: 'Unauthorized' });
     }
 
@@ -95,18 +97,24 @@ module.exports = async (req, res) => {
             }
 
             // Window check:
-            // Email 1 (Friendly Reminder): 90 - 150 minutes (1.5h - 2.5h)
-            // Email 2 (Final Urgency): 1050 - 1110 minutes (17.5h - 18.5h)
+            // - Native Vercel daily cron: sends one social proof email to pending payments from the last 24h
+            // - Hourly external trigger: sends a sequence (friendly at 2h, social proof at 18h)
             let emailType = 0; // 0 = none, 1 = friendly, 2 = final urgency
 
-            if (diffMinutes >= 90 && diffMinutes < 150) {
-                emailType = 1;
-            } else if (diffMinutes >= 1050 && diffMinutes < 1110) {
-                emailType = 2;
+            if (isVercelCron) {
+                if (diffMinutes >= 120 && diffMinutes < 1560) {
+                    emailType = 2; // Send high-converting social proof email once a day
+                }
+            } else {
+                if (diffMinutes >= 90 && diffMinutes < 150) {
+                    emailType = 1; // Friendly reminder (2h)
+                } else if (diffMinutes >= 1050 && diffMinutes < 1110) {
+                    emailType = 2; // Final warning with social proof (18h)
+                }
             }
 
             if (emailType > 0) {
-                console.log(`Found eligible pending payment ID: ${payment.id} | EmailType: ${emailType} | DiffMinutes: ${diffMinutes.toFixed(1)}`);
+                console.log(`Found eligible pending payment ID: ${payment.id} | EmailType: ${emailType} | DiffMinutes: ${diffMinutes.toFixed(1)} | NativeCron: ${isVercelCron}`);
                 emailTriggers.push(sendRecoveryEmail(apiKey, emailType, recipientEmail, recipientName, formattedAmount, orderId, pixCode));
             }
         }
