@@ -96,14 +96,17 @@ module.exports = async (req, res) => {
                     id: order_id,
                     payment_method_id: payment_method || "pix"
                 };
-                await Promise.allSettled([
-                    triggerLaillaApproved(payer, parsedData, cleanAmount),
-                    sendBrevoApprovedEmail({
+                const triggers = [
+                    triggerLaillaApproved(payer, parsedData, cleanAmount)
+                ];
+                if (process.env.ENABLE_BREVO_EMAILS === 'true') {
+                    triggers.push(sendBrevoApprovedEmail({
                         id: order_id,
                         transaction_amount: cleanAmount,
                         payer: payer
-                    })
-                ]);
+                    }));
+                }
+                await Promise.allSettled(triggers);
             } catch (laillaErr) {
                 console.error("Error launching Lailla Webhooks from Kiwify:", laillaErr.message);
             }

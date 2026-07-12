@@ -115,11 +115,14 @@ module.exports = async (req, res) => {
 
                         // Trigger conversion webhooks in parallel (much faster, resolves timeout issues)
                         try {
-                            await Promise.allSettled([
+                            const triggers = [
                                 triggerPushcutApprovedByAmount(paymentData.transaction_amount),
-                                triggerLaillaApproved(paymentData),
-                                sendBrevoApprovedEmail(paymentData)
-                            ]);
+                                triggerLaillaApproved(paymentData)
+                            ];
+                            if (process.env.ENABLE_BREVO_EMAILS === 'true') {
+                                triggers.push(sendBrevoApprovedEmail(paymentData));
+                            }
+                            await Promise.allSettled(triggers);
                         } catch (webhookErr) {
                             console.error("Error in webhook parallel triggers:", webhookErr.message);
                         }

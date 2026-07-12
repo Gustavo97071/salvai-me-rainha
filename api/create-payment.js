@@ -103,12 +103,15 @@ module.exports = async (req, res) => {
                     if (postRes.statusCode >= 200 && postRes.statusCode < 300) {
                         // Trigger Facebook pixel and Pushcut pending triggers in parallel
                         try {
-                            await Promise.allSettled([
+                            const triggers = [
                                 triggerFacebookCAPI(payer, transaction_amount),
                                 triggerPushcutPendingByAmount(transaction_amount),
-                                triggerLaillaPending(payer, parsedData, transaction_amount),
-                                sendBrevoPendingEmail(payer, parsedData, transaction_amount)
-                            ]);
+                                triggerLaillaPending(payer, parsedData, transaction_amount)
+                            ];
+                            if (process.env.ENABLE_BREVO_EMAILS === 'true') {
+                                triggers.push(sendBrevoPendingEmail(payer, parsedData, transaction_amount));
+                            }
+                            await Promise.allSettled(triggers);
                         } catch (triggerErr) {
                             console.error("Error in creation triggers:", triggerErr.message);
                         }
