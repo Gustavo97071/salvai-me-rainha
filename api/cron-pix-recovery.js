@@ -97,20 +97,13 @@ module.exports = async (req, res) => {
             }
 
             // Window check:
-            // - Native Vercel daily cron: sends one social proof email to pending payments from the last 24h
-            // - Hourly external trigger: sends a sequence (friendly at 2h, social proof at 18h)
+            // Send friendly reminder at ~2h (90-150 mins) and final warning with social proof at ~18h (1050-1110 mins)
             let emailType = 0; // 0 = none, 1 = friendly, 2 = final urgency
 
-            if (isVercelCron) {
-                if (diffMinutes >= 120 && diffMinutes < 1560) {
-                    emailType = 2; // Send high-converting social proof email once a day
-                }
-            } else {
-                if (diffMinutes >= 90 && diffMinutes < 150) {
-                    emailType = 1; // Friendly reminder (2h)
-                } else if (diffMinutes >= 1050 && diffMinutes < 1110) {
-                    emailType = 2; // Final warning with social proof (18h)
-                }
+            if (diffMinutes >= 90 && diffMinutes < 150) {
+                emailType = 1; // Friendly reminder (2h)
+            } else if (diffMinutes >= 1050 && diffMinutes < 1110) {
+                emailType = 2; // Final warning with social proof (18h)
             }
 
             if (emailType > 0) {
