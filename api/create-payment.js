@@ -360,71 +360,172 @@ function sendBrevoPendingEmail(payer, parsedData, amount) {
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Código PIX Gerado</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pix Gerado com Sucesso</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f7f9fa; color: #334155; margin: 0; padding: 0; }
-        .container { max-width: 600px; margin: 20px auto; background-color: #ffffff; border-radius: 12px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-        .header { background-color: #061930; padding: 30px 20px; text-align: center; border-bottom: 3px solid #d4af37; }
-        .header h1 { color: #ffffff; font-size: 24px; font-weight: 800; margin: 0; letter-spacing: 0.5px; }
-        .content { padding: 30px 24px; }
-        .greeting { font-size: 18px; font-weight: 700; color: #061930; margin-top: 0; margin-bottom: 12px; }
-        .intro-text { font-size: 14px; line-height: 1.6; color: #475569; margin-bottom: 24px; }
-        .pix-box { background-color: #f8fafc; border: 1.5px solid #cbd5e1; border-radius: 8px; padding: 16px; margin-bottom: 24px; text-align: center; }
-        .pix-title { font-size: 12px; font-weight: 800; color: #061930; text-transform: uppercase; margin-bottom: 8px; letter-spacing: 0.5px; }
-        .pix-code { font-family: monospace; font-size: 11px; color: #334155; word-break: break-all; background-color: #ffffff; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; margin-bottom: 12px; display: block; max-height: 80px; overflow-y: auto; text-align: left; }
-        .pix-instructions { text-align: left; background-color: #fffbeb; border: 1px solid #fef3c7; border-radius: 8px; padding: 14px; margin-bottom: 24px; }
-        .pix-instructions h4 { font-size: 13px; font-weight: 800; color: #b45309; margin: 0 0 10px 0; }
-        .step { font-size: 12px; line-height: 1.5; color: #78350f; margin-bottom: 8px; }
-        .step:last-child { margin-bottom: 0; }
-        .summary-table { width: 100%; border-collapse: collapse; margin-bottom: 24px; font-size: 13px; }
-        .summary-table th, .summary-table td { padding: 10px; border-bottom: 1px solid #e2e8f0; text-align: left; }
-        .summary-table th { color: #475569; font-weight: 700; }
-        .summary-table td { color: #061930; font-weight: 800; }
-        .footer { background-color: #f1f5f9; padding: 20px; text-align: center; font-size: 11px; color: #94a3b8; line-height: 1.4; border-top: 1px solid #e2e8f0; }
+        @media screen and (max-width: 600px) {
+            .mobile-stack {
+                display: block !important;
+                width: 100% !important;
+            }
+            .mobile-margin {
+                margin-top: 15px !important;
+            }
+        }
     </style>
 </head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h1>MÃE SANTÍSSIMA</h1>
-        </div>
-        <div class="content">
-            <h2 class="greeting">Olá, ${recipientName}!</h2>
-            <p class="intro-text">Sua solicitação de doação para a campanha <strong>Salvai-me Rainha</strong> foi gerada com sucesso. Para concluir o envio da sua Camisa Devocional de Nossa Senhora Aparecida, efetue o pagamento do PIX Copia e Cola abaixo:</p>
-            
-            <div class="pix-box">
-                <div class="pix-title">Código PIX Copia e Cola</div>
-                <code class="pix-code">${pixCode}</code>
-            </div>
+<body style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #f7f9fa; margin: 0; padding: 0;">
+    <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #f7f9fa; padding: 20px 0;">
+        <tr>
+            <td align="center">
+                <table width="600" border="0" cellspacing="0" cellpadding="0" style="background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.06); border: 1px solid #e2e8f0;">
+                    
+                    <!-- Header Banner -->
+                    <tr>
+                        <td align="center">
+                            <img src="https://maesantissima.com/assets/email_banner.png" width="600" style="width: 100%; max-width: 600px; display: block; height: auto;" alt="Mãe Santíssima" />
+                        </td>
+                    </tr>
 
-            <div class="pix-instructions">
-                <h4>💡 Como Pagar?</h4>
-                <div class="step"><strong>1.</strong> Copie o código em destaque acima.</div>
-                <div class="step"><strong>2.</strong> Abra o aplicativo do seu banco no celular.</div>
-                <div class="step"><strong>3.</strong> Acesse a área Pix e escolha a opção <strong>"Pix Copia e Cola"</strong>.</div>
-                <div class="step"><strong>4.</strong> Cole o código e confirme o pagamento de <strong>R$ ${formattedAmount}</strong>.</div>
-            </div>
+                    <!-- Heart Divider -->
+                    <tr>
+                        <td align="center" style="padding-top: 20px;">
+                            <span style="font-size: 16px; color: #d4af37;">💛</span>
+                        </td>
+                    </tr>
 
-            <table class="summary-table">
-                <tr>
-                    <th>Item do Pedido</th>
-                    <td>Camisa Devocional de Nossa Senhora Aparecida (Grátis)</td>
-                </tr>
-                <tr>
-                    <th>Tamanho Escolhido</th>
-                    <td>Camisa Devocional Oficial</td>
-                </tr>
-                <tr>
-                    <th>Taxa de Envio</th>
-                    <td>R$ ${formattedAmount}</td>
-                </tr>
-            </table>
-        </div>
-        <div class="footer">
-            <p>© 2026 Associação Mãe Santíssima. Todos os direitos reservados.</p>
-            <p>Este é um e-mail automático. Por favor, não responda diretamente.</p>
-        </div>
-    </div>
+                    <!-- Title -->
+                    <tr>
+                        <td align="center" style="padding: 10px 30px 15px 30px;">
+                            <h2 style="font-size: 26px; color: #061930; font-weight: 800; margin: 0; font-family: Georgia, serif;">Pix gerado com sucesso!</h2>
+                            <p style="font-size: 14px; color: #475569; margin: 10px 0 0 0; line-height: 1.5;">Para finalizar sua contribuição, utilize o QR Code ou copie o código Pix abaixo.</p>
+                        </td>
+                    </tr>
+
+                    <!-- Main Section (Blue Card & QR Code & Instructions) -->
+                    <tr>
+                        <td style="padding: 10px 30px 25px 30px;">
+                            <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                                <tr>
+                                    <!-- Left Column: Blue Card -->
+                                    <td width="170" valign="top" class="mobile-stack" style="background-color: #061930; border-radius: 12px; padding: 20px 15px; text-align: center;">
+                                        <div style="font-size: 11px; font-weight: bold; color: #d4af37; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">Valor da Contribuição</div>
+                                        <div style="font-size: 18px; font-weight: bold; color: #ffffff; margin-bottom: 2px;">R$</div>
+                                        <div style="font-size: 38px; font-weight: 800; color: #ffffff; line-height: 1; margin-bottom: 15px;">${formattedAmount}</div>
+                                        <div style="border-top: 1px solid rgba(212, 175, 55, 0.3); padding-top: 15px;">
+                                            <span style="font-size: 12px; color: #d4af37; vertical-align: middle;">💛</span>
+                                            <div style="font-size: 10px; color: #cbd5e1; margin-top: 8px;">Esse Pix expira em:<br><strong>30:00 minutos</strong></div>
+                                        </div>
+                                    </td>
+
+                                    <!-- Spacing -->
+                                    <td width="15" class="mobile-stack">&nbsp;</td>
+
+                                    <!-- Middle Column: QR Code -->
+                                    <td width="180" valign="top" class="mobile-stack mobile-margin" align="center" style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 15px;">
+                                        <div style="font-size: 12px; font-weight: bold; color: #061930; margin-bottom: 10px;">Escaneie o QR Code</div>
+                                        <div style="background-color: #ffffff; padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1; display: inline-block;">
+                                            <img src="data:image/jpeg;base64,${parsedData.point_of_interaction?.transaction_data?.qr_code_base64 || ""}" width="130" height="130" style="display: block;" alt="QR Code" />
+                                        </div>
+                                    </td>
+
+                                    <!-- Spacing -->
+                                    <td width="15" class="mobile-stack">&nbsp;</td>
+
+                                    <!-- Right Column: Instructions -->
+                                    <td width="160" valign="middle" class="mobile-stack mobile-margin">
+                                        <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                                            <!-- Step 1 -->
+                                            <tr>
+                                                <td width="30" valign="top" style="padding-bottom: 12px;">
+                                                    <div style="width: 22px; height: 22px; line-height: 22px; background-color: #061930; color: #ffffff; border-radius: 50%; text-align: center; font-size: 11px; font-weight: bold;">1</div>
+                                                </td>
+                                                <td valign="top" style="font-size: 12px; color: #334155; line-height: 1.4; padding-left: 8px; padding-bottom: 12px;">
+                                                    Abra o app do seu banco
+                                                </td>
+                                            </tr>
+                                            <!-- Step 2 -->
+                                            <tr>
+                                                <td width="30" valign="top" style="padding-bottom: 12px;">
+                                                    <div style="width: 22px; height: 22px; line-height: 22px; background-color: #061930; color: #ffffff; border-radius: 50%; text-align: center; font-size: 11px; font-weight: bold;">2</div>
+                                                </td>
+                                                <td valign="top" style="font-size: 12px; color: #334155; line-height: 1.4; padding-left: 8px; padding-bottom: 12px;">
+                                                    Escaneie o QR Code
+                                                </td>
+                                            </tr>
+                                            <!-- Step 3 -->
+                                            <tr>
+                                                <td width="30" valign="top">
+                                                    <div style="width: 22px; height: 22px; line-height: 22px; background-color: #061930; color: #ffffff; border-radius: 50%; text-align: center; font-size: 11px; font-weight: bold;">3</div>
+                                                </td>
+                                                <td valign="top" style="font-size: 12px; color: #334155; line-height: 1.4; padding-left: 8px;">
+                                                    Confirme o pagamento
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+
+                    <!-- Pix Code Box -->
+                    <tr>
+                        <td style="padding: 0 30px 20px 30px;">
+                            <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #ffffff; border: 1px solid #fcd34d; border-radius: 12px; padding: 15px;">
+                                <tr>
+                                    <td>
+                                        <div style="font-size: 11px; font-weight: bold; color: #475569; text-transform: uppercase; margin-bottom: 8px; text-align: center; letter-spacing: 0.5px;">Código Pix (Copia e Cola)</div>
+                                        <div style="font-family: monospace; font-size: 11px; color: #334155; word-break: break-all; background-color: #f8fafc; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; max-height: 85px; overflow-y: auto; line-height: 1.4;">${pixCode}</div>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+
+                    <!-- Important Message Box -->
+                    <tr>
+                        <td style="padding: 0 30px 20px 30px;">
+                            <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #f1f5f9; border-radius: 12px; padding: 15px;">
+                                <tr>
+                                    <td style="font-size: 13px; color: #334155; line-height: 1.5; text-align: center;">
+                                        Sua contribuição é muito importante para que possamos continuar nossa missão.<br><strong>Deus abençoe você e sua família!</strong>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+
+                    <!-- Intercession and Social Networks -->
+                    <tr>
+                        <td style="padding: 10px 30px 20px 30px; border-top: 1px solid #e2e8f0;">
+                            <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                                <tr>
+                                    <td valign="middle" style="font-size: 13px; color: #475569; line-height: 1.4;">
+                                        Que Nossa Senhora Aparecida interceda sempre por você.<br><strong style="color: #d4af37;">Juntos somos mais fortes!</strong>
+                                    </td>
+                                    <td width="140" align="right" valign="middle">
+                                        <div style="font-size: 11px; color: #94a3b8; margin-bottom: 6px;">Acompanhe nosso projeto:</div>
+                                        <a href="https://instagram.com" target="_blank" style="text-decoration: none; margin-left: 8px;"><img src="https://cdn-icons-png.flaticon.com/32/733/733558.png" width="22" height="22" style="border:0;" alt="Instagram" /></a>
+                                        <a href="https://facebook.com" target="_blank" style="text-decoration: none; margin-left: 8px;"><img src="https://cdn-icons-png.flaticon.com/32/733/733547.png" width="22" height="22" style="border:0;" alt="Facebook" /></a>
+                                        <a href="https://youtube.com" target="_blank" style="text-decoration: none; margin-left: 8px;"><img src="https://cdn-icons-png.flaticon.com/32/733/733646.png" width="22" height="22" style="border:0;" alt="YouTube" /></a>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+
+                    <!-- Bottom Bar -->
+                    <tr>
+                        <td align="center" style="background-color: #061930; padding: 15px 20px; border-top: 3px solid #d4af37;">
+                            <span style="font-size: 12px; color: #ffffff; font-weight: bold; letter-spacing: 0.5px;">Nossa Senhora Aparecida, rogai por nós!</span>
+                        </td>
+                    </tr>
+
+                </table>
+            </td>
+        </tr>
+    </table>
 </body>
 </html>
         `;
