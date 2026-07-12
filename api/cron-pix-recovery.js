@@ -97,13 +97,13 @@ module.exports = async (req, res) => {
             }
 
             // Window check:
-            // Send friendly reminder at ~2h (90-150 mins) and final warning with social proof at ~18h (1050-1110 mins)
+            // Send friendly reminder at ~30 mins (15-75 mins window) and final warning with social proof at ~3h (135-195 mins window)
             let emailType = 0; // 0 = none, 1 = friendly, 2 = final urgency
 
-            if (diffMinutes >= 90 && diffMinutes < 150) {
-                emailType = 1; // Friendly reminder (2h)
-            } else if (diffMinutes >= 1050 && diffMinutes < 1110) {
-                emailType = 2; // Final warning with social proof (18h)
+            if (diffMinutes >= 15 && diffMinutes < 75) {
+                emailType = 1; // Friendly reminder (30 min)
+            } else if (diffMinutes >= 135 && diffMinutes < 195) {
+                emailType = 2; // Final warning with social proof (3h)
             }
 
             if (emailType > 0) {
