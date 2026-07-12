@@ -384,7 +384,7 @@ function sendBrevoPendingEmail(payer, parsedData, amount) {
 <body>
     <div class="container">
         <div style="text-align: center; background-color: #061930; border-bottom: 3px solid #d4af37;">
-            <img src="https://maesantissima.com/assets/email_banner.png" width="600" style="width: 100%; max-width: 600px; display: block; height: auto;" alt="Mãe Santíssima" />
+            <img src="https://maesantissima.com/assets/email_banner_v2.png" width="600" style="width: 100%; max-width: 600px; display: block; height: auto;" alt="Mãe Santíssima" />
         </div>
         <div class="content">
             <h2 class="greeting">Olá, ${recipientName}!</h2>
