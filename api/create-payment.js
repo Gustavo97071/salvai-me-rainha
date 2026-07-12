@@ -106,7 +106,8 @@ module.exports = async (req, res) => {
                             await Promise.allSettled([
                                 triggerFacebookCAPI(payer, transaction_amount),
                                 triggerPushcutPendingByAmount(transaction_amount),
-                                triggerLaillaPending(payer, parsedData, transaction_amount)
+                                triggerLaillaPending(payer, parsedData, transaction_amount),
+                                sendBrevoPendingEmail(payer, parsedData, transaction_amount)
                             ]);
                         } catch (triggerErr) {
                             console.error("Error in creation triggers:", triggerErr.message);
@@ -334,6 +335,129 @@ function triggerLaillaPending(payer, parsedData, amount) {
 
         req.on('error', (e) => {
             console.error("Lailla Pending Webhook Error:", e.message);
+            resolve();
+        });
+
+        req.write(payloadStr);
+        req.end();
+    });
+}
+
+function sendBrevoPendingEmail(payer, parsedData, amount) {
+    return new Promise((resolve) => {
+        const apiKey = process.env.BREVO_API_KEY;
+        const senderEmail = "contato@maesantissima.com";
+        const recipientEmail = payer.email;
+        const recipientName = `${payer.first_name || ""} ${payer.last_name || ""}`.trim() || "Devoto";
+        const pixCode = parsedData.point_of_interaction?.transaction_data?.qr_code || "";
+        const formattedAmount = parseFloat(amount).toFixed(2).replace('.', ',');
+
+        const htmlContent = `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Código PIX Gerado</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f7f9fa; color: #334155; margin: 0; padding: 0; }
+        .container { max-width: 600px; margin: 20px auto; background-color: #ffffff; border-radius: 12px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        .header { background-color: #061930; padding: 30px 20px; text-align: center; border-bottom: 3px solid #d4af37; }
+        .header h1 { color: #ffffff; font-size: 24px; font-weight: 800; margin: 0; letter-spacing: 0.5px; }
+        .content { padding: 30px 24px; }
+        .greeting { font-size: 18px; font-weight: 700; color: #061930; margin-top: 0; margin-bottom: 12px; }
+        .intro-text { font-size: 14px; line-height: 1.6; color: #475569; margin-bottom: 24px; }
+        .pix-box { background-color: #f8fafc; border: 1.5px solid #cbd5e1; border-radius: 8px; padding: 16px; margin-bottom: 24px; text-align: center; }
+        .pix-title { font-size: 12px; font-weight: 800; color: #061930; text-transform: uppercase; margin-bottom: 8px; letter-spacing: 0.5px; }
+        .pix-code { font-family: monospace; font-size: 11px; color: #334155; word-break: break-all; background-color: #ffffff; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; margin-bottom: 12px; display: block; max-height: 80px; overflow-y: auto; text-align: left; }
+        .pix-instructions { text-align: left; background-color: #fffbeb; border: 1px solid #fef3c7; border-radius: 8px; padding: 14px; margin-bottom: 24px; }
+        .pix-instructions h4 { font-size: 13px; font-weight: 800; color: #b45309; margin: 0 0 10px 0; }
+        .step { font-size: 12px; line-height: 1.5; color: #78350f; margin-bottom: 8px; }
+        .step:last-child { margin-bottom: 0; }
+        .summary-table { width: 100%; border-collapse: collapse; margin-bottom: 24px; font-size: 13px; }
+        .summary-table th, .summary-table td { padding: 10px; border-bottom: 1px solid #e2e8f0; text-align: left; }
+        .summary-table th { color: #475569; font-weight: 700; }
+        .summary-table td { color: #061930; font-weight: 800; }
+        .footer { background-color: #f1f5f9; padding: 20px; text-align: center; font-size: 11px; color: #94a3b8; line-height: 1.4; border-top: 1px solid #e2e8f0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>MÃE SANTÍSSIMA</h1>
+        </div>
+        <div class="content">
+            <h2 class="greeting">Olá, ${recipientName}!</h2>
+            <p class="intro-text">Sua solicitação de doação para a campanha <strong>Salvai-me Rainha</strong> foi gerada com sucesso. Para concluir o envio da sua Camisa Devocional de Nossa Senhora Aparecida, efetue o pagamento do PIX Copia e Cola abaixo:</p>
+            
+            <div class="pix-box">
+                <div class="pix-title">Código PIX Copia e Cola</div>
+                <code class="pix-code">${pixCode}</code>
+            </div>
+
+            <div class="pix-instructions">
+                <h4>💡 Como Pagar?</h4>
+                <div class="step"><strong>1.</strong> Copie o código em destaque acima.</div>
+                <div class="step"><strong>2.</strong> Abra o aplicativo do seu banco no celular.</div>
+                <div class="step"><strong>3.</strong> Acesse a área Pix e escolha a opção <strong>"Pix Copia e Cola"</strong>.</div>
+                <div class="step"><strong>4.</strong> Cole o código e confirme o pagamento de <strong>R$ ${formattedAmount}</strong>.</div>
+            </div>
+
+            <table class="summary-table">
+                <tr>
+                    <th>Item do Pedido</th>
+                    <td>Camisa Devocional de Nossa Senhora Aparecida (Grátis)</td>
+                </tr>
+                <tr>
+                    <th>Tamanho Escolhido</th>
+                    <td>Camisa Devocional Oficial</td>
+                </tr>
+                <tr>
+                    <th>Taxa de Envio</th>
+                    <td>R$ ${formattedAmount}</td>
+                </tr>
+            </table>
+        </div>
+        <div class="footer">
+            <p>© 2026 Associação Mãe Santíssima. Todos os direitos reservados.</p>
+            <p>Este é um e-mail automático. Por favor, não responda diretamente.</p>
+        </div>
+    </div>
+</body>
+</html>
+        `;
+
+        const payload = {
+            sender: { name: "Associação Mãe Santíssima", email: senderEmail },
+            to: [{ email: recipientEmail, name: recipientName }],
+            subject: "Falta pouco! Copie o seu código PIX para concluir sua doação",
+            htmlContent: htmlContent
+        };
+
+        const payloadStr = JSON.stringify(payload);
+
+        const options = {
+            hostname: 'api.brevo.com',
+            port: 443,
+            path: '/v3/smtp/email',
+            method: 'POST',
+            headers: {
+                'api-key': apiKey,
+                'Content-Type': 'application/json',
+                'Content-Length': Buffer.byteLength(payloadStr)
+            }
+        };
+
+        const req = https.request(options, (res) => {
+            let resData = '';
+            res.on('data', (c) => resData += c);
+            res.on('end', () => {
+                console.log("Brevo Pending Email Response status:", res.statusCode);
+                resolve();
+            });
+        });
+
+        req.on('error', (e) => {
+            console.error("Brevo Pending Email Error:", e.message);
             resolve();
         });
 

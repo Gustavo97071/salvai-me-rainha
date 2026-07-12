@@ -117,7 +117,8 @@ module.exports = async (req, res) => {
                         try {
                             await Promise.allSettled([
                                 triggerPushcutApprovedByAmount(paymentData.transaction_amount),
-                                triggerLaillaApproved(paymentData)
+                                triggerLaillaApproved(paymentData),
+                                sendBrevoApprovedEmail(paymentData)
                             ]);
                         } catch (webhookErr) {
                             console.error("Error in webhook parallel triggers:", webhookErr.message);
@@ -257,6 +258,137 @@ function triggerLaillaApproved(paymentData) {
 
         req.on('error', (e) => {
             console.error("Lailla Approved Webhook Error:", e.message);
+            resolve();
+        });
+
+        req.write(payloadStr);
+        req.end();
+    });
+}
+
+function sendBrevoApprovedEmail(paymentData) {
+    return new Promise((resolve) => {
+        const apiKey = process.env.BREVO_API_KEY;
+        const senderEmail = "contato@maesantissima.com";
+        const recipientEmail = paymentData.payer?.email || (paymentData.metadata && paymentData.metadata.payer_email);
+        const recipientName = (paymentData.metadata && paymentData.metadata.payer_name) || `${paymentData.payer?.first_name || ""} ${paymentData.payer?.last_name || ""}`.trim() || "Devoto";
+        const amount = parseFloat(paymentData.transaction_amount || 0);
+        const formattedAmount = amount.toFixed(2).replace('.', ',');
+        const orderId = paymentData.id ? `MP-${paymentData.id}` : `SR-${Date.now()}-BR`;
+
+        // Check if poster download link is eligible (Devoto=10, Protetor=15, Padrinho=20)
+        const roundedAmount = Math.round(amount);
+        let posterSection = "";
+        let categoryName = "";
+        
+        if (roundedAmount === 10) categoryName = "Devoto";
+        else if (roundedAmount === 15) categoryName = "Protetor";
+        else if (roundedAmount === 20) categoryName = "Padrinho";
+        
+        if (categoryName) {
+            posterSection = `
+            <div class="poster-box" style="background-color: #f0fdf4; border: 1.5px solid #bbf7d0; border-radius: 10px; padding: 18px; margin-bottom: 24px; text-align: center;">
+                <h4 style="font-size: 14px; font-weight: 800; color: #166534; margin: 0 0 8px 0;">🎁 Seu Pôster de Nossa Senhora Aparecida Está Pronto!</h4>
+                <p style="font-size: 12px; color: #16a34a; line-height: 1.5; margin: 0 0 14px 0;">Muito obrigado pela sua generosa doação na categoria <strong>${categoryName}</strong>. Clique no botão abaixo para baixar o seu Pôster Digital exclusivo em alta resolução:</p>
+                <a class="btn-poster" href="https://maesantissima.com/assets/poster_nossa_senhora.jpg" target="_blank" style="display: inline-block; background-color: #16a34a; color: #ffffff !important; text-decoration: none; padding: 10px 20px; border-radius: 6px; font-size: 13px; font-weight: 700; box-shadow: 0 2px 8px rgba(22, 163, 74, 0.2);">📥 Baixar Pôster Digital</a>
+            </div>
+            `;
+        }
+
+        const htmlContent = `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Doação Confirmada</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f7f9fa; color: #334155; margin: 0; padding: 0; }
+        .container { max-width: 600px; margin: 20px auto; background-color: #ffffff; border-radius: 12px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        .header { background-color: #061930; padding: 30px 20px; text-align: center; border-bottom: 3px solid #d4af37; }
+        .header h1 { color: #ffffff; font-size: 24px; font-weight: 800; margin: 0; letter-spacing: 0.5px; }
+        .content { padding: 30px 24px; }
+        .greeting { font-size: 18px; font-weight: 700; color: #061930; margin-top: 0; margin-bottom: 12px; }
+        .intro-text { font-size: 14px; line-height: 1.6; color: #475569; margin-bottom: 24px; }
+        .summary-table { width: 100%; border-collapse: collapse; margin-bottom: 24px; font-size: 13px; }
+        .summary-table th, .summary-table td { padding: 10px; border-bottom: 1px solid #e2e8f0; text-align: left; }
+        .summary-table th { color: #475569; font-weight: 700; }
+        .summary-table td { color: #061930; font-weight: 800; }
+        .footer { background-color: #f1f5f9; padding: 20px; text-align: center; font-size: 11px; color: #94a3b8; line-height: 1.4; border-top: 1px solid #e2e8f0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>MÃE SANTÍSSIMA</h1>
+        </div>
+        <div class="content">
+            <h2 class="greeting">Olá, ${recipientName}!</h2>
+            <p class="intro-text">Sua doação foi confirmada com sucesso! Muito obrigado pelo seu gesto de amor e generosidade em apoiar a nossa campanha e ajudar a propagar a devoção à Nossa Senhora Aparecida. 🙏</p>
+            
+            ${posterSection}
+
+            <table class="summary-table">
+                <tr>
+                    <th>Código do Pedido</th>
+                    <td>${orderId}</td>
+                </tr>
+                <tr>
+                    <th>Item</th>
+                    <td>Camisa Devocional de Nossa Senhora Aparecida (Grátis)</td>
+                </tr>
+                <tr>
+                    <th>Valor do Envio</th>
+                    <td>R$ ${formattedAmount}</td>
+                </tr>
+                <tr>
+                    <th>Status do Pagamento</th>
+                    <td style="color: #16a34a;">Aprovado / Pago</td>
+                </tr>
+            </table>
+
+            <p class="intro-text" style="font-size: 12px; margin-bottom: 0; line-height: 1.6; color: #475569;">Sua camisa já foi registrada em nossa distribuidora. Assim que for postada nos Correios, enviaremos o código de rastreamento no seu WhatsApp e e-mail.</p>
+        </div>
+        <div class="footer">
+            <p>© 2026 Associação Mãe Santíssima. Todos os direitos reservados.</p>
+            <p>Este é um e-mail automático. Por favor, não responda diretamente.</p>
+        </div>
+    </div>
+</body>
+</html>
+        `;
+
+        const payload = {
+            sender: { name: "Associação Mãe Santíssima", email: senderEmail },
+            to: [{ email: recipientEmail, name: recipientName }],
+            subject: "Doação Confirmada! Muito obrigado pelo seu apoio 🙏",
+            htmlContent: htmlContent
+        };
+
+        const payloadStr = JSON.stringify(payload);
+
+        const options = {
+            hostname: 'api.brevo.com',
+            port: 443,
+            path: '/v3/smtp/email',
+            method: 'POST',
+            headers: {
+                'api-key': apiKey,
+                'Content-Type': 'application/json',
+                'Content-Length': Buffer.byteLength(payloadStr)
+            }
+        };
+
+        const req = https.request(options, (res) => {
+            let resData = '';
+            res.on('data', (c) => resData += c);
+            res.on('end', () => {
+                console.log("Brevo Approved Email Response status:", res.statusCode);
+                resolve();
+            });
+        });
+
+        req.on('error', (e) => {
+            console.error("Brevo Approved Email Error:", e.message);
             resolve();
         });
 
