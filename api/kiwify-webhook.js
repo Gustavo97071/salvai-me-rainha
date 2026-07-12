@@ -354,7 +354,7 @@ function sendBrevoApprovedEmail(paymentData) {
                 </tr>
             </table>
 
-            <p class="intro-text" style="font-size: 12px; margin-bottom: 0; line-height: 1.6; color: #475569;">Sua camisa já foi registrada em nossa distribuidora. Assim que for postada nos Correios, enviaremos o código de rastreamento no seu WhatsApp e e-mail.</p>
+            <p class="intro-text" style="font-size: 12px; margin-bottom: 0; line-height: 1.6; color: #475569;">Caso sua participação contemple o envio da Camisa Devocional de Nossa Senhora Aparecida, o pedido será registrado em nossa distribuidora. O prazo para postagem é de até 10 dias úteis. Após a postagem, o prazo estimado de entrega pelos Correios é de até 7 dias úteis, podendo variar conforme a região. Assim que a encomenda for postada, o código de rastreamento será enviado para o seu e-mail, para que você possa acompanhar todo o processo de entrega.</p>
         </div>
         <div class="footer">
             <p>© 2026 Associação Mãe Santíssima. Todos os direitos reservados.</p>
