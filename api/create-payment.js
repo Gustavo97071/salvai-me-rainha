@@ -409,11 +409,7 @@ function sendBrevoPendingEmail(payer, parsedData, amount) {
                     <td>Camisa Devocional de Nossa Senhora Aparecida (Grátis)</td>
                 </tr>
                 <tr>
-                    <th>Tamanho Escolhido</th>
-                    <td>Camisa Devocional Oficial</td>
-                </tr>
-                <tr>
-                    <th>Taxa de Envio</th>
+                    <th>Doação</th>
                     <td>R$ ${formattedAmount}</td>
                 </tr>
             </table>
