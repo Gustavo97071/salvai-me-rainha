@@ -305,25 +305,6 @@ function sendBrevoApprovedEmail(paymentData) {
         const formattedAmount = amount.toFixed(2).replace('.', ',');
         const orderId = paymentData.id ? `KW-${paymentData.id}` : `SR-${Date.now()}-BR`;
 
-        // Check if poster download link is eligible (Devoto=10, Protetor=15, Padrinho=20)
-        const roundedAmount = Math.round(amount);
-        let posterSection = "";
-        let categoryName = "";
-        
-        if (roundedAmount === 10) categoryName = "Devoto";
-        else if (roundedAmount === 15) categoryName = "Protetor";
-        else if (roundedAmount === 20) categoryName = "Padrinho";
-        
-        if (categoryName) {
-            posterSection = `
-            <div class="poster-box" style="background-color: #f0fdf4; border: 1.5px solid #bbf7d0; border-radius: 10px; padding: 18px; margin-bottom: 24px; text-align: center;">
-                <h4 style="font-size: 14px; font-weight: 800; color: #166534; margin: 0 0 8px 0;">🎁 Seu Pôster de Nossa Senhora Aparecida Está Pronto!</h4>
-                <p style="font-size: 12px; color: #16a34a; line-height: 1.5; margin: 0 0 14px 0;">Muito obrigado pela sua generosa doação na categoria <strong>${categoryName}</strong>. Clique no botão abaixo para baixar o seu Pôster Digital exclusivo em alta resolução:</p>
-                <a class="btn-poster" href="https://maesantissima.com/assets/poster_nossa_senhora.jpg" target="_blank" style="display: inline-block; background-color: #16a34a; color: #ffffff !important; text-decoration: none; padding: 10px 20px; border-radius: 6px; font-size: 13px; font-weight: 700; box-shadow: 0 2px 8px rgba(22, 163, 74, 0.2);">📥 Baixar Pôster Digital</a>
-            </div>
-            `;
-        }
-
         const htmlContent = `
 <!DOCTYPE html>
 <html>
@@ -333,8 +314,6 @@ function sendBrevoApprovedEmail(paymentData) {
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f7f9fa; color: #334155; margin: 0; padding: 0; }
         .container { max-width: 600px; margin: 20px auto; background-color: #ffffff; border-radius: 12px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-        .header { background-color: #061930; padding: 30px 20px; text-align: center; border-bottom: 3px solid #d4af37; }
-        .header h1 { color: #ffffff; font-size: 24px; font-weight: 800; margin: 0; letter-spacing: 0.5px; }
         .content { padding: 30px 24px; }
         .greeting { font-size: 18px; font-weight: 700; color: #061930; margin-top: 0; margin-bottom: 12px; }
         .intro-text { font-size: 14px; line-height: 1.6; color: #475569; margin-bottom: 24px; }
@@ -347,15 +326,15 @@ function sendBrevoApprovedEmail(paymentData) {
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <h1>MÃE SANTÍSSIMA</h1>
+        <div style="text-align: center; background-color: #061930; border-bottom: 3px solid #d4af37;">
+            <img src="https://maesantissima.com/assets/email_banner_v2.png" width="600" style="width: 100%; max-width: 600px; display: block; height: auto;" alt="Mãe Santíssima" />
         </div>
         <div class="content">
-            <h2 class="greeting">Olá, ${recipientName}!</h2>
-            <p class="intro-text">Sua doação foi confirmada com sucesso! Muito obrigado pelo seu gesto de amor e generosidade em apoiar a nossa campanha e ajudar a propagar a devoção à Nossa Senhora Aparecida. 🙏</p>
+            <h2 class="greeting" style="color: #16a34a; font-weight: 800; font-size: 20px; display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 24px;">✓</span> Pagamento Confirmado!
+            </h2>
+            <p class="intro-text">Olá, <strong>${recipientName}</strong>! Sua doação foi confirmada com sucesso! Muito obrigado pelo seu gesto de amor e generosidade em apoiar a nossa campanha e ajudar a propagar a devoção à Nossa Senhora Aparecida. 💛</p>
             
-            ${posterSection}
-
             <table class="summary-table">
                 <tr>
                     <th>Código do Pedido</th>
@@ -366,12 +345,12 @@ function sendBrevoApprovedEmail(paymentData) {
                     <td>Camisa Devocional de Nossa Senhora Aparecida (Grátis)</td>
                 </tr>
                 <tr>
-                    <th>Valor do Envio</th>
+                    <th>Doação</th>
                     <td>R$ ${formattedAmount}</td>
                 </tr>
                 <tr>
                     <th>Status do Pagamento</th>
-                    <td style="color: #16a34a;">Aprovado / Pago</td>
+                    <td style="color: #16a34a; font-weight: bold;">🟢 Aprovado / Pago</td>
                 </tr>
             </table>
 
