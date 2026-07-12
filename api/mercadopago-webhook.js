@@ -273,7 +273,10 @@ function sendBrevoApprovedEmail(paymentData) {
     return new Promise((resolve) => {
         const apiKey = process.env.BREVO_API_KEY;
         const senderEmail = "contato@maesantissima.com";
-        const recipientEmail = paymentData.payer?.email || (paymentData.metadata && paymentData.metadata.payer_email);
+        let recipientEmail = (paymentData.metadata && paymentData.metadata.payer_email) || paymentData.payer?.email;
+        if (recipientEmail && (!recipientEmail.includes('@') || recipientEmail.includes('XXX'))) {
+            recipientEmail = (paymentData.metadata && paymentData.metadata.payer_email) || "";
+        }
         const recipientName = (paymentData.metadata && paymentData.metadata.payer_name) || `${paymentData.payer?.first_name || ""} ${paymentData.payer?.last_name || ""}`.trim() || "Devoto";
         const amount = parseFloat(paymentData.transaction_amount || 0);
         const formattedAmount = amount.toFixed(2).replace('.', ',');
