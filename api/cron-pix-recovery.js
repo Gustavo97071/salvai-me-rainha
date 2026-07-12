@@ -2,9 +2,10 @@ const https = require('https');
 const url = require('url');
 
 module.exports = async (req, res) => {
-    // Authorize Vercel Cron requests
-    const cronHeader = req.headers['x-vercel-cron'];
-    if (process.env.NODE_ENV === 'production' && cronHeader !== '1') {
+    // Authorize Cron requests (supporting external triggers like cron-job.org)
+    const recoveryToken = req.headers['x-recovery-token'];
+    const secretToken = "7a8d8e5f2c4b1a0d3f8e6c7d9a0b1c2d";
+    if (process.env.NODE_ENV === 'production' && recoveryToken !== secretToken) {
         return res.status(401).json({ error: 'Unauthorized' });
     }
 
