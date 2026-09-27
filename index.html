@@ -12,7 +12,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     
     <!-- Custom Stylesheet -->
-    <link rel="stylesheet" href="style.css?v=1.6.0">
+    <link rel="stylesheet" href="style.css?v=2.0.0">
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=AW-389926235"></script>
     <script>
@@ -143,7 +143,7 @@
                     </div>
                     
                     <button class="buy-button-cta-inline" onclick="app.openCheckout()">
-                        Quero Contribuir
+                        Quero Receber Grátis
                         <span class="pulse-ring"></span>
                     </button>
                 </section>
@@ -191,7 +191,7 @@
                             <span class="accordion-arrow">▼</span>
                         </button>
                         <div class="accordion-content">
-                            <p>A campanha Salvai-me Mãe Santíssima apoia projetos de evangelização e sociais. A distribuição gratuita destas camisetas religiosas faz parte da nossa missão de propagar a devoção mariana nos lares. A única contribuição solicitada ao devoto para receber a camiseta física é a doação Benfeitor no valor de R$ 50,00 reais, cobrindo exclusivamente as despesas de envio e a logística de entrega dos Correios. Para as doações de outros valores (como Devoto de R$ 10,00, Protetor de R$ 15,00 ou Padrinho de R$ 20,00), os devotos receberão como agradecimento um maravilhoso Kit Devocional Online de Nossa Senhora Aparecida diretamente no e-mail cadastrado.</p>
+                            <p>A campanha Salvai-me Mãe Santíssima apoia projetos de evangelização e sociais. A distribuição gratuita destas camisetas religiosas faz parte da nossa missão de propagar a devoção mariana nos lares. A única contribuição solicitada ao devoto para receber a camiseta física é a doação Benfeitor no valor de R$ 60,00 reais, cobrindo exclusivamente as despesas de envio e a logística de entrega dos Correios. Para as doações de outros valores (como Devoto de R$ 10,00, Protetor de R$ 15,00 ou Padrinho de R$ 20,00), os devotos receberão como agradecimento um maravilhoso Kit Devocional Online de Nossa Senhora Aparecida diretamente no e-mail cadastrado.</p>
                         </div>
                     </div>
 
@@ -347,7 +347,7 @@
                 
                 <section class="footer-cta-container text-center" style="padding: 24px 16px; background-color: #fafafa; border-top: 1px solid var(--clr-border);">
                     <button class="buy-button-cta-inline" onclick="app.openCheckout()">
-                        Quero Contribuir
+                        Quero Receber Grátis
                     </button>
                 </section>
 
@@ -402,6 +402,12 @@
                         </div>
 
                         <div class="form-group">
+                            <label for="input-cpf">CPF (obrigatório para nota fiscal)</label>
+                            <input type="tel" id="input-cpf" placeholder="000.000.000-00" maxlength="14" oninput="app.onCpfInput(this)" required>
+                            <span class="error-msg" id="error-cpf">Insira um CPF válido</span>
+                        </div>
+
+                        <div class="form-group">
                             <label for="input-email">E-mail para Confirmação</label>
                             <input type="email" id="input-email" placeholder="Ex: seunome@email.com" required autocomplete="email">
                             <span class="error-msg" id="error-email">Insira um e-mail válido</span>
@@ -422,32 +428,32 @@
                 <!-- STEP 2: SHIPPING ADDRESS & SHIPPING SELECTION -->
                 <div class="checkout-step" id="step-form-2">
                     <h3 class="step-title">Endereço para Envio do Brinde</h3>
-                    <p class="step-desc">Digite seu CEP para preencher o endereço postal automaticamente.</p>
+                    <p class="step-desc">Digite seu CEP para preencher o endereço automaticamente.</p>
 
                     <form id="form-shipping" onsubmit="app.nextStep(2, event)">
                         <div class="form-group zip-group">
                             <label for="input-cep">CEP</label>
                             <div class="cep-input-wrapper">
-                                <input type="tel" id="input-cep" placeholder="00000-000" maxlength="9" onblur="app.fetchAddress(this.value)" required>
+                                <input type="tel" id="input-cep" placeholder="00000-000" maxlength="9" oninput="app.onCepInput(this)" onblur="app.fetchAddress(this.value)" required>
                                 <div class="cep-spinner" id="cep-loading"></div>
                             </div>
-                            <span class="error-msg" id="error-cep">CEP não encontrado ou inválido</span>
+                            <span class="error-msg" id="error-cep">CEP não encontrado. Preencha o endereço abaixo.</span>
                         </div>
 
-                        <div class="form-row">
+                        <div class="form-row" style="display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); gap: 10px; width: 100%; max-width: 100%; box-sizing: border-box;">
                             <div class="form-group flex-2">
                                 <label for="input-street">Rua / Avenida</label>
                                 <input type="text" id="input-street" placeholder="Rua Francisca Júlia" required>
                             </div>
                             <div class="form-group flex-1">
                                 <label for="input-number">Número</label>
-                                <input type="text" id="input-number" placeholder="290" required>
+                                <input type="text" id="input-number" placeholder="290 ou S/N" required>
                             </div>
                         </div>
 
                         <div class="form-group">
                             <label for="input-complement">Complemento (Opcional)</label>
-                            <input type="text" id="input-complement" placeholder="Apto 12, Bloco C">
+                            <input type="text" id="input-complement" placeholder="Apto 12, Bloco C, Casa 2">
                         </div>
 
                         <div class="form-group">
@@ -455,14 +461,14 @@
                             <input type="text" id="input-neighborhood" placeholder="Santana" required>
                         </div>
 
-                        <div class="form-row">
+                        <div class="form-row" style="display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); gap: 10px; width: 100%; max-width: 100%; box-sizing: border-box;">
                             <div class="form-group flex-2">
                                 <label for="input-city">Cidade</label>
-                                <input type="text" id="input-city" placeholder="São Paulo" required readonly>
+                                <input type="text" id="input-city" placeholder="São Paulo" required>
                             </div>
                             <div class="form-group flex-1">
-                                <label for="input-state">Estado</label>
-                                <input type="text" id="input-state" placeholder="SP" required readonly>
+                                <label for="input-state">Estado (UF)</label>
+                                <input type="text" id="input-state" placeholder="SP" maxlength="2" required style="text-transform: uppercase;">
                             </div>
                         </div>
 
@@ -490,11 +496,11 @@
                                 <span class="option-price">R$ 20,00</span>
                             </label>
                             <label class="shipping-option-card active" id="label-shipping-benfeitor">
-                                <input type="radio" name="shipping-fee" value="50.00" checked onclick="app.updateShipping(50.00, 'benfeitor')">
+                                <input type="radio" name="shipping-fee" value="60.00" checked onclick="app.updateShipping(60.00, 'benfeitor')">
                                 <div class="shipping-option-info">
                                     <span class="option-name">Doação Benfeitor</span>
                                 </div>
-                                <span class="option-price">R$ 50,00</span>
+                                <span class="option-price">R$ 60,00</span>
                             </label>
                         </div>
 
@@ -569,192 +575,313 @@
             </div>
         </div>
 
-        <!-- 3. SUCCESS VIEW -->
+        <!-- 3. SUCCESS VIEW (EXACT REFERENCE LAYOUT) -->
         <div id="view-success" class="app-view">
-            <div class="success-screen-content">
-                <div class="success-badge-container">
-                    <div class="success-circle waiting" id="success-status-icon">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-                    </div>
-                </div>
+            <div class="success-screen-content-v2">
                 
-                <h1 id="success-status-title">Aguardando Pagamento</h1>
-                <p class="success-main-text" id="success-status-desc">Assim que o pagamento for confirmado, o pedido será enviado e o código de rastreamento será enviado no seu WhatsApp.</p>
-                
-                <!-- Confetti Canvas -->
-                <canvas id="confetti-canvas" class="confetti-canvas"></canvas>
-
-                <!-- Order Receipt Card -->
-                <div class="receipt-card">
-                    <div class="receipt-header">
-                        <span>Código do Pedido:</span>
-                        <strong id="success-order-id">#SR-136413-BR</strong>
+                <!-- TOP DEVOTIONAL HERO HEADER -->
+                <div class="ref-hero-header">
+                    <div class="ref-header-bg">
+                        <img src="assets/hero_fatima.jpg" alt="Nossa Senhora Aparecida Header" class="ref-hero-bg-img">
+                        <div class="ref-hero-overlay"></div>
                     </div>
-                    <div class="receipt-item-row">
-                        <div class="item-thumb">
-                            <img src="assets/camiseta_frente.jpg" alt="Camisa Nossa Senhora Aparecida">
+                    <div class="ref-hero-content">
+                        <div class="ref-brand-logo">
+                            <span class="crown-icon">👑</span>
+                            <div class="brand-titles">
+                                <span class="brand-main">Salvai-me Rainha</span>
+                                <span class="brand-sub">Projeto Nossa Senhora Aparecida</span>
+                            </div>
                         </div>
-                        <div class="item-info">
-                            <span class="item-name">Camisa Devocional de Nossa Senhora Aparecida (Grátis)</span>
-                            <span class="item-qty">Tamanho: <strong id="successDisplaySize">M</strong></span>
-                        </div>
-                        <div class="item-price" id="successTotalPaid">
-                            R$ 19,90
-                        </div>
-                    </div>
-
-                    <div class="receipt-divider"></div>
-
-                    <div class="receipt-details">
-                        <div class="receipt-line">
-                            <span>Destinatário:</span>
-                            <strong id="successDonorName">Carregando...</strong>
-                        </div>
-                        <div class="receipt-line">
-                            <span>Entregar em:</span>
-                            <strong id="successAddressText">Carregando...</strong>
-                        </div>
-                        <div class="receipt-line">
-                            <span>Envio:</span>
-                            <strong id="successShippingType">Frete Expresso</strong>
-                        </div>
-                        <div class="receipt-line">
-                            <span>Método:</span>
-                            <strong id="successMethodText">PIX</strong>
+                        <h1 class="ref-hero-title">
+                            Seu pedido foi confirmado!<br>
+                            Falta apenas o pagamento do <span class="highlight-gold">PIX</span> para enviarmos sua camiseta.
+                        </h1>
+                        <div class="ref-hero-badge">
+                            <span class="shield-check">🛡️</span> É rápido, seguro e leva apenas 2 minutos!
                         </div>
                     </div>
                 </div>
 
-                <!-- Native PIX Container (Only shown when payment method is PIX and not yet confirmed) -->
-                <div class="native-success-section" id="success-pix-container">
-                    <div class="pix-success-box">
-                        <div class="pix-header">
-                            <div class="pix-tag">PAGAMENTO SEGURO VIA PIX</div>
-                            <h3>Aguardando Confirmação do Pagamento</h3>
-                            <p class="pix-instructions">Leia o QR Code abaixo com o aplicativo do seu banco ou copie o código Copia e Cola.</p>
-                        </div>
-                        
-                        <div class="qr-code-box">
-                            <img id="success-pix-qr" src="" alt="QR Code PIX">
-                        </div>
-                        
-                        <p class="pix-timer">⚠️ O QR Code expira em: <span id="success-pix-countdown">15:00</span></p>
-                        <div class="copy-paste-box">
-                            <label>Código PIX Copia e Cola:</label>
-                            <div class="copy-input-row">
-                                <input type="text" id="success-pix-code" value="" readonly>
-                                <button type="button" onclick="app.copySuccessPIXKey()">📋 Copiar</button>
+                <!-- MAIN CARD WRAPPER -->
+                <div class="ref-main-card">
+
+                    <!-- STEP TRACKER TIMELINE -->
+                    <div class="ref-step-tracker">
+                        <div class="ref-step-item completed">
+                            <div class="step-icon-circle">
+                                🛒
+                                <span class="step-check-badge">✓</span>
                             </div>
-                            <span class="copy-alert" id="success-pix-copy-alert">Código copiado!</span>
+                            <span class="step-label">Pedido<br>realizado</span>
                         </div>
 
-                        <!-- Depoimentos WhatsApp -->
-                        <div class="pix-depoimentos-section" style="margin-top: 20px;">
-                            <p class="pix-depoimentos-title" style="font-size: 14px; font-weight: 700; color: #444; text-align: center; margin-bottom: 14px; font-family: 'Outfit', sans-serif;">💬 Veja o que estão dizendo quem já recebeu:</p>
-                            <div class="pix-depoimentos-list" style="display: flex; flex-direction: column; align-items: center; gap: 14px;">
-                                <img src="assets/depoimento_whatsapp_1.jpg" alt="Depoimento Janaina Oliver" class="pix-depoimento-img" style="width: 100%; max-width: 340px; border-radius: 12px; box-shadow: 0 3px 10px rgba(0,0,0,0.12);" loading="lazy">
-                                <img src="assets/depoimento_whatsapp_2.jpg" alt="Depoimento Claudiana Vale" class="pix-depoimento-img" style="width: 100%; max-width: 340px; border-radius: 12px; box-shadow: 0 3px 10px rgba(0,0,0,0.12);" loading="lazy">
-                                <img src="assets/depoimento_whatsapp_3.png" alt="Depoimento Thalita Soares" class="pix-depoimento-img" style="width: 100%; max-width: 340px; border-radius: 12px; box-shadow: 0 3px 10px rgba(0,0,0,0.12);" loading="lazy">
+                        <div class="ref-step-line completed"></div>
+
+                        <div class="ref-step-item completed">
+                            <div class="step-icon-circle">
+                                📋
+                                <span class="step-check-badge">✓</span>
                             </div>
+                            <span class="step-label">Pedido<br>confirmado</span>
                         </div>
 
-                        <p style="font-size: 13.5px; font-weight: 700; color: var(--clr-primary); margin: 24px 0 6px 0; font-family: 'Outfit', sans-serif; text-align: center;">
-                            🙏 Escute a mensagem de bênção do Padre Miguel enquanto aguarda a confirmação:
-                        </p>
+                        <div class="ref-step-line active"></div>
 
-                        <!-- Priest Message Audio Player (WhatsApp Style) -->
-                        <div class="wa-audio-container">
-                            <div class="wa-audio-bubble">
-                                <!-- Avatar with WhatsApp Green Mic Badge -->
-                                <div class="wa-avatar-container">
-                                    <img src="assets/padre.jpg" alt="Padre" class="wa-avatar">
-                                    <div class="wa-mic-badge">🎙️</div>
+                        <div class="ref-step-item current">
+                            <div class="step-icon-circle current-pulse">
+                                ❖
+                                <span class="step-clock-badge">🕒</span>
+                            </div>
+                            <span class="step-label bold">Aguardando<br>pagamento do PIX</span>
+                            <span class="etapa-atual-pill">ETAPA ATUAL</span>
+                        </div>
+
+                        <div class="ref-step-line"></div>
+
+                        <div class="ref-step-item future">
+                            <div class="step-icon-circle gray">
+                                🚚
+                            </div>
+                            <span class="step-label muted">Em breve,<br>vamos enviar!</span>
+                        </div>
+                    </div>
+
+                    <!-- REAL-TIME STATUS BANNER (Dynamic JS polling status) -->
+                    <div class="pix-status-container" id="pix-status-card" style="margin: 0 0 20px 0;">
+                        <div class="pix-status-spinner" id="pix-status-loader">
+                            <div class="pulse-ring"></div>
+                            <div class="spinner-dot"></div>
+                        </div>
+                        <span class="pix-status-text" id="success-pix-status-label">⚡ Status: Aguardando confirmação do pagamento em tempo real...</span>
+                    </div>
+
+                    <!-- Hidden elements required by JS -->
+                    <div style="display:none;">
+                        <div id="success-status-icon"></div>
+                        <h2 id="success-status-title">Aguardando Pagamento</h2>
+                        <p id="success-status-desc"></p>
+                    </div>
+
+                    <!-- Confetti Canvas -->
+                    <canvas id="confetti-canvas" class="confetti-canvas"></canvas>
+
+                    <!-- NATIVE PIX CONTAINER -->
+                    <div class="native-success-section" id="success-pix-container">
+                        
+                        <!-- DARK NAVY PIX HEADER BANNER -->
+                        <div class="ref-pix-header-banner">
+                            <span class="ref-pix-icon">❖</span>
+                            <span class="ref-pix-header-title">PAGUE COM PIX</span>
+                            <span class="ref-pix-header-sub">Escaneie o QR Code ou copie a chave PIX</span>
+                        </div>
+
+                        <div class="ref-pix-body">
+                            <!-- QR CODE WITH DECORATIVE DASHES -->
+                            <div class="ref-qr-container">
+                                <div class="qr-dash-left">⚡</div>
+                                <div class="qr-code-box">
+                                    <img id="success-pix-qr" src="" alt="QR Code PIX">
                                 </div>
+                                <div class="qr-dash-right">⚡</div>
+                            </div>
 
-                                <!-- Audio Player Main Content -->
-                                <div class="wa-audio-content">
-                                    <div class="wa-audio-controls-row">
-                                        <!-- Play/Pause Button -->
-                                        <button type="button" id="btn-play-pause-priest" onclick="app.togglePriestAudio()" class="wa-play-btn">
-                                            <!-- Play SVG -->
-                                            <svg id="audio-play-svg" viewBox="0 0 24 24" width="26" height="26" fill="#54656f" style="margin-left: 2px;"><path d="M8 5v14l11-7z"/></svg>
-                                            <!-- Pause SVG -->
-                                            <svg id="audio-pause-svg" viewBox="0 0 24 24" width="26" height="26" fill="#54656f" style="display: none;"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
-                                        </button>
+                            <p class="ref-copy-hint">Ou copie a chave PIX abaixo:</p>
 
-                                        <!-- Custom Waveform Progress Container -->
-                                        <div class="wa-progress-container" onclick="app.seekPriestAudio(event)">
-                                            <!-- Waveform representation (bars) -->
-                                            <div class="wa-waveform" id="wa-waveform-bars">
-                                                <span class="bar" style="height: 12px;"></span>
-                                                <span class="bar" style="height: 18px;"></span>
-                                                <span class="bar" style="height: 10px;"></span>
-                                                <span class="bar" style="height: 24px;"></span>
-                                                <span class="bar" style="height: 16px;"></span>
-                                                <span class="bar" style="height: 28px;"></span>
-                                                <span class="bar" style="height: 14px;"></span>
-                                                <span class="bar" style="height: 20px;"></span>
-                                                <span class="bar" style="height: 8px;"></span>
-                                                <span class="bar" style="height: 22px;"></span>
-                                                <span class="bar" style="height: 16px;"></span>
-                                                <span class="bar" style="height: 26px;"></span>
-                                                <span class="bar" style="height: 12px;"></span>
-                                                <span class="bar" style="height: 18px;"></span>
-                                                <span class="bar" style="height: 22px;"></span>
-                                                <span class="bar" style="height: 10px;"></span>
-                                                <span class="bar" style="height: 24px;"></span>
-                                                <span class="bar" style="height: 14px;"></span>
-                                                <span class="bar" style="height: 20px;"></span>
-                                                <span class="bar" style="height: 8px;"></span>
+                            <!-- COPY PIX KEY INPUT & COPY BUTTON -->
+                            <div class="ref-copy-box">
+                                <div class="ref-copy-input-wrapper">
+                                    <input type="text" id="success-pix-code" value="" readonly class="ref-copy-input">
+                                    <button type="button" onclick="app.copySuccessPIXKey()" class="ref-btn-copiar">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                                        COPIAR
+                                    </button>
+                                </div>
+                                <span class="copy-alert" id="success-pix-copy-alert">✅ Código PIX copiado com sucesso!</span>
+                            </div>
+
+                            <!-- TIMER BAR -->
+                            <div class="ref-timer-bar">
+                                <span class="timer-clock-icon">🕒</span>
+                                <span>Prazo para pagamento:</span>
+                                <strong id="success-pix-countdown">15:00</strong>
+                            </div>
+
+                            <!-- Priest Message Audio Player (WhatsApp Style) -->
+                            <p style="font-size: 13.5px; font-weight: 700; color: var(--clr-primary); margin: 24px 0 8px 0; font-family: 'Outfit', sans-serif; text-align: center;">
+                                🙏 Escute a bênção especial do Padre Miguel enquanto conclui:
+                            </p>
+
+                            <div class="wa-audio-container" style="margin-bottom: 24px;">
+                                <div class="wa-audio-bubble">
+                                    <div class="wa-avatar-container">
+                                        <img src="assets/padre.jpg" alt="Padre" class="wa-avatar">
+                                        <div class="wa-mic-badge">🎙️</div>
+                                    </div>
+
+                                    <div class="wa-audio-content">
+                                        <div class="wa-audio-controls-row">
+                                            <button type="button" id="btn-play-pause-priest" onclick="app.togglePriestAudio()" class="wa-play-btn">
+                                                <svg id="audio-play-svg" viewBox="0 0 24 24" width="26" height="26" fill="#54656f" style="margin-left: 2px;"><path d="M8 5v14l11-7z"/></svg>
+                                                <svg id="audio-pause-svg" viewBox="0 0 24 24" width="26" height="26" fill="#54656f" style="display: none;"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+                                            </button>
+
+                                            <div class="wa-progress-container" onclick="app.seekPriestAudio(event)">
+                                                <div class="wa-waveform" id="wa-waveform-bars">
+                                                    <span class="bar" style="height: 12px;"></span>
+                                                    <span class="bar" style="height: 18px;"></span>
+                                                    <span class="bar" style="height: 10px;"></span>
+                                                    <span class="bar" style="height: 24px;"></span>
+                                                    <span class="bar" style="height: 16px;"></span>
+                                                    <span class="bar" style="height: 28px;"></span>
+                                                    <span class="bar" style="height: 14px;"></span>
+                                                    <span class="bar" style="height: 20px;"></span>
+                                                    <span class="bar" style="height: 8px;"></span>
+                                                    <span class="bar" style="height: 22px;"></span>
+                                                    <span class="bar" style="height: 16px;"></span>
+                                                    <span class="bar" style="height: 26px;"></span>
+                                                    <span class="bar" style="height: 12px;"></span>
+                                                    <span class="bar" style="height: 18px;"></span>
+                                                    <span class="bar" style="height: 22px;"></span>
+                                                    <span class="bar" style="height: 10px;"></span>
+                                                    <span class="bar" style="height: 24px;"></span>
+                                                    <span class="bar" style="height: 14px;"></span>
+                                                    <span class="bar" style="height: 20px;"></span>
+                                                    <span class="bar" style="height: 8px;"></span>
+                                                </div>
+                                                <audio id="priest-audio-file" src="assets/padre_miguel.mp3" preload="metadata"></audio>
                                             </div>
-                                            <!-- Audio Hidden Tag -->
-                                            <audio id="priest-audio-file" src="assets/padre_miguel.mp3" preload="metadata"></audio>
                                         </div>
-                                    </div>
 
-                                    <!-- Bottom Info (Time, Duration, Status) -->
-                                    <div class="wa-info-row">
-                                        <span class="wa-duration" id="audio-time-label">0:00</span>
-                                        <div class="wa-status-meta">
-                                            <span class="wa-timestamp" id="wa-time-now">23:11</span>
-                                            <span class="wa-double-check" id="wa-check-status">✓✓</span>
+                                        <div class="wa-info-row">
+                                            <span class="wa-duration" id="audio-time-label">0:00</span>
+                                            <div class="wa-status-meta">
+                                                <span class="wa-timestamp" id="wa-time-now">23:11</span>
+                                                <span class="wa-double-check" id="wa-check-status">✓✓</span>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
 
-                        <!-- Step by Step Guide for client -->
-                        <div class="pix-steps-guide">
-                            <h4>💡 Como pagar com o código copiado?</h4>
-                            <div class="pix-step-item">
-                                <span class="pix-step-num">1</span>
-                                <p>Clique no botão <strong>"📋 Copiar"</strong> azul acima.</p>
-                            </div>
-                            <div class="pix-step-item">
-                                <span class="pix-step-num">2</span>
-                                <p>Abra o <strong>aplicativo do seu banco</strong> no celular.</p>
-                            </div>
-                            <div class="pix-step-item">
-                                <span class="pix-step-num">3</span>
-                                <p>Acesse a área <strong>Pix</strong> e escolha a opção <strong>"Pix Copia e Cola"</strong>.</p>
-                            </div>
-                            <div class="pix-step-item danger">
-                                <span class="pix-step-num">⚠️</span>
-                                <p><strong>Atenção:</strong> Não cole na opção de "Chave Pix" (CPF/CNPJ). Use apenas a opção de "Copia e Cola" do seu banco.</p>
-                            </div>
-                        </div>
-
-                        <!-- Real-time status checker -->
-                        <div class="pix-status-container" id="pix-status-card">
-                            <div class="pix-status-spinner" id="pix-status-loader">
-                                <div class="pulse-ring"></div>
-                                <div class="spinner-dot"></div>
-                            </div>
-                            <span class="pix-status-text" id="success-pix-status-label">Aguardando confirmação do pagamento...</span>
                         </div>
                     </div>
+
+                    <!-- HOW IT WORKS SECTION (3 COLUMNS) -->
+                    <div class="ref-how-it-works">
+                        <h3 class="ref-section-title">Como funciona?</h3>
+                        <div class="ref-steps-grid">
+                            <div class="ref-step-card">
+                                <div class="ref-card-icon-wrapper">
+                                    <span class="ref-card-icon">📱</span>
+                                    <span class="ref-card-num">1</span>
+                                </div>
+                                <h4 class="ref-card-title">Escaneie o QR Code</h4>
+                                <p class="ref-card-desc">Use o app do seu banco para escanear o código PIX.</p>
+                            </div>
+
+                            <div class="ref-step-card">
+                                <div class="ref-card-icon-wrapper">
+                                    <span class="ref-card-icon">💰</span>
+                                    <span class="ref-card-num">2</span>
+                                </div>
+                                <h4 class="ref-card-title">Faça o pagamento</h4>
+                                <p class="ref-card-desc">Confirme os dados e realize o pagamento.</p>
+                            </div>
+
+                            <div class="ref-step-card">
+                                <div class="ref-card-icon-wrapper">
+                                    <span class="ref-card-icon">🛡️</span>
+                                    <span class="ref-card-num">3</span>
+                                </div>
+                                <h4 class="ref-card-title">Aguarde a confirmação</h4>
+                                <p class="ref-card-desc">Seu pagamento será aprovado e seu pedido separado com muito carinho!</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TRUST & PROOF BANNER -->
+                    <div class="ref-trust-banner">
+                        <div class="ref-trust-left">
+                            <span class="ref-shield-icon">🛡️</span>
+                            <div class="ref-trust-text">
+                                <strong>Pagamento 100% seguro</strong>
+                                <p>Seus dados estão protegidos e seu pedido só será enviado após a confirmação do pagamento.</p>
+                            </div>
+                        </div>
+                        <div class="ref-trust-right">
+                            <div class="ref-stars">⭐⭐⭐⭐⭐</div>
+                            <div class="ref-avatars-row">
+                                <img src="assets/devoto_1.jpg" alt="Devoto">
+                                <img src="assets/devoto_2.jpg" alt="Devoto">
+                                <img src="assets/devoto_3.jpg" alt="Devoto">
+                                <img src="assets/devoto_4.jpg" alt="Devoto">
+                                <img src="assets/devoto_5.jpg" alt="Devoto">
+                            </div>
+                            <span class="ref-social-label">Mais de 25.000 devotos já receberam seu presente com fé e amor!</span>
+                        </div>
+                    </div>
+
+                    <!-- ORDER SUMMARY SECTION -->
+                    <div class="ref-summary-section">
+                        <h3 class="ref-summary-title">🛍️ Resumo do seu pedido</h3>
+                        <div class="ref-product-box">
+                            <div class="ref-prod-left">
+                                <img src="assets/camiseta_frente.jpg" alt="Camiseta Devocional" class="ref-prod-img">
+                                <div class="ref-prod-details">
+                                    <h4 class="ref-prod-name">Camiseta Devocional Nossa Senhora Aparecida</h4>
+                                    <span class="ref-prod-meta">Tamanho: <strong id="successDisplaySize">M</strong></span>
+                                    <span class="ref-prod-meta">Quantidade: 1</span>
+                                    <span class="ref-prod-meta">Código: <strong id="success-order-id">#SR-136413-BR</strong></span>
+                                </div>
+                            </div>
+                            <div class="ref-prod-right">
+                                <span class="ref-price-label">Valor do pedido</span>
+                                <span class="ref-price-value" id="successTotalPaid">R$ 60,00</span>
+                            </div>
+                        </div>
+
+                        <!-- RECEIPT DETAILS (COLLAPSIBLE / CLEAN) -->
+                        <div class="receipt-details" style="margin-top: 14px; padding: 12px; background: #f8fafc; border-radius: 10px; font-size: 11px;">
+                            <div class="receipt-line">
+                                <span>Destinatário:</span>
+                                <strong id="successDonorName">Carregando...</strong>
+                            </div>
+                            <div class="receipt-line">
+                                <span>Entregar em:</span>
+                                <strong id="successAddressText">Carregando...</strong>
+                            </div>
+                            <div class="receipt-line">
+                                <span>Envio:</span>
+                                <strong id="successShippingType">Frete Expresso</strong>
+                            </div>
+                            <div class="receipt-line">
+                                <span>Método:</span>
+                                <strong id="successMethodText">PIX</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- IMPORTANT NOTICE BANNER -->
+                    <div class="ref-help-banner">
+                        <div class="ref-help-col">
+                            <span class="ref-help-icon">🔔</span>
+                            <div>
+                                <strong>Importante!</strong>
+                                <p>Assim que seu pagamento for confirmado, você receberá todas as atualizações por e-mail.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- DEVOTIONAL FOOTER BAR -->
+                    <div class="ref-footer-bar">
+                        <span>💛 Nossa Senhora Aparecida abençoe você e sua família!</span>
+                        <small>Sua doação ajuda a manter este projeto de fé.</small>
+                    </div>
+
                 </div>
+            </div>
+        </div>
 
                 <!-- Testimonials Section -->
                 <div class="success-testimonials-box">
@@ -809,7 +936,7 @@
                             <div class="timeline-dot"></div>
                             <div class="timeline-info">
                                 <h4>Coleta dos Correios</h4>
-                                <p>Código de rastreamento enviado por e-mail e WhatsApp.</p>
+                                <p>Código de rastreamento enviado por e-mail.</p>
                             </div>
                         </div>
                     </div>
