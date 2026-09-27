@@ -1059,6 +1059,32 @@
                 document.getElementById('admin-dashboard').style.display = 'none';
             },
 
+            parseOrderDate(dateStr) {
+                if (!dateStr) return 0;
+                let t = Date.parse(dateStr);
+                if (isNaN(t)) {
+                    const formattedStr = String(dateStr)
+                        .replace(' ', 'T')
+                        .replace(/\.\d+/, '')
+                        .replace(/([\+\-]\d{2}):(\d{2})$/, '$1$2');
+                    t = Date.parse(formattedStr);
+                }
+                return isNaN(t) ? 0 : t;
+            },
+
+            mergeOrders(batch) {
+                if (!Array.isArray(batch) || batch.length === 0) return;
+                const map = new Map(this.allOrders.map(o => [o.id, o]));
+                batch.forEach(o => {
+                    if (o && o.id) {
+                        map.set(o.id, o);
+                    }
+                });
+                const arr = Array.from(map.values());
+                arr.sort((a, b) => this.parseOrderDate(b.created_at) - this.parseOrderDate(a.created_at));
+                this.allOrders = arr;
+            },
+
             async loadOrders(silent = false) {
                 const tbody = document.getElementById('orders-tbody');
                 try {
@@ -1079,13 +1105,7 @@
                     const data = await res.json();
                     if (res.ok) {
                         const initialOrders = data.orders || [];
-                        if (!silent || this.allOrders.length === 0) {
-                            this.allOrders = initialOrders;
-                        } else {
-                            const existingMap = new Map(this.allOrders.map(o => [o.id, o]));
-                            initialOrders.forEach(o => existingMap.set(o.id, o));
-                            this.allOrders = Array.from(existingMap.values());
-                        }
+                        this.mergeOrders(initialOrders);
                         this.applyFilters(silent);
 
                         // Trigger progressive background loading of remaining orders
@@ -1121,10 +1141,9 @@
                         const batch = data.orders || [];
                         if (batch.length === 0) break;
 
-                        const existingIds = new Set(this.allOrders.map(o => o.id));
-                        const newOrders = batch.filter(o => !existingIds.has(o.id));
-                        if (newOrders.length > 0) {
-                            this.allOrders = this.allOrders.concat(newOrders);
+                        const countBefore = this.allOrders.length;
+                        this.mergeOrders(batch);
+                        if (this.allOrders.length > countBefore) {
                             this.applyFilters(true);
                         }
 
@@ -1160,12 +1179,8 @@
                                 const data = await res.json();
                                 const searchResults = data.orders || [];
                                 if (searchResults.length > 0) {
-                                    const existingIds = new Set(this.allOrders.map(o => o.id));
-                                    const newOrders = searchResults.filter(o => !existingIds.has(o.id));
-                                    if (newOrders.length > 0) {
-                                        this.allOrders = this.allOrders.concat(newOrders);
-                                        this.applyFilters(true);
-                                    }
+                                    this.mergeOrders(searchResults);
+                                    this.applyFilters(true);
                                 }
                             }
                         } catch (err) {
