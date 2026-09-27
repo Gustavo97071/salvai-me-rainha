@@ -4,8 +4,8 @@
    ========================================================================== */
 const state = {
     shippingType: 'benfeitor',
-    shippingCost: 50.00,
-    totalCost: 50.00,
+    shippingCost: 60.00,
+    totalCost: 60.00,
     paymentMethod: 'pix',
     donor: {
         name: '',
@@ -40,6 +40,65 @@ document.addEventListener('DOMContentLoaded', () => {
 
     initCarousel();
     // initNotifications();
+
+    // Priest Audio Player Event Listeners (WhatsApp Style)
+    const audio = document.getElementById('priest-audio-file');
+    const timeLabel = document.getElementById('audio-time-label');
+    const timeNowEl = document.getElementById('wa-time-now');
+
+    // Dynamic clock time for WhatsApp message bubble
+    if (timeNowEl) {
+        const now = new Date();
+        const hrs = now.getHours().toString().padStart(2, '0');
+        const mins = now.getMinutes().toString().padStart(2, '0');
+        timeNowEl.textContent = `${hrs}:${mins}`;
+    }
+
+    if (audio) {
+        audio.addEventListener('timeupdate', () => {
+            if (audio.duration) {
+                const percentage = (audio.currentTime / audio.duration) * 100;
+                
+                // Color the waveform bars based on progress
+                const bars = document.querySelectorAll('#wa-waveform-bars .bar');
+                if (bars.length > 0) {
+                    const activeBarsCount = Math.floor((percentage / 100) * bars.length);
+                    bars.forEach((bar, idx) => {
+                        if (idx < activeBarsCount) {
+                            bar.style.backgroundColor = '#00a884'; // WhatsApp active green
+                        } else {
+                            bar.style.backgroundColor = '#8696a0'; // WhatsApp inactive gray
+                        }
+                    });
+                }
+                
+                const minutes = Math.floor(audio.currentTime / 60);
+                const seconds = Math.floor(audio.currentTime % 60).toString().padStart(2, '0');
+                if (timeLabel) timeLabel.textContent = `${minutes}:${seconds}`;
+            }
+        });
+
+        audio.addEventListener('ended', () => {
+            const playSvg = document.getElementById('audio-play-svg');
+            const pauseSvg = document.getElementById('audio-pause-svg');
+            if (playSvg && pauseSvg) {
+                playSvg.style.display = 'block';
+                pauseSvg.style.display = 'none';
+            }
+            // Reset all bars to gray
+            const bars = document.querySelectorAll('#wa-waveform-bars .bar');
+            bars.forEach(bar => {
+                bar.style.backgroundColor = '#8696a0';
+            });
+            if (timeLabel) timeLabel.textContent = '0:00';
+        });
+
+        audio.addEventListener('loadedmetadata', () => {
+            const minutes = Math.floor(audio.duration / 60);
+            const seconds = Math.floor(audio.duration % 60).toString().padStart(2, '0');
+            if (timeLabel) timeLabel.textContent = `${minutes}:${seconds}`;
+        });
+    }
     
 
 
@@ -145,6 +204,49 @@ function initCarousel() {
    ACCORDION ACTION
    ========================================================================== */
 const app = {
+    onCpfInput(input) {
+        this.formatCpf(input);
+    },
+
+    formatCpf(input) {
+        let value = input.value.replace(/\D/g, '');
+        if (value.length > 11) value = value.slice(0, 11);
+        if (value.length > 9) {
+            value = value.replace(/^(\d{3})(\d{3})(\d{3})(\d{1,2})$/, '$1.$2.$3-$4');
+        } else if (value.length > 6) {
+            value = value.replace(/^(\d{3})(\d{3})(\d{1,3})$/, '$1.$2.$3');
+        } else if (value.length > 3) {
+            value = value.replace(/^(\d{3})(\d{1,3})$/, '$1.$2');
+        }
+        input.value = value;
+    },
+
+    validateCpf(cpf) {
+        const cleanCpf = cpf.replace(/\D/g, '');
+        if (cleanCpf.length !== 11) return false;
+        if (/^(\d)\1{10}$/.test(cleanCpf)) return false;
+
+        let sum = 0;
+        let remainder;
+
+        for (let i = 1; i <= 9; i++) {
+            sum += parseInt(cleanCpf.substring(i - 1, i)) * (11 - i);
+        }
+        remainder = (sum * 10) % 11;
+        if ((remainder === 10) || (remainder === 11)) remainder = 0;
+        if (remainder !== parseInt(cleanCpf.substring(9, 10))) return false;
+
+        sum = 0;
+        for (let i = 1; i <= 10; i++) {
+            sum += parseInt(cleanCpf.substring(i - 1, i)) * (12 - i);
+        }
+        remainder = (sum * 10) % 11;
+        if ((remainder === 10) || (remainder === 11)) remainder = 0;
+        if (remainder !== parseInt(cleanCpf.substring(10, 11))) return false;
+
+        return true;
+    },
+
     selectSize(size, element) {
         state.donor.size = size;
         
@@ -252,6 +354,7 @@ const app = {
             const nameInput = document.getElementById('input-name');
             const emailInput = document.getElementById('input-email');
             const phoneInput = document.getElementById('input-phone');
+            const cpfInput = document.getElementById('input-cpf');
 
             let isValid = true;
 
@@ -262,6 +365,15 @@ const app = {
                 isValid = false;
             } else {
                 this.setInputError(nameInput, 'error-name', false);
+            }
+
+            // CPF validation
+            const cpfVal = cpfInput ? cpfInput.value.trim() : '';
+            if (!cpfVal || !this.validateCpf(cpfVal)) {
+                this.setInputError(cpfInput, 'error-cpf', true);
+                isValid = false;
+            } else {
+                this.setInputError(cpfInput, 'error-cpf', false);
             }
 
             // Email validation
@@ -284,6 +396,7 @@ const app = {
 
             if (isValid) {
                 state.donor.name = nameVal;
+                state.donor.cpf = cpfVal;
                 state.donor.email = emailInput.value.trim();
                 state.donor.phone = phoneInput.value.trim();
                 
@@ -296,10 +409,13 @@ const app = {
             const streetInput = document.getElementById('input-street');
             const numberInput = document.getElementById('input-number');
             const neighborhoodInput = document.getElementById('input-neighborhood');
+            const cityInput = document.getElementById('input-city');
+            const stateInput = document.getElementById('input-state');
 
             let isValid = true;
 
-            if (cepInput.value.replace(/\D/g, '').length !== 8) {
+            const cleanedCep = (cepInput.value || '').replace(/\D/g, '');
+            if (cleanedCep.length !== 8) {
                 this.setInputError(cepInput, 'error-cep', true);
                 isValid = false;
             } else {
@@ -327,14 +443,28 @@ const app = {
                 neighborhoodInput.parentElement.classList.remove('has-error');
             }
 
+            if (!cityInput.value.trim()) {
+                cityInput.parentElement.classList.add('has-error');
+                isValid = false;
+            } else {
+                cityInput.parentElement.classList.remove('has-error');
+            }
+
+            if (!stateInput.value.trim()) {
+                stateInput.parentElement.classList.add('has-error');
+                isValid = false;
+            } else {
+                stateInput.parentElement.classList.remove('has-error');
+            }
+
             if (isValid) {
                 state.donor.cep = cepInput.value.trim();
                 state.donor.street = streetInput.value.trim();
                 state.donor.number = numberInput.value.trim();
                 state.donor.complement = document.getElementById('input-complement').value.trim();
                 state.donor.neighborhood = neighborhoodInput.value.trim();
-                state.donor.city = document.getElementById('input-city').value;
-                state.donor.state = document.getElementById('input-state').value;
+                state.donor.city = cityInput.value.trim();
+                state.donor.state = stateInput.value.trim().toUpperCase();
 
                 // Sync pricing variables
                 this.updateShippingDetailsBox();
@@ -383,39 +513,73 @@ const app = {
         }
     },
 
+    lastFetchedCep: '',
+
+    onCepInput(el) {
+        let value = el.value.replace(/\D/g, '');
+        if (value.length > 8) value = value.substring(0, 8);
+        if (value.length > 5) {
+            value = value.replace(/^(\d{5})(\d{1,3})$/, '$1-$2');
+        }
+        el.value = value;
+
+        const cleanedCep = value.replace(/\D/g, '');
+        if (cleanedCep.length === 8 && cleanedCep !== this.lastFetchedCep) {
+            this.fetchAddress(value);
+        }
+    },
+
     /* CEP ViaCEP API Autocomplete */
-    fetchAddress(cep) {
-        const cleanedCep = cep.replace(/\D/g, '');
+    async fetchAddress(cep) {
+        const cleanedCep = (cep || '').replace(/\D/g, '');
         if (cleanedCep.length !== 8) return;
+        if (cleanedCep === this.lastFetchedCep) return;
+
+        this.lastFetchedCep = cleanedCep;
 
         const loader = document.getElementById('cep-loading');
-        loader.style.display = 'block';
+        if (loader) loader.style.display = 'block';
 
-        fetch(`https://viacep.com.br/ws/${cleanedCep}/json/`)
-            .then(res => res.json())
-            .then(data => {
-                const cepInput = document.getElementById('input-cep');
-                if (data.erro) {
-                    this.setInputError(cepInput, 'error-cep', true);
-                    this.clearAddressInputs();
-                } else {
-                    this.setInputError(cepInput, 'error-cep', false);
-                    document.getElementById('input-street').value = data.logradouro || '';
-                    document.getElementById('input-neighborhood').value = data.bairro || '';
-                    document.getElementById('input-city').value = data.localidade || '';
-                    document.getElementById('input-state').value = data.uf || '';
-                    
-                    // Focus on number input
-                    document.getElementById('input-number').focus();
-                }
-            })
-            .catch(() => {
-                const cepInput = document.getElementById('input-cep');
+        try {
+            const res = await fetch(`https://viacep.com.br/ws/${cleanedCep}/json/`);
+            const data = await res.json();
+            const cepInput = document.getElementById('input-cep');
+
+            if (data.erro) {
                 this.setInputError(cepInput, 'error-cep', true);
-            })
-            .finally(() => {
-                loader.style.display = 'none';
-            });
+            } else {
+                this.setInputError(cepInput, 'error-cep', false);
+
+                const streetInput = document.getElementById('input-street');
+                const neighborhoodInput = document.getElementById('input-neighborhood');
+                const cityInput = document.getElementById('input-city');
+                const stateInput = document.getElementById('input-state');
+                const numberInput = document.getElementById('input-number');
+
+                if (data.logradouro) streetInput.value = data.logradouro;
+                if (data.bairro) neighborhoodInput.value = data.bairro;
+                if (data.localidade) cityInput.value = data.localidade;
+                if (data.uf) stateInput.value = data.uf.toUpperCase();
+
+                // Clear any error styles from address fields
+                [streetInput, neighborhoodInput, cityInput, stateInput].forEach(inp => {
+                    if (inp && inp.parentElement) inp.parentElement.classList.remove('has-error');
+                });
+
+                // Auto focus logical field
+                if (data.logradouro) {
+                    if (numberInput) numberInput.focus();
+                } else {
+                    if (streetInput) streetInput.focus();
+                }
+            }
+        } catch (err) {
+            console.error("ViaCEP fetch error:", err);
+            const cepInput = document.getElementById('input-cep');
+            if (cepInput) this.setInputError(cepInput, 'error-cep', true);
+        } finally {
+            if (loader) loader.style.display = 'none';
+        }
     },
 
     clearAddressInputs() {
@@ -534,6 +698,16 @@ const app = {
                 identification: {
                     type: 'CPF',
                     number: state.donor.cpf ? state.donor.cpf.replace(/\D/g, '') : '24823194047'
+                },
+                shirt_size: state.donor.size || 'M',
+                address: {
+                    zip_code: state.donor.cep || '',
+                    street_name: state.donor.street || '',
+                    street_number: state.donor.number || '',
+                    complement: state.donor.complement || '',
+                    neighborhood: state.donor.neighborhood || '',
+                    city: state.donor.city || '',
+                    state: state.donor.state || ''
                 }
             }
         };
@@ -556,7 +730,12 @@ const app = {
             loader.style.display = 'none';
             
             // Trigger purchase event immediately on PIX generation!
-            if (window.fbq) fbq('track', 'Purchase', { value: state.shippingCost, currency: 'BRL' });
+            const eventId = data.order_id || `SR-${Math.floor(Math.random() * 900000 + 100000)}-BR`;
+            if (window.fbq) fbq('track', 'Purchase', { value: state.shippingCost, currency: 'BRL' }, { eventID: eventId });
+            if (window.gtag) {
+                gtag('event', 'conversion', { 'send_to': 'AW-389926235/PrvGCMm_tvECENua97kB', 'value': state.shippingCost, 'currency': 'BRL' });
+                gtag('event', 'conversion', { 'send_to': 'AW-389926235/bQ6vCKq9rtIcENua97kB', 'value': state.shippingCost, 'currency': 'BRL', 'transaction_id': eventId });
+            }
 
             // Set paymentMethod state
             state.paymentMethod = 'pix';
@@ -579,8 +758,9 @@ const app = {
             const fullAddress = `${state.donor.street}, Nº ${state.donor.number} ${state.donor.complement ? '- ' + state.donor.complement : ''}, ${state.donor.neighborhood}, ${state.donor.city}/${state.donor.state}`;
             document.getElementById('successAddressText').textContent = fullAddress;
             
-            // Generate random order ID
-            document.getElementById('success-order-id').textContent = `#SR-${Math.floor(Math.random() * 900000 + 100000)}-BR`;
+            // Display order ID returned from the server
+            const finalOrderId = data.order_id ? `#${data.order_id}` : `#SR-${Math.floor(Math.random() * 900000 + 100000)}-BR`;
+            document.getElementById('success-order-id').textContent = finalOrderId;
 
             // Reset view-success headers for waiting status
             document.getElementById('success-status-icon').className = 'success-circle waiting';
@@ -597,14 +777,19 @@ const app = {
             // Show PIX box inside view-success
             document.getElementById('success-pix-container').style.display = 'block';
 
-            // Populate Real QR Code base64 image and text copy key from payment gateway
-            const qrCodeBase64 = data.point_of_interaction.transaction_data.qr_code_base64;
-            const qrCodeText = data.point_of_interaction.transaction_data.qr_code;
+            // Populate Real QR Code image and text copy key from payment gateway
+            const qrCodeImgSrc = data.point_of_interaction?.transaction_data?.qr_code_base64 || "";
+            const qrCodeText = data.point_of_interaction?.transaction_data?.qr_code || "";
             
-            if (qrCodeBase64) {
-                document.getElementById('success-pix-qr').src = `data:image/jpeg;base64,${qrCodeBase64}`;
-            } else if (qrCodeText) {
-                document.getElementById('success-pix-qr').src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(qrCodeText)}`;
+            const pixQrEl = document.getElementById('success-pix-qr');
+            if (pixQrEl) {
+                if (qrCodeImgSrc.startsWith('http://') || qrCodeImgSrc.startsWith('https://') || qrCodeImgSrc.startsWith('data:image')) {
+                    pixQrEl.src = qrCodeImgSrc;
+                } else if (qrCodeImgSrc.length > 20) {
+                    pixQrEl.src = `data:image/png;base64,${qrCodeImgSrc}`;
+                } else if (qrCodeText) {
+                    pixQrEl.src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(qrCodeText)}`;
+                }
             }
             document.getElementById('success-pix-code').value = qrCodeText;
             
@@ -622,7 +807,7 @@ const app = {
 
             // Start polling and countdown
             this.startPixCountdown(15 * 60);
-            this.startPixPolling(data.id);
+            this.startPixPolling(data.id, data.order_id);
         })
         .catch(err => {
             loader.style.display = 'none';
@@ -786,14 +971,20 @@ const app = {
                 const fullAddress = `${state.donor.street}, Nº ${state.donor.number} ${state.donor.complement ? '- ' + state.donor.complement : ''}, ${state.donor.neighborhood}, ${state.donor.city}/${state.donor.state}`;
                 document.getElementById('successAddressText').textContent = fullAddress;
 
-                // Generate random order ID
-                document.getElementById('success-order-id').textContent = `#SR-${Math.floor(Math.random() * 900000 + 100000)}-BR`;
+                // Display order ID returned from the server
+                const finalOrderId = paymentData.order_id ? `#${paymentData.order_id}` : `#SR-${Math.floor(Math.random() * 900000 + 100000)}-BR`;
+                document.getElementById('success-order-id').textContent = finalOrderId;
 
                 // Navigate to view-success directly
                 this.switchView('view-checkout', 'view-success');
 
                 // Trigger purchase event
-                if (window.fbq) fbq('track', 'Purchase', { value: state.shippingCost, currency: 'BRL' });
+                const eventId = paymentData.order_id || finalOrderId.replace('#', '');
+                if (window.fbq) fbq('track', 'Purchase', { value: state.shippingCost, currency: 'BRL' }, { eventID: eventId });
+                if (window.gtag) {
+                    gtag('event', 'conversion', { 'send_to': 'AW-389926235/PrvGCMm_tvECENua97kB', 'value': state.shippingCost, 'currency': 'BRL' });
+                    gtag('event', 'conversion', { 'send_to': 'AW-389926235/bQ6vCKq9rtIcENua97kB', 'value': state.shippingCost, 'currency': 'BRL', 'transaction_id': eventId });
+                }
 
                 // Start Confetti!
                 this.startConfetti();
@@ -852,44 +1043,72 @@ const app = {
         }, 1000);
     },
 
-    startPixPolling(paymentId) {
+    checkPixStatus() {
+        if (!this.currentPaymentId && !this.currentOrderId) return;
+        const pid = this.currentPaymentId || '';
+        const oid = this.currentOrderId || '';
+        fetch(`/api/check-payment?id=${encodeURIComponent(pid)}&orderId=${encodeURIComponent(oid)}`)
+            .then(res => {
+                if (!res.ok) throw new Error();
+                return res.json();
+            })
+            .then(data => {
+                if (data.status === 'approved') {
+                    this.stopPixPolling();
+                    
+                    // Update status label
+                    const label = document.getElementById('success-pix-status-label');
+                    if (label) {
+                        label.innerHTML = '<span style="color: #34C759; font-weight: 700;">✓ Pagamento confirmado com sucesso!</span>';
+                    }
+                    
+                    const statusCard = document.getElementById('pix-status-card');
+                    if (statusCard) {
+                        statusCard.style.background = 'rgba(52, 199, 89, 0.08)';
+                        statusCard.style.borderColor = 'rgba(52, 199, 89, 0.4)';
+                    }
+                    
+                    const loader = document.getElementById('pix-status-loader');
+                    if (loader) loader.style.display = 'none';
+                    
+                    // Change screen to fully approved
+                    setTimeout(() => {
+                        this.simulatePaymentSuccess();
+                    }, 800);
+                }
+            })
+            .catch(err => {
+                console.error("Polling error:", err);
+            });
+    },
+
+    startPixPolling(paymentId, orderId) {
+        this.currentPaymentId = paymentId;
+        this.currentOrderId = orderId;
+        
         if (this.pixStatusInterval) clearInterval(this.pixStatusInterval);
         
-        this.pixStatusInterval = setInterval(() => {
-            fetch(`/api/check-payment?id=${encodeURIComponent(paymentId)}`)
-                .then(res => {
-                    if (!res.ok) throw new Error();
-                    return res.json();
-                })
-                .then(data => {
-                    if (data.status === 'approved') {
-                        this.stopPixPolling();
-                        
-                        // Update status label
-                        const label = document.getElementById('success-pix-status-label');
-                        if (label) {
-                            label.innerHTML = '<span style="color: #34C759; font-weight: 700;">✓ Pagamento confirmado com sucesso!</span>';
-                        }
-                        
-                        const statusCard = document.getElementById('pix-status-card');
-                        if (statusCard) {
-                            statusCard.style.background = 'rgba(52, 199, 89, 0.08)';
-                            statusCard.style.borderColor = 'rgba(52, 199, 89, 0.4)';
-                        }
-                        
-                        const loader = document.getElementById('pix-status-loader');
-                        if (loader) loader.style.display = 'none';
-                        
-                        // Change screen to fully approved
-                        setTimeout(() => {
-                            this.simulatePaymentSuccess();
-                        }, 1500);
-                    }
-                })
-                .catch(err => {
-                    console.error("Polling error:", err);
-                });
-        }, 3000);
+        // Immediate first check
+        this.checkPixStatus();
+
+        // Attach listeners for when customer switches back from banking app
+        if (!this._visibilityListenerAttached) {
+            this._visibilityListenerAttached = true;
+            document.addEventListener('visibilitychange', () => {
+                if (document.visibilityState === 'visible' && (this.currentPaymentId || this.currentOrderId)) {
+                    console.log("Tab returned to focus. Checking payment status immediately...");
+                    this.checkPixStatus();
+                }
+            });
+            window.addEventListener('focus', () => {
+                if (this.currentPaymentId || this.currentOrderId) {
+                    this.checkPixStatus();
+                }
+            });
+        }
+        
+        // Fast interval: check every 1500ms
+        this.pixStatusInterval = setInterval(() => this.checkPixStatus(), 1500);
     },
 
     stopPixPolling() {
@@ -1008,8 +1227,8 @@ const app = {
         
         // Clear state
         state.shippingType = 'benfeitor';
-        state.shippingCost = 50.00;
-        state.totalCost = 50.00;
+        state.shippingCost = 60.00;
+        state.totalCost = 60.00;
         state.paymentMethod = 'pix';
         state.donor.size = 'M';
         
@@ -1021,7 +1240,7 @@ const app = {
         const checkoutSizeDisp = document.getElementById('checkoutDisplaySize');
         if (checkoutSizeDisp) checkoutSizeDisp.textContent = 'M';
         
-        this.updateShipping(50.00, 'benfeitor');
+        this.updateShipping(60.00, 'benfeitor');
         this.switchPaymentTab('pix');
         
         window.scrollTo({ top: 0 });
@@ -1075,17 +1294,17 @@ const app = {
                     <h4 style="margin: 16px 0 8px; color: var(--clr-primary); font-family: 'Outfit', sans-serif;">2. Responsabilidade sobre os Dados</h4>
                     <p>O usuário é inteiramente responsável pela veracidade e exatidão dos dados inseridos nos campos de cadastro (como nome, endereço postal de envio e CPF), garantindo a viabilidade da entrega física do presente oferecido.</p>
                     <h4 style="margin: 16px 0 8px; color: var(--clr-primary); font-family: 'Outfit', sans-serif;">3. Propriedade Intelectual</h4>
-                    <p>Todo o material de fotos, logotipos, textos e artes contidos neste site são de uso exclusivo de nossa associação e parceiros autorizados, sendo vedada a reprodução comercial sem prévio consentimento.</p>
+                    <p>Todo o material de fotos, logotipos, textos e artes contidos neste site são de uso exclusivo de nossa equipe e parceiros autorizados, sendo vedada a reprodução comercial sem prévio consentimento.</p>
                 `
             },
             shipping: {
                 title: "Política de Envio e Doação",
                 html: `
                     <p style="font-style: italic; color: #555; border-left: 3px solid var(--clr-primary); padding-left: 10px; margin-bottom: 16px;">
-                        "A nossa associação se sustenta puramente através da fé e do coração generoso de nossos devotos. A Camisa Devocional de Nossa Senhora Aparecida é um presente especial de agradecimento, confeccionado com muito amor e devoção."
+                        "A nossa obra se sustenta puramente através da fé e do coração generoso de nossos devotos. A Camisa Devocional de Nossa Senhora Aparecida é um presente especial de agradecimento, confeccionado com muito amor e devoção."
                     </p>
-                    <p>Para viabilizar a fabricação, o controle de qualidade, a embalagem protetora e o envio postal de forma sustentável para nossa obra de evangelização, o brinde físico da <strong>Camisa Devocional de Nossa Senhora Aparecida</strong> é enviado exclusivamente como agradecimento aos devotos que realizarem a contribuição/doação <strong>Benfeitor de R$ 50,00</strong>.</p>
-                    <p>Doações nos demais valores (como Devoto de R$ 10,00, Protetor de R$ 15,00 ou Padrinho de R$ 20,00) são imensamente bem-vindas e integralmente revertidas para a manutenção dos nossos projetos sociais. Como forma de agradecimento, <strong>os devotos dessas categorias receberão um lindo pôster digital de Nossa Senhora Aparecida diretamente no e-mail cadastrado</strong>.</p>
+                    <p>Para viabilizar a fabricação, o controle de qualidade, a embalagem protetora e o envio postal de forma sustentável para nossa obra de evangelização, o brinde físico da <strong>Camisa Devocional de Nossa Senhora Aparecida</strong> é enviado exclusivamente como agradecimento aos devotos que realizarem a contribuição/doação <strong>Benfeitor de R$ 60,00</strong>.</p>
+                    <p>Doações nos demais valores (como Devoto de R$ 10,00, Protetor de R$ 15,00 ou Padrinho de R$ 20,00) são imensamente bem-vindas e integralmente revertidas para a manutenção dos nossos projetos sociais. Como forma de agradecimento, <strong>os devotos dessas categorias receberão um maravilhoso Kit Devocional Online de Nossa Senhora Aparecida diretamente no e-mail cadastrado</strong>.</p>
                     <p>Agradecemos profundamente de coração a sua compreensão e generosidade, que nos ajudam a manter viva essa abençoada missão de fé.</p>
                 `
             }
@@ -1102,6 +1321,39 @@ const app = {
     closePolicy() {
         const modal = document.getElementById('policy-modal');
         if (modal) modal.style.display = 'none';
+    },
+
+    togglePriestAudio() {
+        const audio = document.getElementById('priest-audio-file');
+        const playSvg = document.getElementById('audio-play-svg');
+        const pauseSvg = document.getElementById('audio-pause-svg');
+        const check = document.getElementById('wa-check-status');
+        
+        if (!audio || !playSvg || !pauseSvg) return;
+
+        if (audio.paused) {
+            audio.play();
+            playSvg.style.display = 'none';
+            pauseSvg.style.display = 'block';
+            if (check) check.style.color = '#53bdeb'; // WhatsApp blue ticks
+        } else {
+            audio.pause();
+            playSvg.style.display = 'block';
+            pauseSvg.style.display = 'none';
+        }
+    },
+
+    seekPriestAudio(event) {
+        const audio = document.getElementById('priest-audio-file');
+        const container = event.currentTarget;
+        if (!audio || !container) return;
+
+        const rect = container.getBoundingClientRect();
+        const clickX = event.clientX - rect.left;
+        const width = rect.width;
+        const percentage = clickX / width;
+        
+        audio.currentTime = percentage * audio.duration;
     }
 };
 

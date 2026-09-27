@@ -22,9 +22,15 @@ module.exports = async (req, res) => {
     }
 
     try {
+        const search = req.query?.search ? String(req.query.search).trim() : '';
         const limit = parseInt(req.query?.limit || '1000');
         const offset = parseInt(req.query?.offset || '0');
-        const orders = await supabase.getOrdersPage(limit, offset);
+        let orders;
+        if (search) {
+            orders = await supabase.searchOrders(search, limit);
+        } else {
+            orders = await supabase.getOrdersPage(limit, offset);
+        }
         return res.status(200).json({ orders: Array.isArray(orders) ? orders : [] });
     } catch (err) {
         console.error('Error fetching admin orders:', err.message);

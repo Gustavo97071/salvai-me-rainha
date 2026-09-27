@@ -130,5 +130,11 @@ module.exports = {
     getRecentPendingOrders(hours = 2, limit = 30) {
         const pastDate = new Date(Date.now() - hours * 3600 * 1000).toISOString();
         return request('GET', `/orders?payment_status=eq.pending&created_at=gte.${encodeURIComponent(pastDate)}&order=created_at.desc&limit=${limit}`);
+    },
+
+    searchOrders(term, limit = 200) {
+        const cleanTerm = (term || '').replace(/^#/, '').trim();
+        if (!cleanTerm) return Promise.resolve([]);
+        return request('GET', `/orders?or=(id.ilike.*${encodeURIComponent(cleanTerm)}*,donor_name.ilike.*${encodeURIComponent(cleanTerm)}*,donor_email.ilike.*${encodeURIComponent(cleanTerm)}*,donor_cpf.ilike.*${encodeURIComponent(cleanTerm)}*,tracking_code.ilike.*${encodeURIComponent(cleanTerm)}*)&order=created_at.desc&limit=${limit}`);
     }
 };

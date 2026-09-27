@@ -818,7 +818,7 @@
                 <div class="filters-left">
                     <div class="search-box">
                         <i class="fa-solid fa-magnifying-glass"></i>
-                        <input type="text" id="filter-search" placeholder="Buscar por nome, e-mail, telefone ou pedido..." oninput="adminApp.applyFilters()">
+                        <input type="text" id="filter-search" placeholder="Buscar por nome, e-mail, telefone ou pedido..." oninput="adminApp.handleSearchInput()">
                     </div>
                     
                     <select id="filter-payment" class="filter-select" onchange="adminApp.applyFilters()">
@@ -945,6 +945,8 @@
             currentPage: 1,
             pageSize: 500, // Default 500 orders per page as requested by user
             autoRefreshInterval: null,
+            isLoadingRemaining: false,
+            searchTimeout: null,
 
             init() {
                 if (this.token) {
@@ -1049,6 +1051,7 @@
 
             handleLogout() {
                 this.token = '';
+                this.isLoadingRemaining = false;
                 if (this.autoRefreshInterval) clearInterval(this.autoRefreshInterval);
                 this.autoRefreshInterval = null;
                 localStorage.removeItem('admin_token');
@@ -1059,11 +1062,11 @@
             async loadOrders(silent = false) {
                 const tbody = document.getElementById('orders-tbody');
                 try {
-                    let res = await fetch('/api/admin-orders', {
+                    let res = await fetch('/api/admin-orders?limit=1000&offset=0', {
                         headers: { 'Authorization': `Bearer ${this.token}` }
                     });
                     if (res.status === 404) {
-                        res = await fetch('/api/admin/orders', {
+                        res = await fetch('/api/admin/orders?limit=1000&offset=0', {
                             headers: { 'Authorization': `Bearer ${this.token}` }
                         });
                     }
@@ -1075,8 +1078,18 @@
 
                     const data = await res.json();
                     if (res.ok) {
-                        this.allOrders = data.orders || [];
+                        const initialOrders = data.orders || [];
+                        if (!silent || this.allOrders.length === 0) {
+                            this.allOrders = initialOrders;
+                        } else {
+                            const existingMap = new Map(this.allOrders.map(o => [o.id, o]));
+                            initialOrders.forEach(o => existingMap.set(o.id, o));
+                            this.allOrders = Array.from(existingMap.values());
+                        }
                         this.applyFilters(silent);
+
+                        // Trigger progressive background loading of remaining orders
+                        this.loadRemainingOrders();
                     } else if (!silent) {
                         tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; color: red;">Erro: ${data.error || 'Falha ao obter dados.'}</td></tr>`;
                     }
@@ -1084,6 +1097,81 @@
                     if (!silent) {
                         tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; color: red;">Falha ao carregar conexões (${err.message}).</td></tr>`;
                     }
+                }
+            },
+
+            async loadRemainingOrders() {
+                if (this.isLoadingRemaining) return;
+                this.isLoadingRemaining = true;
+                let offset = 1000;
+                const limit = 1000;
+
+                while (this.isLoadingRemaining && this.token) {
+                    try {
+                        let res = await fetch(`/api/admin-orders?limit=${limit}&offset=${offset}`, {
+                            headers: { 'Authorization': `Bearer ${this.token}` }
+                        });
+                        if (res.status === 404) {
+                            res = await fetch(`/api/admin/orders?limit=${limit}&offset=${offset}`, {
+                                headers: { 'Authorization': `Bearer ${this.token}` }
+                            });
+                        }
+                        if (!res.ok) break;
+                        const data = await res.json();
+                        const batch = data.orders || [];
+                        if (batch.length === 0) break;
+
+                        const existingIds = new Set(this.allOrders.map(o => o.id));
+                        const newOrders = batch.filter(o => !existingIds.has(o.id));
+                        if (newOrders.length > 0) {
+                            this.allOrders = this.allOrders.concat(newOrders);
+                            this.applyFilters(true);
+                        }
+
+                        if (batch.length < limit) break;
+                        offset += limit;
+
+                        await new Promise(r => setTimeout(r, 60));
+                    } catch (err) {
+                        console.error('Erro no carregamento progressivo de pedidos:', err);
+                        break;
+                    }
+                }
+                this.isLoadingRemaining = false;
+            },
+
+            handleSearchInput() {
+                this.applyFilters();
+                const rawSearch = document.getElementById('filter-search').value.toLowerCase().trim();
+                const cleanSearch = rawSearch.replace(/^#/, '').trim();
+                if (cleanSearch.length >= 3) {
+                    if (this.searchTimeout) clearTimeout(this.searchTimeout);
+                    this.searchTimeout = setTimeout(async () => {
+                        try {
+                            let res = await fetch(`/api/admin-orders?search=${encodeURIComponent(cleanSearch)}&limit=200`, {
+                                headers: { 'Authorization': `Bearer ${this.token}` }
+                            });
+                            if (res.status === 404) {
+                                res = await fetch(`/api/admin/orders?search=${encodeURIComponent(cleanSearch)}&limit=200`, {
+                                    headers: { 'Authorization': `Bearer ${this.token}` }
+                                });
+                            }
+                            if (res.ok) {
+                                const data = await res.json();
+                                const searchResults = data.orders || [];
+                                if (searchResults.length > 0) {
+                                    const existingIds = new Set(this.allOrders.map(o => o.id));
+                                    const newOrders = searchResults.filter(o => !existingIds.has(o.id));
+                                    if (newOrders.length > 0) {
+                                        this.allOrders = this.allOrders.concat(newOrders);
+                                        this.applyFilters(true);
+                                    }
+                                }
+                            }
+                        } catch (err) {
+                            console.error('Remote search error:', err);
+                        }
+                    }, 400);
                 }
             },
 

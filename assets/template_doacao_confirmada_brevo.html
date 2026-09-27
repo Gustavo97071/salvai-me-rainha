@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Doação Confirmada</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f7f9fa; color: #334155; margin: 0; padding: 0; }
+        .container { max-width: 600px; margin: 20px auto; background-color: #ffffff; border-radius: 12px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        .content { padding: 30px 24px; }
+        .greeting { font-size: 18px; font-weight: 700; color: #061930; margin-top: 0; margin-bottom: 12px; }
+        .intro-text { font-size: 14px; line-height: 1.6; color: #475569; margin-bottom: 24px; }
+        .summary-table { width: 100%; border-collapse: collapse; margin-bottom: 24px; font-size: 13px; }
+        .summary-table th, .summary-table td { padding: 10px; border-bottom: 1px solid #e2e8f0; text-align: left; }
+        .summary-table th { color: #475569; font-weight: 700; }
+        .summary-table td { color: #061930; font-weight: 800; }
+        .footer { background-color: #f1f5f9; padding: 20px; text-align: center; font-size: 11px; color: #94a3b8; line-height: 1.4; border-top: 1px solid #e2e8f0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div style="text-align: center; background-color: #061930; border-bottom: 3px solid #d4af37;">
+            <img src="https://maesantissima.com/assets/email_banner_v2.png" width="600" style="width: 100%; max-width: 600px; display: block; height: auto;" alt="Mãe Santíssima" />
+        </div>
+        <div class="content">
+            <h2 class="greeting" style="color: #16a34a; font-weight: 800; font-size: 20px; display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 24px;">✓</span> Pagamento Confirmado!
+            </h2>
+            <p class="intro-text">Olá, <strong>{{ params.recipientName }}</strong>! Sua doação foi confirmada com sucesso! Muito obrigado pelo seu gesto de amor e generosidade em apoiar a nossa campanha e ajudar a propagar a devoção à Nossa Senhora Aparecida. 💛</p>
+            
+            <table class="summary-table">
+                <tr>
+                    <th>Código do Pedido</th>
+                    <td>{{ params.orderId }}</td>
+                </tr>
+                <tr>
+                    <th>Item</th>
+                    <td>Camisa Devocional de Nossa Senhora Aparecida (Grátis)</td>
+                </tr>
+                <tr>
+                    <th>Doação</th>
+                    <td>R$ {{ params.formattedAmount }}</td>
+                </tr>
+                <tr>
+                    <th>Status do Pagamento</th>
+                    <td style="color: #16a34a; font-weight: bold;">🟢 Aprovado / Pago</td>
+                </tr>
+            </table>
+
+            <p class="intro-text" style="font-size: 12px; margin-bottom: 0; line-height: 1.6; color: #475569;">Caso sua participação contemple o envio da Camisa Devocional de Nossa Senhora Aparecida, o pedido será registrado em nossa distribuidora. O prazo para postagem é de até 10 dias úteis. Após a postagem, o prazo estimado de entrega pelos Correios é de até 7 dias úteis, podendo variar conforme a região. Assim que a encomenda for postada, o código de rastreamento será enviado para o seu e-mail, para que você possa acompanhar todo o processo de entrega.</p>
+        </div>
+        <div class="footer">
+            <p>© 2026 Mãe Santíssima. Todos os direitos reservados.</p>
+            <p>Este é um e-mail automático. Por favor, não responda diretamente.</p>
+        </div>
+    </div>
+</body>
+</html>
