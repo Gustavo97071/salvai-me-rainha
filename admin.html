@@ -1005,11 +1005,18 @@
                 }
 
                 try {
-                    const res = await fetch('/api/admin/login', {
+                    let res = await fetch('/api/admin-login', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ password })
                     });
+                    if (res.status === 404) {
+                        res = await fetch('/api/admin/login', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ password })
+                        });
+                    }
                     
                     const data = await res.json();
                     if (res.ok && data.success) {
@@ -1026,7 +1033,6 @@
                         }
                     }
                 } catch (err) {
-                    // Fallback login check
                     if (password === 'start2026admin') {
                         this.token = expectedToken;
                         localStorage.setItem('admin_token', expectedToken);
@@ -1053,9 +1059,14 @@
             async loadOrders(silent = false) {
                 const tbody = document.getElementById('orders-tbody');
                 try {
-                    const res = await fetch('/api/admin/orders', {
+                    let res = await fetch('/api/admin-orders', {
                         headers: { 'Authorization': `Bearer ${this.token}` }
                     });
+                    if (res.status === 404) {
+                        res = await fetch('/api/admin/orders', {
+                            headers: { 'Authorization': `Bearer ${this.token}` }
+                        });
+                    }
 
                     if (res.status === 401) {
                         this.handleLogout();
@@ -1067,11 +1078,11 @@
                         this.allOrders = data.orders || [];
                         this.applyFilters(silent);
                     } else if (!silent) {
-                        tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; color: red;">Erro: ${data.error}</td></tr>`;
+                        tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; color: red;">Erro: ${data.error || 'Falha ao obter dados.'}</td></tr>`;
                     }
                 } catch (err) {
                     if (!silent) {
-                        tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; color: red;">Falha ao carregar conexões.</td></tr>`;
+                        tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; color: red;">Falha ao carregar conexões (${err.message}).</td></tr>`;
                     }
                 }
             },
@@ -1475,7 +1486,7 @@
                 const trackingCode = document.getElementById('modal-tracking-code').value.toUpperCase().trim();
 
                 try {
-                    const res = await fetch('/api/admin/update-order', {
+                    let res = await fetch('/api/admin-update-order', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -1487,6 +1498,20 @@
                             tracking_code: trackingCode
                         })
                     });
+                    if (res.status === 404) {
+                        res = await fetch('/api/admin/update-order', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${this.token}`
+                            },
+                            body: JSON.stringify({
+                                id,
+                                shipping_status: 'shipped',
+                                tracking_code: trackingCode
+                            })
+                        });
+                    }
 
                     const data = await res.json();
                     if (res.ok && data.success) {

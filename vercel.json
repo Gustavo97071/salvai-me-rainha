@@ -2,7 +2,12 @@
   "crons": [
     {
       "path": "/api/cron-pix-recovery",
-      "schedule": "0 * * * *"
+      "schedule": "* * * * *"
     }
+  ],
+  "rewrites": [
+    { "source": "/api/admin/login", "destination": "/api/admin-login" },
+    { "source": "/api/admin/orders", "destination": "/api/admin-orders" },
+    { "source": "/api/admin/update-order", "destination": "/api/admin-update-order" }
   ]
 }
