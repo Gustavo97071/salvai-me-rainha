@@ -6,8 +6,10 @@
     }
   ],
   "rewrites": [
+    { "source": "/financeiro", "destination": "/financeiro.html" },
     { "source": "/api/admin/login", "destination": "/api/admin-login" },
     { "source": "/api/admin/orders", "destination": "/api/admin-orders" },
-    { "source": "/api/admin/update-order", "destination": "/api/admin-update-order" }
+    { "source": "/api/admin/update-order", "destination": "/api/admin-update-order" },
+    { "source": "/api/admin/financials", "destination": "/api/admin-financials" }
   ]
 }
