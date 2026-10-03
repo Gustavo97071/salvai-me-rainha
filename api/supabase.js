@@ -90,15 +90,25 @@ module.exports = {
     },
 
     async getAllOrders() {
-        let all = [];
-        let offset = 0;
         const limit = 1000;
-        while (true) {
-            const batch = await request('GET', `/orders?order=created_at.desc&limit=${limit}&offset=${offset}`);
-            if (!Array.isArray(batch) || batch.length === 0) break;
-            all = all.concat(batch);
-            if (batch.length < limit) break;
-            offset += limit;
+        const firstBatch = await request('GET', `/orders?order=created_at.desc&limit=${limit}&offset=0`);
+        if (!Array.isArray(firstBatch) || firstBatch.length === 0) return [];
+        if (firstBatch.length < limit) return firstBatch;
+
+        let all = [...firstBatch];
+        const pagePromises = [];
+        for (let offset = 1000; offset <= 45000; offset += 1000) {
+            pagePromises.push(request('GET', `/orders?order=created_at.desc&limit=${limit}&offset=${offset}`));
+        }
+
+        const results = await Promise.all(pagePromises);
+        for (const batch of results) {
+            if (Array.isArray(batch) && batch.length > 0) {
+                all = all.concat(batch);
+                if (batch.length < limit) break;
+            } else {
+                break;
+            }
         }
         return all;
     },
