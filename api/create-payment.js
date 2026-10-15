@@ -781,7 +781,7 @@ function createWooviPayment(amount, orderId, payer) {
         const payload = JSON.stringify({
             correlationID: orderId,
             value: valueCents,
-            comment: `Doacao Camiseta N. Sra. Aparecida (${orderId})`,
+            comment: `Kit Devocional Digital Ebook – Nossa Senhora Aparecida (${orderId})`,
             customer: {
                 name: `${payer.first_name || ""} ${payer.last_name || ""}`.trim() || "Devoto",
                 email: payer.email,
