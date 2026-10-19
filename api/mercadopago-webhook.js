@@ -132,7 +132,7 @@ module.exports = async (req, res) => {
                     let clientEmail = "";
                     let clientName = "Devoto";
                     let cleanPhone = "";
-                    let donationAmount = parseFloat(verifiedTx.amount || 60.00);
+                    let donationAmount = parseFloat(verifiedTx.amount || 65.00);
 
                     try {
                         const order = await supabase.getOrderById(orderId);
@@ -140,7 +140,7 @@ module.exports = async (req, res) => {
                             clientEmail = order.donor_email || "";
                             clientName = order.donor_name || "Devoto";
                             cleanPhone = order.donor_phone || "";
-                            donationAmount = parseFloat(order.donation_amount || verifiedTx.amount || 60.00);
+                            donationAmount = parseFloat(order.donation_amount || verifiedTx.amount || 65.00);
                         }
                     } catch (dbErr) {
                         console.error("Database lookup error in webhook:", dbErr.message);
@@ -173,12 +173,13 @@ module.exports = async (req, res) => {
                         ];
                         
                         let targetListId = null;
-                        if (Math.abs(donationAmount - 50.00) < 0.01 || Math.abs(donationAmount - 60.00) < 0.01) {
-                            targetListId = 12; // "Compra Aprovada - R$ 50/60 reais"
+                        if (Math.abs(donationAmount - 50.00) < 0.01 || Math.abs(donationAmount - 60.00) < 0.01 || Math.abs(donationAmount - 65.00) < 0.01) {
+                            targetListId = 12; // "Compra Aprovada - R$ 50/60/65 reais"
                         } else if (Math.abs(donationAmount - 10.00) < 0.01 || 
                                    Math.abs(donationAmount - 15.00) < 0.01 || 
-                                   Math.abs(donationAmount - 20.00) < 0.01) {
-                            targetListId = 5;  // "Compras Aprovadas" (R$ 10, 15, 20)
+                                   Math.abs(donationAmount - 20.00) < 0.01 ||
+                                   Math.abs(donationAmount - 30.00) < 0.01) {
+                            targetListId = 5;  // "Compras Aprovadas" (R$ 10, 15, 20, 30)
                         }
 
                         if (targetListId && clientEmail) {
@@ -330,12 +331,13 @@ module.exports = async (req, res) => {
                         
                         const donationAmount = parseFloat(paymentData.transaction_amount || 0);
                         let targetListId = null;
-                        if (Math.abs(donationAmount - 50.00) < 0.01 || Math.abs(donationAmount - 60.00) < 0.01) {
-                            targetListId = 12; // "Compras Aprovadas" (R$ 50/60)
+                        if (Math.abs(donationAmount - 50.00) < 0.01 || Math.abs(donationAmount - 60.00) < 0.01 || Math.abs(donationAmount - 65.00) < 0.01) {
+                            targetListId = 12; // "Compras Aprovadas" (R$ 50/60/65)
                         } else if (Math.abs(donationAmount - 10.00) < 0.01 || 
                                    Math.abs(donationAmount - 15.00) < 0.01 || 
-                                   Math.abs(donationAmount - 20.00) < 0.01) {
-                            targetListId = 5;  // "Compras Aprovadas" (R$ 10, 15, 20)
+                                   Math.abs(donationAmount - 20.00) < 0.01 ||
+                                   Math.abs(donationAmount - 30.00) < 0.01) {
+                            targetListId = 5;  // "Compras Aprovadas" (R$ 10, 15, 20, 30)
                         }
 
                         if (targetListId) {
@@ -377,9 +379,9 @@ function triggerPushcutApprovedByAmount(amount) {
             pushcutUrl = "https://api.pushcut.io/K1TZkL2GM2OjtKHRpac5Y/notifications/Pix%20Pago%20-%2010";
         } else if (roundedAmount === 15) {
             pushcutUrl = "https://api.pushcut.io/K1TZkL2GM2OjtKHRpac5Y/notifications/Pix%20Pago%20-%2015";
-        } else if (roundedAmount === 20) {
+        } else if (roundedAmount === 20 || roundedAmount === 30) {
             pushcutUrl = "https://api.pushcut.io/K1TZkL2GM2OjtKHRpac5Y/notifications/Pix%20Pago%20-%2020";
-        } else if (roundedAmount === 50 || roundedAmount === 60) {
+        } else if (roundedAmount === 50 || roundedAmount === 60 || roundedAmount === 65) {
             pushcutUrl = "https://api.pushcut.io/K1TZkL2GM2OjtKHRpac5Y/notifications/Pix%20Pago%20-%2050";
         } else {
             console.log(`Unknown amount ${roundedAmount} for Pushcut approved. Skipping.`);

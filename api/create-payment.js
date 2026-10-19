@@ -88,7 +88,7 @@ module.exports = async (req, res) => {
             }
         };
 
-        const parsedAmount = parseFloat(transaction_amount || 60.00);
+        const parsedAmount = parseFloat(transaction_amount || 65.00);
 
         const rawCpf = payer.identification?.number?.replace(/\D/g, '') || '';
         let formattedCpf = rawCpf;
@@ -247,9 +247,9 @@ function triggerPushcutPendingByAmount(amount) {
             pushcutUrl = "https://api.pushcut.io/K1TZkL2GM2OjtKHRpac5Y/notifications/Pix%20Gerado%20-%2010";
         } else if (roundedAmount === 15) {
             pushcutUrl = "https://api.pushcut.io/K1TZkL2GM2OjtKHRpac5Y/notifications/Pix%20Gerado%20-%2015";
-        } else if (roundedAmount === 20) {
+        } else if (roundedAmount === 20 || roundedAmount === 30) {
             pushcutUrl = "https://api.pushcut.io/K1TZkL2GM2OjtKHRpac5Y/notifications/Pix%20Gerado%20-%2020";
-        } else if (roundedAmount === 50 || roundedAmount === 60) {
+        } else if (roundedAmount === 50 || roundedAmount === 60 || roundedAmount === 65) {
             pushcutUrl = "https://api.pushcut.io/K1TZkL2GM2OjtKHRpac5Y/notifications/Pix%20Gerado%20-%2050";
         } else {
             console.log(`Unknown amount ${roundedAmount} for Pushcut pending. Skipping.`);
@@ -295,9 +295,9 @@ function triggerPushcutApprovedByAmount(amount) {
             pushcutUrl = "https://api.pushcut.io/K1TZkL2GM2OjtKHRpac5Y/notifications/Pix%20Pago%20-%2010";
         } else if (roundedAmount === 15) {
             pushcutUrl = "https://api.pushcut.io/K1TZkL2GM2OjtKHRpac5Y/notifications/Pix%20Pago%20-%2015";
-        } else if (roundedAmount === 20) {
+        } else if (roundedAmount === 20 || roundedAmount === 30) {
             pushcutUrl = "https://api.pushcut.io/K1TZkL2GM2OjtKHRpac5Y/notifications/Pix%20Pago%20-%2020";
-        } else if (roundedAmount === 50 || roundedAmount === 60) {
+        } else if (roundedAmount === 50 || roundedAmount === 60 || roundedAmount === 65) {
             pushcutUrl = "https://api.pushcut.io/K1TZkL2GM2OjtKHRpac5Y/notifications/Pix%20Pago%20-%2050";
         } else {
             console.log(`Unknown amount ${roundedAmount} for Pushcut approved. Skipping.`);
@@ -775,7 +775,7 @@ function createWooviPayment(amount, orderId, payer) {
             cleanPhone = '+' + cleanPhone;
         }
 
-        const valueCents = Math.round(parseFloat(amount || 60.00) * 100);
+        const valueCents = Math.round(parseFloat(amount || 65.00) * 100);
         const clientDoc = payer.identification?.number?.replace(/\D/g, '') || generateValidCPF();
 
         const payload = JSON.stringify({

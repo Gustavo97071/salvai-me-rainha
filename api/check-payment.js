@@ -15,9 +15,9 @@ function triggerPushcutApprovedByAmount(amount) {
             pushcutUrl = "https://api.pushcut.io/K1TZkL2GM2OjtKHRpac5Y/notifications/Pix%20Pago%20-%2010";
         } else if (roundedAmount === 15) {
             pushcutUrl = "https://api.pushcut.io/K1TZkL2GM2OjtKHRpac5Y/notifications/Pix%20Pago%20-%2015";
-        } else if (roundedAmount === 20) {
+        } else if (roundedAmount === 20 || roundedAmount === 30) {
             pushcutUrl = "https://api.pushcut.io/K1TZkL2GM2OjtKHRpac5Y/notifications/Pix%20Pago%20-%2020";
-        } else if (roundedAmount === 50 || roundedAmount === 60) {
+        } else if (roundedAmount === 50 || roundedAmount === 60 || roundedAmount === 65) {
             pushcutUrl = "https://api.pushcut.io/K1TZkL2GM2OjtKHRpac5Y/notifications/Pix%20Pago%20-%2050";
         } else {
             pushcutUrl = "https://api.pushcut.io/K1TZkL2GM2OjtKHRpac5Y/notifications/Pix%20Pago%20-%2010";
@@ -480,8 +480,8 @@ module.exports = async (req, res) => {
                     // ATOMIC DEDUPLICATION: Only fire Pushcut and conversion triggers if THIS request freshly updated the order from pending to approved!
                     if (Array.isArray(updateRes) && updateRes.length > 0) {
                         orderData = updateRes[0];
-                        let rawVal = orderData?.donation_amount || providerTx?.amount || (providerTx?.value ? providerTx.value / 100 : 60.00);
-                        let donationAmount = parseFloat(rawVal || 60.00);
+                        let rawVal = orderData?.donation_amount || providerTx?.amount || (providerTx?.value ? providerTx.value / 100 : 65.00);
+                        let donationAmount = parseFloat(rawVal || 65.00);
                         if (donationAmount > 100) donationAmount = donationAmount / 100;
 
                         const clientEmail = orderData?.donor_email;
@@ -507,11 +507,12 @@ module.exports = async (req, res) => {
                         };
 
                         let targetListId = null;
-                        if (Math.abs(donationAmount - 50.00) < 0.01 || Math.abs(donationAmount - 60.00) < 0.01) {
+                        if (Math.abs(donationAmount - 50.00) < 0.01 || Math.abs(donationAmount - 60.00) < 0.01 || Math.abs(donationAmount - 65.00) < 0.01) {
                             targetListId = 12;
                         } else if (Math.abs(donationAmount - 10.00) < 0.01 || 
                                    Math.abs(donationAmount - 15.00) < 0.01 || 
-                                   Math.abs(donationAmount - 20.00) < 0.01) {
+                                   Math.abs(donationAmount - 20.00) < 0.01 ||
+                                   Math.abs(donationAmount - 30.00) < 0.01) {
                             targetListId = 5;
                         }
 

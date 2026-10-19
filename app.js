@@ -4,8 +4,8 @@
    ========================================================================== */
 const state = {
     shippingType: 'benfeitor',
-    shippingCost: 60.00,
-    totalCost: 60.00,
+    shippingCost: 65.00,
+    totalCost: 65.00,
     paymentMethod: 'pix',
     donor: {
         name: '',
@@ -599,11 +599,13 @@ const app = {
         const devotoCard = document.getElementById('label-shipping-devoto');
         const protetorCard = document.getElementById('label-shipping-protetor');
         const padrinhoCard = document.getElementById('label-shipping-padrinho');
+        const missionarioCard = document.getElementById('label-shipping-missionario');
         const benfeitorCard = document.getElementById('label-shipping-benfeitor');
 
         if (devotoCard) devotoCard.classList.toggle('active', type === 'devoto');
         if (protetorCard) protetorCard.classList.toggle('active', type === 'protetor');
         if (padrinhoCard) padrinhoCard.classList.toggle('active', type === 'padrinho');
+        if (missionarioCard) missionarioCard.classList.toggle('active', type === 'missionario');
         if (benfeitorCard) benfeitorCard.classList.toggle('active', type === 'benfeitor');
 
         this.updateShippingDetailsBox();
@@ -615,6 +617,8 @@ const app = {
             typeText = 'Doação Protetor (Frete Grátis)';
         } else if (state.shippingType === 'padrinho') {
             typeText = 'Doação Padrinho (Frete Grátis)';
+        } else if (state.shippingType === 'missionario') {
+            typeText = 'Doação Missionário (Frete Grátis)';
         } else if (state.shippingType === 'benfeitor') {
             typeText = 'Doação Benfeitor (Frete Grátis)';
         }
@@ -744,10 +748,12 @@ const app = {
             document.getElementById('successDonorName').textContent = state.donor.name;
             document.getElementById('successDisplaySize').textContent = state.donor.size;
             let successShippingText = 'Doação Devoto (Frete Grátis)';
-            if (state.shippingType === 'sedex') {
+            if (state.shippingType === 'protetor' || state.shippingType === 'sedex') {
                 successShippingText = 'Doação Protetor (Frete Grátis)';
-            } else if (state.shippingType === 'test') {
+            } else if (state.shippingType === 'padrinho' || state.shippingType === 'test') {
                 successShippingText = 'Doação Padrinho (Frete Grátis)';
+            } else if (state.shippingType === 'missionario') {
+                successShippingText = 'Doação Missionário (Frete Grátis)';
             } else if (state.shippingType === 'benfeitor') {
                 successShippingText = 'Doação Benfeitor (Frete Grátis)';
             }
@@ -957,10 +963,12 @@ const app = {
                 document.getElementById('successDonorName').textContent = state.donor.name;
                 document.getElementById('successDisplaySize').textContent = state.donor.size;
                 let successShippingText = 'Doação Devoto (Frete Grátis)';
-                if (state.shippingType === 'sedex') {
+                if (state.shippingType === 'protetor' || state.shippingType === 'sedex') {
                     successShippingText = 'Doação Protetor (Frete Grátis)';
-                } else if (state.shippingType === 'test') {
+                } else if (state.shippingType === 'padrinho' || state.shippingType === 'test') {
                     successShippingText = 'Doação Padrinho (Frete Grátis)';
+                } else if (state.shippingType === 'missionario') {
+                    successShippingText = 'Doação Missionário (Frete Grátis)';
                 } else if (state.shippingType === 'benfeitor') {
                     successShippingText = 'Doação Benfeitor (Frete Grátis)';
                 }
@@ -1227,8 +1235,8 @@ const app = {
         
         // Clear state
         state.shippingType = 'benfeitor';
-        state.shippingCost = 60.00;
-        state.totalCost = 60.00;
+        state.shippingCost = 65.00;
+        state.totalCost = 65.00;
         state.paymentMethod = 'pix';
         state.donor.size = 'M';
         
@@ -1240,7 +1248,7 @@ const app = {
         const checkoutSizeDisp = document.getElementById('checkoutDisplaySize');
         if (checkoutSizeDisp) checkoutSizeDisp.textContent = 'M';
         
-        this.updateShipping(60.00, 'benfeitor');
+        this.updateShipping(65.00, 'benfeitor');
         this.switchPaymentTab('pix');
         
         window.scrollTo({ top: 0 });
@@ -1303,8 +1311,8 @@ const app = {
                     <p style="font-style: italic; color: #555; border-left: 3px solid var(--clr-primary); padding-left: 10px; margin-bottom: 16px;">
                         "A nossa obra se sustenta puramente através da fé e do coração generoso de nossos devotos. A Camisa Devocional de Nossa Senhora Aparecida é um presente especial de agradecimento, confeccionado com muito amor e devoção."
                     </p>
-                    <p>Para viabilizar a fabricação, o controle de qualidade, a embalagem protetora e o envio postal de forma sustentável para nossa obra de evangelização, o brinde físico da <strong>Camisa Devocional de Nossa Senhora Aparecida</strong> é enviado exclusivamente como agradecimento aos devotos que realizarem a contribuição/doação <strong>Benfeitor de R$ 60,00</strong>.</p>
-                    <p>Doações nos demais valores (como Devoto de R$ 10,00, Protetor de R$ 15,00 ou Padrinho de R$ 20,00) são imensamente bem-vindas e integralmente revertidas para a manutenção dos nossos projetos sociais. Como forma de agradecimento, <strong>os devotos dessas categorias receberão um maravilhoso Kit Devocional Online de Nossa Senhora Aparecida diretamente no e-mail cadastrado</strong>.</p>
+                    <p>Para viabilizar a fabricação, o controle de qualidade, a embalagem protetora e o envio postal de forma sustentável para nossa obra de evangelização, o brinde físico da <strong>Camisa Devocional de Nossa Senhora Aparecida</strong> é enviado exclusivamente como agradecimento aos devotos que realizarem a contribuição/doação <strong>Benfeitor de R$ 65,00</strong>.</p>
+                    <p>Doações nos demais valores (como Devoto de R$ 10,00, Protetor de R$ 15,00, Padrinho de R$ 20,00 ou Missionário de R$ 30,00) são imensamente bem-vindas e integralmente revertidas para a manutenção dos nossos projetos sociais. Como forma de agradecimento, <strong>os devotos dessas categorias receberão um maravilhoso Kit Devocional Online de Nossa Senhora Aparecida diretamente no e-mail cadastrado</strong>.</p>
                     <p>Agradecemos profundamente de coração a sua compreensão e generosidade, que nos ajudam a manter viva essa abençoada missão de fé.</p>
                 `
             }

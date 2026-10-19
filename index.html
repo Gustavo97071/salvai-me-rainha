@@ -191,7 +191,7 @@
                             <span class="accordion-arrow">▼</span>
                         </button>
                         <div class="accordion-content">
-                            <p>A campanha Salvai-me Mãe Santíssima apoia projetos de evangelização e sociais. A distribuição gratuita destas camisetas religiosas faz parte da nossa missão de propagar a devoção mariana nos lares. A única contribuição solicitada ao devoto para receber a camiseta física é a doação Benfeitor no valor de R$ 60,00 reais, cobrindo exclusivamente as despesas de envio e a logística de entrega dos Correios. Para as doações de outros valores (como Devoto de R$ 10,00, Protetor de R$ 15,00 ou Padrinho de R$ 20,00), os devotos receberão como agradecimento um maravilhoso Kit Devocional Online de Nossa Senhora Aparecida diretamente no e-mail cadastrado.</p>
+                            <p>A campanha Salvai-me Mãe Santíssima apoia projetos de evangelização e sociais. A distribuição gratuita destas camisetas religiosas faz parte da nossa missão de propagar a devoção mariana nos lares. A única contribuição solicitada ao devoto para receber a camiseta física é a doação Benfeitor no valor de R$ 65,00 reais, cobrindo exclusivamente as despesas de envio e a logística de entrega dos Correios. Para as doações de outros valores (como Devoto de R$ 10,00, Protetor de R$ 15,00, Padrinho de R$ 20,00 ou Missionário de R$ 30,00), os devotos receberão como agradecimento um maravilhoso Kit Devocional Online de Nossa Senhora Aparecida diretamente no e-mail cadastrado.</p>
                         </div>
                     </div>
 
@@ -495,12 +495,19 @@
                                 </div>
                                 <span class="option-price">R$ 20,00</span>
                             </label>
+                            <label class="shipping-option-card" id="label-shipping-missionario">
+                                <input type="radio" name="shipping-fee" value="30.00" onclick="app.updateShipping(30.00, 'missionario')">
+                                <div class="shipping-option-info">
+                                    <span class="option-name">Doação Missionário</span>
+                                </div>
+                                <span class="option-price">R$ 30,00</span>
+                            </label>
                             <label class="shipping-option-card active" id="label-shipping-benfeitor">
-                                <input type="radio" name="shipping-fee" value="60.00" checked onclick="app.updateShipping(60.00, 'benfeitor')">
+                                <input type="radio" name="shipping-fee" value="65.00" checked onclick="app.updateShipping(65.00, 'benfeitor')">
                                 <div class="shipping-option-info">
                                     <span class="option-name">Doação Benfeitor</span>
                                 </div>
-                                <span class="option-price">R$ 60,00</span>
+                                <span class="option-price">R$ 65,00</span>
                             </label>
                         </div>
 
@@ -837,7 +844,7 @@
                             </div>
                             <div class="ref-prod-right">
                                 <span class="ref-price-label">Valor do pedido</span>
-                                <span class="ref-price-value" id="successTotalPaid">R$ 60,00</span>
+                                <span class="ref-price-value" id="successTotalPaid">R$ 65,00</span>
                             </div>
                         </div>
 

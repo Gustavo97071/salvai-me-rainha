@@ -835,8 +835,10 @@
 
                     <select id="filter-amount" class="filter-select" onchange="adminApp.applyFilters()">
                         <option value="all">Valor da Doação (Todos)</option>
-                        <option value="60">R$ 60,00 (Benfeitor - Camiseta)</option>
+                        <option value="65">R$ 65,00 (Benfeitor - Camiseta)</option>
+                        <option value="60">R$ 60,00 (Benfeitor Antigo)</option>
                         <option value="50">R$ 50,00 (Benfeitor Antigo)</option>
+                        <option value="30">R$ 30,00 (Missionário)</option>
                         <option value="20">R$ 20,00 (Padrinho)</option>
                         <option value="15">R$ 15,00 (Protetor)</option>
                         <option value="10">R$ 10,00 (Devoto)</option>
@@ -1315,7 +1317,7 @@
                     if (amountFilter !== 'all') {
                         const orderAmt = parseFloat(order.donation_amount || 0);
                         if (amountFilter === 'other') {
-                            matchesAmount = ![10, 15, 20, 50, 60].includes(orderAmt);
+                            matchesAmount = ![10, 15, 20, 30, 50, 60, 65].includes(orderAmt);
                         } else {
                             const targetAmt = parseFloat(amountFilter);
                             matchesAmount = Math.abs(orderAmt - targetAmt) < 0.01;

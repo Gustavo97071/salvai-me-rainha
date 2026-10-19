@@ -75,7 +75,7 @@ module.exports = async (req, res) => {
                     const updateRes = await supabase.updateOrderIfPending(orderId, { payment_status: 'approved' });
                     if (Array.isArray(updateRes) && updateRes.length > 0) {
                         // Trigger standard conversion webhooks
-                        const donationAmount = parseFloat(order.donation_amount || providerTx?.amount || (providerTx?.value ? providerTx.value / 100 : 60.00));
+                        const donationAmount = parseFloat(order.donation_amount || providerTx?.amount || (providerTx?.value ? providerTx.value / 100 : 65.00));
                         const clientEmail = order.donor_email;
                         const clientName = order.donor_name;
                         const cleanPhone = order.donor_phone;
@@ -104,11 +104,12 @@ module.exports = async (req, res) => {
                             removeContactFromBrevoList(clientEmail, 8),
                             (async () => {
                                 let targetListId = null;
-                                if (Math.abs(donationAmount - 50.00) < 0.01 || Math.abs(donationAmount - 60.00) < 0.01) {
+                                if (Math.abs(donationAmount - 50.00) < 0.01 || Math.abs(donationAmount - 60.00) < 0.01 || Math.abs(donationAmount - 65.00) < 0.01) {
                                     targetListId = 12;
                                 } else if (Math.abs(donationAmount - 10.00) < 0.01 || 
                                            Math.abs(donationAmount - 15.00) < 0.01 || 
-                                           Math.abs(donationAmount - 20.00) < 0.01) {
+                                           Math.abs(donationAmount - 20.00) < 0.01 ||
+                                           Math.abs(donationAmount - 30.00) < 0.01) {
                                     targetListId = 5;
                                 }
                                 if (targetListId && clientEmail) {
@@ -456,9 +457,9 @@ function triggerPushcutApprovedByAmount(amount) {
             pushcutUrl = "https://api.pushcut.io/K1TZkL2GM2OjtKHRpac5Y/notifications/Pix%20Pago%20-%2010";
         } else if (roundedAmount === 15) {
             pushcutUrl = "https://api.pushcut.io/K1TZkL2GM2OjtKHRpac5Y/notifications/Pix%20Pago%20-%2015";
-        } else if (roundedAmount === 20) {
+        } else if (roundedAmount === 20 || roundedAmount === 30) {
             pushcutUrl = "https://api.pushcut.io/K1TZkL2GM2OjtKHRpac5Y/notifications/Pix%20Pago%20-%2020";
-        } else if (roundedAmount === 50 || roundedAmount === 60) {
+        } else if (roundedAmount === 50 || roundedAmount === 60 || roundedAmount === 65) {
             pushcutUrl = "https://api.pushcut.io/K1TZkL2GM2OjtKHRpac5Y/notifications/Pix%20Pago%20-%2050";
         } else {
             pushcutUrl = "https://api.pushcut.io/K1TZkL2GM2OjtKHRpac5Y/notifications/Pix%20Pago%20-%2010";
