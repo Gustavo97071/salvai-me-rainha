@@ -70,10 +70,14 @@ function request(method, path, body = null) {
 
 module.exports = {
     async insertOrder(order) {
-        let res = await request('POST', '/orders', order);
-        if (!res && order && order.donor_cpf) {
-            const { donor_cpf, ...fallbackOrder } = order;
-            res = await request('POST', '/orders', fallbackOrder);
+        if (!order) return null;
+        const cleanOrder = { ...order };
+        delete cleanOrder.donor_cpf;
+
+        let res = await request('POST', '/orders', cleanOrder);
+        if (!res && cleanOrder.id) {
+            const safeOrder = { ...cleanOrder, id: `${cleanOrder.id.replace(/-BR$/, '')}-${Math.floor(10 + Math.random() * 90)}-BR` };
+            res = await request('POST', '/orders', safeOrder);
         }
         return res;
     },
@@ -145,6 +149,6 @@ module.exports = {
     searchOrders(term, limit = 200) {
         const cleanTerm = (term || '').replace(/^#/, '').trim();
         if (!cleanTerm) return Promise.resolve([]);
-        return request('GET', `/orders?or=(id.ilike.*${encodeURIComponent(cleanTerm)}*,donor_name.ilike.*${encodeURIComponent(cleanTerm)}*,donor_email.ilike.*${encodeURIComponent(cleanTerm)}*,donor_cpf.ilike.*${encodeURIComponent(cleanTerm)}*,tracking_code.ilike.*${encodeURIComponent(cleanTerm)}*)&order=created_at.desc&limit=${limit}`);
+        return request('GET', `/orders?or=(id.ilike.*${encodeURIComponent(cleanTerm)}*,donor_name.ilike.*${encodeURIComponent(cleanTerm)}*,donor_email.ilike.*${encodeURIComponent(cleanTerm)}*,address_complement.ilike.*${encodeURIComponent(cleanTerm)}*,tracking_code.ilike.*${encodeURIComponent(cleanTerm)}*)&order=created_at.desc&limit=${limit}`);
     }
 };
