@@ -784,7 +784,6 @@ function createWooviPayment(amount, orderId, payer) {
             comment: `Kit Devocional Digital Ebook - Nossa Senhora Aparecida (${orderId})`,
             customer: {
                 name: `${payer.first_name || ""} ${payer.last_name || ""}`.trim() || "Devoto",
-                email: payer.email,
                 phone: cleanPhone || "+5511999999999",
                 taxID: clientDoc
             }
