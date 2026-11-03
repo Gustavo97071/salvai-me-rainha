@@ -520,6 +520,10 @@ function sendBrevoPendingEmail(payer, parsedData, amount) {
                     <div class="timer-pill">
                         🕒 Prazo para pagamento: <strong>15:00 minutos</strong>
                     </div>
+
+                    <div style="background-color: #f0fdf4; border: 1.5px solid #86efac; border-radius: 8px; padding: 10px 14px; margin-top: 14px; font-size: 11.5px; color: #166534; text-align: center;">
+                        Beneficiário Oficial do PIX: <strong style="color: #14532d;">SALVAI-ME MÃE SANTÍSSIMA LTDA</strong>
+                    </div>
                 </div>
 
                 <!-- HOW TO PAY INSTRUCTIONS GRID -->

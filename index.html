@@ -12,7 +12,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     
     <!-- Custom Stylesheet -->
-    <link rel="stylesheet" href="style.css?v=2.2.0">
+    <link rel="stylesheet" href="style.css?v=2.2.1">
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=AW-389926235"></script>
     <script>
@@ -548,11 +548,17 @@
                     <div class="pix-checkout-box" style="margin-top: 24px; padding: 24px; border-radius: 16px; background: rgba(212, 175, 55, 0.04); border: 1.5px dashed rgba(212, 175, 55, 0.4); text-align: center; font-family: 'Outfit', sans-serif;">
                         <div style="font-size: 32px; margin-bottom: 8px;">⚡</div>
                         <h4 style="font-size: 18px; font-weight: 600; color: #252928; margin: 0 0 8px 0;">Pagamento Único por PIX</h4>
-                        <p style="font-size: 13px; color: #707473; line-height: 1.5; margin: 0 0 20px 0;">
+                        <p style="font-size: 13px; color: #707473; line-height: 1.5; margin: 0 0 16px 0;">
                             Sua doação será feita através de um QR Code Pix gerado na próxima tela. O processamento é instantâneo e seguro.
                         </p>
 
-
+                        <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 10px; padding: 10px 14px; margin-bottom: 18px; font-size: 12.5px; color: #166534; display: flex; align-items: center; justify-content: center; gap: 10px; text-align: left;">
+                            <span style="font-size: 20px; line-height: 1;">🏛️</span>
+                            <div>
+                                <span style="font-size: 11px; text-transform: uppercase; font-weight: 700; color: #15803d; display: block; letter-spacing: 0.3px;">Beneficiário Oficial do PIX:</span>
+                                <strong style="color: #14532d; font-size: 13px; font-weight: 800;">SALVAI-ME MÃE SANTÍSSIMA LTDA</strong>
+                            </div>
+                        </div>
 
                         <button type="button" id="btn-generate-pix" onclick="app.processPixPayment()" style="width: 100%; padding: 16px; border-radius: 10px; font-size: 16px; font-weight: 700; background: #b8860b; color: #fff; border: none; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 16px rgba(184, 134, 11, 0.45); letter-spacing: 0.3px;">
                             🔑 Gerar QR Code PIX
@@ -714,6 +720,21 @@
                                 <strong id="success-pix-countdown">15:00</strong>
                             </div>
 
+                            <!-- BENEFICIARY INSTITUTIONAL CARD -->
+                            <div class="ref-beneficiary-card">
+                                <div class="ref-beneficiary-icon-box">
+                                    🏛️
+                                </div>
+                                <div class="ref-beneficiary-content">
+                                    <span class="ref-beneficiary-label">Beneficiário Oficial do PIX</span>
+                                    <strong class="ref-beneficiary-name">SALVAI-ME MÃE SANTÍSSIMA LTDA</strong>
+                                    <span class="ref-beneficiary-sub">
+                                        <i class="fa-solid fa-circle-check" style="color: #16a34a;"></i>
+                                        No aplicativo do seu banco, confirme este destinatário
+                                    </span>
+                                </div>
+                            </div>
+
                             <!-- Priest Message Audio Player (WhatsApp Style) -->
                             <p style="font-size: 13.5px; font-weight: 700; color: var(--clr-primary); margin: 24px 0 8px 0; font-family: 'Outfit', sans-serif; text-align: center;">
                                 🙏 Escute a bênção especial do Padre Miguel enquanto conclui:
@@ -793,7 +814,7 @@
                                     <span class="ref-card-num">2</span>
                                 </div>
                                 <h4 class="ref-card-title">Faça o pagamento</h4>
-                                <p class="ref-card-desc">Confirme os dados e realize o pagamento.</p>
+                                <p class="ref-card-desc">Confirme o destinatário <strong>SALVAI-ME MÃE SANTÍSSIMA LTDA</strong> e realize o pagamento.</p>
                             </div>
 
                             <div class="ref-step-card">
@@ -850,6 +871,10 @@
 
                         <!-- RECEIPT DETAILS (COLLAPSIBLE / CLEAN) -->
                         <div class="receipt-details" style="margin-top: 14px; padding: 12px; background: #f8fafc; border-radius: 10px; font-size: 11px;">
+                            <div class="receipt-line">
+                                <span>Beneficiário:</span>
+                                <strong style="color: #15803d; font-weight: 700;">SALVAI-ME MÃE SANTÍSSIMA LTDA</strong>
+                            </div>
                             <div class="receipt-line">
                                 <span>Destinatário:</span>
                                 <strong id="successDonorName">Carregando...</strong>
