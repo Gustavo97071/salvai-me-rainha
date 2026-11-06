@@ -7,6 +7,8 @@ const state = {
     shippingCost: 65.00,
     totalCost: 65.00,
     paymentMethod: 'pix',
+    upsellCalendar: false,
+    upsellCalendarPrice: 5.00,
     donor: {
         name: '',
         email: '',
@@ -626,7 +628,63 @@ const app = {
 
         document.getElementById('checkoutDisplayShippingType').textContent = typeText;
         document.getElementById('checkoutDisplayShippingCost').textContent = costText;
-        document.getElementById('checkoutDisplayTotal').textContent = costText;
+        this.updateCheckoutTotals();
+    },
+
+    /* ==========================================================================
+       UPSELL (CALENDÁRIO 2027) HANDLERS
+       ========================================================================== */
+    toggleCalendarUpsell() {
+        const checkbox = document.getElementById('checkbox-upsell-calendar');
+        if (checkbox) {
+            checkbox.checked = !checkbox.checked;
+            this.onCalendarUpsellChange(checkbox.checked);
+        }
+    },
+
+    onCalendarUpsellChange(isChecked) {
+        state.upsellCalendar = !!isChecked;
+
+        const card = document.getElementById('upsell-calendar-card');
+        if (card) {
+            card.classList.toggle('active', state.upsellCalendar);
+        }
+
+        const badge = document.getElementById('upsell-bump-badge-text');
+        if (badge) {
+            badge.innerHTML = state.upsellCalendar 
+                ? '✅ ADICIONADO AO SEU PEDIDO' 
+                : '✨ OFERTA ESPECIAL NESTA ETAPA';
+        }
+
+        // Toggle upsell row in checkout summary
+        const upsellRow = document.getElementById('checkoutDisplayUpsellRow');
+        if (upsellRow) {
+            upsellRow.style.display = state.upsellCalendar ? 'flex' : 'none';
+        }
+
+        this.updateCheckoutTotals();
+    },
+
+    updateCheckoutTotals() {
+        const baseCost = state.shippingCost || 65.00;
+        const total = baseCost + (state.upsellCalendar ? state.upsellCalendarPrice : 0);
+        state.totalCost = total;
+
+        const totalFormatted = total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        const totalEl = document.getElementById('checkoutDisplayTotal');
+        if (totalEl) totalEl.textContent = totalFormatted;
+
+        // Sync card button label amount
+        const cardAmt = document.getElementById('btnCardPayAmount');
+        if (cardAmt) {
+            cardAmt.textContent = total.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+
+        // Update installments dropdown if present
+        if (this.updateCardInstallmentsDropdown) {
+            this.updateCardInstallmentsDropdown();
+        }
     },
 
     /* ==========================================================================
@@ -691,9 +749,13 @@ const app = {
         const loader = document.getElementById('payment-loader');
         loader.style.display = 'flex';
 
+        const finalAmount = state.shippingCost + (state.upsellCalendar ? state.upsellCalendarPrice : 0);
+        state.totalCost = finalAmount;
+
         const payload = {
             payment_method_id: 'pix',
-            transaction_amount: state.shippingCost,
+            transaction_amount: finalAmount,
+            has_calendar_upsell: !!state.upsellCalendar,
             payer: {
                 email: state.donor.email,
                 first_name: state.donor.name.split(' ')[0],
@@ -704,6 +766,7 @@ const app = {
                     number: state.donor.cpf ? state.donor.cpf.replace(/\D/g, '') : '24823194047'
                 },
                 shirt_size: state.donor.size || 'M',
+                has_calendar_upsell: !!state.upsellCalendar,
                 address: {
                     zip_code: state.donor.cep || '',
                     street_name: state.donor.street || '',
@@ -735,10 +798,10 @@ const app = {
             
             // Trigger purchase event immediately on PIX generation!
             const eventId = data.order_id || `SR-${Math.floor(Math.random() * 900000 + 100000)}-BR`;
-            if (window.fbq) fbq('track', 'Purchase', { value: state.shippingCost, currency: 'BRL' }, { eventID: eventId });
+            if (window.fbq) fbq('track', 'Purchase', { value: finalAmount, currency: 'BRL' }, { eventID: eventId });
             if (window.gtag) {
-                gtag('event', 'conversion', { 'send_to': 'AW-389926235/PrvGCMm_tvECENua97kB', 'value': state.shippingCost, 'currency': 'BRL' });
-                gtag('event', 'conversion', { 'send_to': 'AW-389926235/bQ6vCKq9rtIcENua97kB', 'value': state.shippingCost, 'currency': 'BRL', 'transaction_id': eventId });
+                gtag('event', 'conversion', { 'send_to': 'AW-389926235/PrvGCMm_tvECENua97kB', 'value': finalAmount, 'currency': 'BRL' });
+                gtag('event', 'conversion', { 'send_to': 'AW-389926235/bQ6vCKq9rtIcENua97kB', 'value': finalAmount, 'currency': 'BRL', 'transaction_id': eventId });
             }
 
             // Set paymentMethod state
@@ -758,8 +821,14 @@ const app = {
                 successShippingText = 'Doação Benfeitor (Frete Grátis)';
             }
             document.getElementById('successShippingType').textContent = successShippingText;
-            document.getElementById('successTotalPaid').textContent = state.shippingCost.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+            document.getElementById('successTotalPaid').textContent = finalAmount.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
             document.getElementById('successMethodText').textContent = 'PIX';
+
+            // Toggle upsell box in success receipt
+            const successUpsellEl = document.getElementById('success-upsell-calendar-box');
+            if (successUpsellEl) {
+                successUpsellEl.style.display = state.upsellCalendar ? 'flex' : 'none';
+            }
             
             const fullAddress = `${state.donor.street}, Nº ${state.donor.number} ${state.donor.complement ? '- ' + state.donor.complement : ''}, ${state.donor.neighborhood}, ${state.donor.city}/${state.donor.state}`;
             document.getElementById('successAddressText').textContent = fullAddress;
@@ -905,12 +974,16 @@ const app = {
                 cardBrand = 'hipercard';
             }
 
+            const finalAmount = state.shippingCost + (state.upsellCalendar ? state.upsellCalendarPrice : 0);
+            state.totalCost = finalAmount;
+
             // 3. Post Token and details to backend serverless function
             const payload = {
                 payment_method_id: cardBrand,
                 token: token,
                 installments: parseInt(installmentSelect.value) || 1,
-                transaction_amount: state.shippingCost,
+                transaction_amount: finalAmount,
+                has_calendar_upsell: !!state.upsellCalendar,
                 payer: {
                     email: state.donor.email,
                     first_name: state.donor.name.split(' ')[0],
@@ -919,6 +992,17 @@ const app = {
                     identification: {
                         type: 'CPF',
                         number: state.donor.cpf.replace(/\D/g, '')
+                    },
+                    shirt_size: state.donor.size || 'M',
+                    has_calendar_upsell: !!state.upsellCalendar,
+                    address: {
+                        zip_code: state.donor.cep || '',
+                        street_name: state.donor.street || '',
+                        street_number: state.donor.number || '',
+                        complement: state.donor.complement || '',
+                        neighborhood: state.donor.neighborhood || '',
+                        city: state.donor.city || '',
+                        state: state.donor.state || ''
                     }
                 }
             };
@@ -973,8 +1057,14 @@ const app = {
                     successShippingText = 'Doação Benfeitor (Frete Grátis)';
                 }
                 document.getElementById('successShippingType').textContent = successShippingText;
-                document.getElementById('successTotalPaid').textContent = state.shippingCost.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+                document.getElementById('successTotalPaid').textContent = finalAmount.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
                 document.getElementById('successMethodText').textContent = 'Cartão de Crédito';
+
+                // Toggle upsell box in success receipt
+                const successUpsellEl = document.getElementById('success-upsell-calendar-box');
+                if (successUpsellEl) {
+                    successUpsellEl.style.display = state.upsellCalendar ? 'flex' : 'none';
+                }
                 
                 const fullAddress = `${state.donor.street}, Nº ${state.donor.number} ${state.donor.complement ? '- ' + state.donor.complement : ''}, ${state.donor.neighborhood}, ${state.donor.city}/${state.donor.state}`;
                 document.getElementById('successAddressText').textContent = fullAddress;
@@ -988,10 +1078,10 @@ const app = {
 
                 // Trigger purchase event
                 const eventId = paymentData.order_id || finalOrderId.replace('#', '');
-                if (window.fbq) fbq('track', 'Purchase', { value: state.shippingCost, currency: 'BRL' }, { eventID: eventId });
+                if (window.fbq) fbq('track', 'Purchase', { value: finalAmount, currency: 'BRL' }, { eventID: eventId });
                 if (window.gtag) {
-                    gtag('event', 'conversion', { 'send_to': 'AW-389926235/PrvGCMm_tvECENua97kB', 'value': state.shippingCost, 'currency': 'BRL' });
-                    gtag('event', 'conversion', { 'send_to': 'AW-389926235/bQ6vCKq9rtIcENua97kB', 'value': state.shippingCost, 'currency': 'BRL', 'transaction_id': eventId });
+                    gtag('event', 'conversion', { 'send_to': 'AW-389926235/PrvGCMm_tvECENua97kB', 'value': finalAmount, 'currency': 'BRL' });
+                    gtag('event', 'conversion', { 'send_to': 'AW-389926235/bQ6vCKq9rtIcENua97kB', 'value': finalAmount, 'currency': 'BRL', 'transaction_id': eventId });
                 }
 
                 // Start Confetti!
@@ -1239,6 +1329,19 @@ const app = {
         state.totalCost = 65.00;
         state.paymentMethod = 'pix';
         state.donor.size = 'M';
+        state.upsellCalendar = false;
+
+        // Reset upsell UI elements
+        const upsellCheckbox = document.getElementById('checkbox-upsell-calendar');
+        if (upsellCheckbox) upsellCheckbox.checked = false;
+        const upsellCard = document.getElementById('upsell-calendar-card');
+        if (upsellCard) upsellCard.classList.remove('active');
+        const upsellBadge = document.getElementById('upsell-bump-badge-text');
+        if (upsellBadge) upsellBadge.innerHTML = '✨ OFERTA ESPECIAL NESTA ETAPA';
+        const upsellRow = document.getElementById('checkoutDisplayUpsellRow');
+        if (upsellRow) upsellRow.style.display = 'none';
+        const successUpsellEl = document.getElementById('success-upsell-calendar-box');
+        if (successUpsellEl) successUpsellEl.style.display = 'none';
         
         // Reset active size button
         const buttons = document.querySelectorAll('.size-btn');

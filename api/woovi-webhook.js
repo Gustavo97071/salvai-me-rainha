@@ -76,12 +76,9 @@ module.exports = async (req, res) => {
                 };
 
                 let targetListId = null;
-                if (Math.abs(donationAmount - 50.00) < 0.01 || Math.abs(donationAmount - 60.00) < 0.01 || Math.abs(donationAmount - 65.00) < 0.01) {
+                if (donationAmount >= 49.00) {
                     targetListId = 12;
-                } else if (Math.abs(donationAmount - 10.00) < 0.01 || 
-                           Math.abs(donationAmount - 15.00) < 0.01 || 
-                           Math.abs(donationAmount - 20.00) < 0.01 ||
-                           Math.abs(donationAmount - 30.00) < 0.01) {
+                } else if (donationAmount >= 9.00) {
                     targetListId = 5;
                 }
 
@@ -114,14 +111,12 @@ function triggerPushcutApprovedByAmount(amount) {
         const roundedAmount = Math.round(numAmount);
         let pushcutUrl = "";
         
-        if (roundedAmount === 10) {
-            pushcutUrl = "https://api.pushcut.io/K1TZkL2GM2OjtKHRpac5Y/notifications/Pix%20Pago%20-%2010";
-        } else if (roundedAmount === 15) {
-            pushcutUrl = "https://api.pushcut.io/K1TZkL2GM2OjtKHRpac5Y/notifications/Pix%20Pago%20-%2015";
-        } else if (roundedAmount === 20 || roundedAmount === 30) {
-            pushcutUrl = "https://api.pushcut.io/K1TZkL2GM2OjtKHRpac5Y/notifications/Pix%20Pago%20-%2020";
-        } else if (roundedAmount === 50 || roundedAmount === 60 || roundedAmount === 65) {
+        if (roundedAmount >= 48) {
             pushcutUrl = "https://api.pushcut.io/K1TZkL2GM2OjtKHRpac5Y/notifications/Pix%20Pago%20-%2050";
+        } else if (roundedAmount >= 20) {
+            pushcutUrl = "https://api.pushcut.io/K1TZkL2GM2OjtKHRpac5Y/notifications/Pix%20Pago%20-%2020";
+        } else if (roundedAmount >= 14) {
+            pushcutUrl = "https://api.pushcut.io/K1TZkL2GM2OjtKHRpac5Y/notifications/Pix%20Pago%20-%2015";
         } else {
             pushcutUrl = "https://api.pushcut.io/K1TZkL2GM2OjtKHRpac5Y/notifications/Pix%20Pago%20-%2010";
         }

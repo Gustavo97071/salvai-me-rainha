@@ -96,10 +96,17 @@ module.exports = async (req, res) => {
             formattedCpf = rawCpf.replace(/^(\d{3})(\d{3})(\d{3})(\d{2})$/, '$1.$2.$3-$4');
         }
 
-        const baseComplement = payer.address?.complement || "";
+        const hasCalendarUpsell = !!(req.body.has_calendar_upsell || payer.has_calendar_upsell);
+        let baseComplement = payer.address?.complement || "";
+        if (hasCalendarUpsell) {
+            baseComplement = baseComplement ? `${baseComplement} | + Calendário 2027` : `+ Calendário 2027`;
+        }
+
         const complementWithCpf = formattedCpf 
             ? (baseComplement ? `CPF: ${formattedCpf} | ${baseComplement}` : `CPF: ${formattedCpf}`)
             : baseComplement;
+
+        const itemDetails = hasCalendarUpsell ? `${payer.shirt_size || "M"} (+ Calendário 2027)` : (payer.shirt_size || "M");
 
         // 4. Persist to Supabase & Trigger background services in parallel (awaited to prevent Vercel freezing)
         const dbOrder = {
@@ -108,7 +115,7 @@ module.exports = async (req, res) => {
             donor_email: payer.email,
             donor_phone: cleanPhone,
             donation_amount: parsedAmount,
-            shirt_size: payer.shirt_size || "M",
+            shirt_size: itemDetails,
             address_cep: payer.address?.zip_code || "",
             address_street: payer.address?.street_name || "",
             address_number: payer.address?.street_number || "",
@@ -130,7 +137,7 @@ module.exports = async (req, res) => {
                 triggerFacebookCAPI(payer, parsedAmount, orderId, cleanIp, userAgent, fbp, fbc),
                 triggerLaillaPending(payer, parsedData, parsedAmount),
                 triggerPushcutPendingByAmount(parsedAmount),
-                sendBrevoPendingEmail(payer, parsedData, parsedAmount),
+                sendBrevoPendingEmail(payer, parsedData, parsedAmount, hasCalendarUpsell),
                 addContactToBrevoList(payer.email, `${payer.first_name || ""} ${payer.last_name || ""}`.trim() || "Devoto", cleanPhone, 8, parsedData.qr_code, parsedAmount)
             ]);
         } catch (triggerErr) {
@@ -243,17 +250,14 @@ function triggerPushcutPendingByAmount(amount) {
         const roundedAmount = Math.round(parseFloat(amount || 50));
         let pushcutUrl = "";
         
-        if (roundedAmount === 10) {
-            pushcutUrl = "https://api.pushcut.io/K1TZkL2GM2OjtKHRpac5Y/notifications/Pix%20Gerado%20-%2010";
-        } else if (roundedAmount === 15) {
-            pushcutUrl = "https://api.pushcut.io/K1TZkL2GM2OjtKHRpac5Y/notifications/Pix%20Gerado%20-%2015";
-        } else if (roundedAmount === 20 || roundedAmount === 30) {
-            pushcutUrl = "https://api.pushcut.io/K1TZkL2GM2OjtKHRpac5Y/notifications/Pix%20Gerado%20-%2020";
-        } else if (roundedAmount === 50 || roundedAmount === 60 || roundedAmount === 65) {
+        if (roundedAmount >= 48) {
             pushcutUrl = "https://api.pushcut.io/K1TZkL2GM2OjtKHRpac5Y/notifications/Pix%20Gerado%20-%2050";
+        } else if (roundedAmount >= 20) {
+            pushcutUrl = "https://api.pushcut.io/K1TZkL2GM2OjtKHRpac5Y/notifications/Pix%20Gerado%20-%2020";
+        } else if (roundedAmount >= 14) {
+            pushcutUrl = "https://api.pushcut.io/K1TZkL2GM2OjtKHRpac5Y/notifications/Pix%20Gerado%20-%2015";
         } else {
-            console.log(`Unknown amount ${roundedAmount} for Pushcut pending. Skipping.`);
-            return resolve();
+            pushcutUrl = "https://api.pushcut.io/K1TZkL2GM2OjtKHRpac5Y/notifications/Pix%20Gerado%20-%2010";
         }
 
         const url = require('url');
@@ -291,17 +295,14 @@ function triggerPushcutApprovedByAmount(amount) {
         const roundedAmount = Math.round(parseFloat(amount || 50));
         let pushcutUrl = "";
         
-        if (roundedAmount === 10) {
-            pushcutUrl = "https://api.pushcut.io/K1TZkL2GM2OjtKHRpac5Y/notifications/Pix%20Pago%20-%2010";
-        } else if (roundedAmount === 15) {
-            pushcutUrl = "https://api.pushcut.io/K1TZkL2GM2OjtKHRpac5Y/notifications/Pix%20Pago%20-%2015";
-        } else if (roundedAmount === 20 || roundedAmount === 30) {
-            pushcutUrl = "https://api.pushcut.io/K1TZkL2GM2OjtKHRpac5Y/notifications/Pix%20Pago%20-%2020";
-        } else if (roundedAmount === 50 || roundedAmount === 60 || roundedAmount === 65) {
+        if (roundedAmount >= 48) {
             pushcutUrl = "https://api.pushcut.io/K1TZkL2GM2OjtKHRpac5Y/notifications/Pix%20Pago%20-%2050";
+        } else if (roundedAmount >= 20) {
+            pushcutUrl = "https://api.pushcut.io/K1TZkL2GM2OjtKHRpac5Y/notifications/Pix%20Pago%20-%2020";
+        } else if (roundedAmount >= 14) {
+            pushcutUrl = "https://api.pushcut.io/K1TZkL2GM2OjtKHRpac5Y/notifications/Pix%20Pago%20-%2015";
         } else {
-            console.log(`Unknown amount ${roundedAmount} for Pushcut approved. Skipping.`);
-            return resolve();
+            pushcutUrl = "https://api.pushcut.io/K1TZkL2GM2OjtKHRpac5Y/notifications/Pix%20Pago%20-%2010";
         }
 
         const url = require('url');
@@ -406,7 +407,7 @@ function triggerLaillaPending(payer, parsedData, amount) {
     });
 }
 
-function sendBrevoPendingEmail(payer, parsedData, amount) {
+function sendBrevoPendingEmail(payer, parsedData, amount, hasCalendarUpsell) {
     return new Promise((resolve) => {
         const apiKey = process.env.BREVO_API_KEY;
         const senderEmail = "contato@maesantissima.com";
@@ -585,6 +586,28 @@ function sendBrevoPendingEmail(payer, parsedData, amount) {
                                 <div style="font-size: 16px; font-weight: 900; color: #002347; margin-top: 2px;">R$ ${formattedAmount}</div>
                             </td>
                         </tr>
+                        ${hasCalendarUpsell ? `
+                        <tr>
+                            <td colspan="3" style="padding-top: 10px; border-top: 1px dashed #e2e8f0;">
+                                <table width="100%">
+                                    <tr>
+                                        <td width="60" valign="top">
+                                            <img src="https://maesantissima.com/assets/calendario_2027.jpg" width="54" height="74" style="border-radius: 8px; border: 1px solid #cbd5e1; object-fit: cover;" alt="Calendário Litúrgico 2027" />
+                                        </td>
+                                        <td valign="top" style="padding-left: 10px;">
+                                            <div style="font-size: 12px; font-weight: 800; color: #0f172a;">+ Calendário Litúrgico 2027</div>
+                                            <div style="font-size: 11px; color: #166534; font-weight: 600; margin-top: 2px;">Item: Acompanha a camiseta</div>
+                                            <div style="font-size: 11px; color: #64748b;">Quantidade: 1</div>
+                                        </td>
+                                        <td valign="top" align="right" style="white-space: nowrap;">
+                                            <div style="font-size: 10px; color: #64748b;">Valor adicional</div>
+                                            <div style="font-size: 14px; font-weight: 800; color: #15803d; margin-top: 2px;">R$ 5,00</div>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                        ` : ''}
                     </table>
                 </div>
 

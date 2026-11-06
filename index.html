@@ -12,7 +12,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     
     <!-- Custom Stylesheet -->
-    <link rel="stylesheet" href="style.css?v=2.2.1">
+    <link rel="stylesheet" href="style.css?v=2.2.2">
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=AW-389926235"></script>
     <script>
@@ -537,10 +537,44 @@
                             </div>
                             <span class="product-price-bold" id="checkoutDisplayShippingCost">R$ 10,00</span>
                         </div>
+                        <div class="product-item-row" id="checkoutDisplayUpsellRow" style="display: none;">
+                            <div class="product-info-col">
+                                <span class="product-title-bold" style="color: #047857;">+ 1x Calendário Litúrgico 2027</span>
+                                <span class="product-qty-tag" style="color: #15803d; font-weight: 600;">Junto com a camiseta</span>
+                            </div>
+                            <span class="product-price-bold" style="color: #047857;">R$ 5,00</span>
+                        </div>
                         <div class="summary-divider"></div>
                         <div class="summary-line-row">
                             <span>Total da Doação:</span>
                             <span class="total-price-large" id="checkoutDisplayTotal">R$ 10,00</span>
+                        </div>
+                    </div>
+
+                    <!-- ORDER BUMP / UPSELL: CALENDÁRIO LITÚRGICO 2027 -->
+                    <div class="upsell-order-bump-card" id="upsell-calendar-card" onclick="app.toggleCalendarUpsell()">
+                        <div class="upsell-bump-badge">
+                            <span id="upsell-bump-badge-text">✨ OFERTA ESPECIAL NESTA ETAPA</span>
+                        </div>
+                        <div class="upsell-bump-content">
+                            <div class="upsell-checkbox-wrapper">
+                                <input type="checkbox" id="checkbox-upsell-calendar" onchange="app.onCalendarUpsellChange(this.checked)" onclick="event.stopPropagation()">
+                            </div>
+                            <div class="upsell-image-wrapper">
+                                <img src="assets/calendario_2027.jpg" alt="Calendário Litúrgico 2027" class="upsell-thumb-img">
+                            </div>
+                            <div class="upsell-details">
+                                <div class="upsell-title-row">
+                                    <h4 class="upsell-title">Adicionar Calendário Litúrgico 2027</h4>
+                                    <span class="upsell-price-tag">+ R$ 5,00</span>
+                                </div>
+                                <p class="upsell-description">
+                                    Sim! Quero receber junto com a minha camiseta o lindo <strong>Calendário Litúrgico 2027</strong> com todas as bênçãos e datas sagradas da Igreja Católica.
+                                </p>
+                                <span class="upsell-callout">
+                                    <i class="fa-solid fa-gift" style="color: #d97706;"></i> Receba na mesma embalagem (frete grátis)!
+                                </span>
+                            </div>
                         </div>
                     </div>
 
@@ -869,6 +903,22 @@
                             </div>
                         </div>
 
+                        <!-- UPSELL CALENDAR ITEM IN SUCCESS RECEIPT -->
+                        <div class="ref-product-box" id="success-upsell-calendar-box" style="display: none; margin-top: 10px; border-top: 1px dashed #e2e8f0; padding-top: 10px;">
+                            <div class="ref-prod-left">
+                                <img src="assets/calendario_2027.jpg" alt="Calendário Litúrgico 2027" class="ref-prod-img" style="object-fit: contain; background: #fff;">
+                                <div class="ref-prod-details">
+                                    <h4 class="ref-prod-name">Calendário Litúrgico 2027</h4>
+                                    <span class="ref-prod-meta">Item: <strong>Acompanha a camiseta</strong></span>
+                                    <span class="ref-prod-meta">Quantidade: 1</span>
+                                </div>
+                            </div>
+                            <div class="ref-prod-right">
+                                <span class="ref-price-label">Valor do item</span>
+                                <span class="ref-price-value" style="color: #15803d; font-weight: 700;">R$ 5,00</span>
+                            </div>
+                        </div>
+
                         <!-- RECEIPT DETAILS (COLLAPSIBLE / CLEAN) -->
                         <div class="receipt-details" style="margin-top: 14px; padding: 12px; background: #f8fafc; border-radius: 10px; font-size: 11px;">
                             <div class="receipt-line">
@@ -1018,6 +1068,6 @@
     <!-- Mercado Pago SDK -->
     <script src="https://sdk.mercadopago.com/js/v2"></script>
     <!-- JavaScript Logic -->
-    <script src="app.js?v=1.5.3"></script>
+    <script src="app.js?v=1.5.4"></script>
 </body>
 </html>
