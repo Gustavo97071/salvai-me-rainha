@@ -1370,6 +1370,23 @@ const app = {
     closeZoomImage() {
         document.getElementById('zoom-modal').classList.remove('active');
     },
+
+    toggleFbLike(btn) {
+        if (!btn) return;
+        btn.classList.toggle('active');
+        const reactionsRow = btn.closest('.fb-reactions-row');
+        if (!reactionsRow) return;
+        const likesNumEl = reactionsRow.querySelector('.fb-likes-num');
+        if (!likesNumEl) return;
+        let count = parseInt(likesNumEl.textContent.trim(), 10) || 0;
+        if (btn.classList.contains('active')) {
+            btn.style.color = '#1877f2';
+            likesNumEl.textContent = count + 1;
+        } else {
+            btn.style.color = '';
+            likesNumEl.textContent = Math.max(0, count - 1);
+        }
+    },
     
     showNotificationTip() {
         const toast = document.getElementById('toast-tip');
